@@ -33,7 +33,7 @@ function toggleBGM() {
             icon.classList.add("rotating");
         }).catch(error => {
             console.error("BGM 재생 오류:", error);
-            alert("음원을 재생할 수 없어! 폴더에 'bgm.mp3' 파일이 정확히 있는지 확인해줘.");
+            alert("음원을 재생할 수 없어! 폴더에 'Night_Sky_City_2026_Plum.mp3' 파일이 정확히 있는지 확인해줘.");
         });
     } else {
         audio.pause();
@@ -74,7 +74,7 @@ function checkPassword() {
             });
         }, 1000);
     } else {
-        alert("비밀번호가 틀렸어! 우리만의 소중한 날짜를 입력해줘.");
+        alert("비밀번호가 틀렸어! 우리의 소중한 날짜를 입력해줘.");
         document.getElementById("letter-password").value = "";
     }
 }
