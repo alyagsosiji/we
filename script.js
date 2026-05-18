@@ -125,36 +125,33 @@ function closeLightbox() {
 // 4번: 마우스 & 모바일 터치 별무리 트레일 로직 
 // =========================================
 
-// 별을 생성하는 공통 함수
 function createStar(x, y) {
-    // 별이 너무 빽빽하게 생성되지 않도록 30% 확률로만 생성 (부드러운 여운)
-    if (Math.random() > 0.3) return;
+    // 이전보다 별이 더 자주(60% 확률) 생성되도록 수정하여 풍성하게 만듦
+    if (Math.random() > 0.6) return;
 
     const star = document.createElement("div");
     star.className = "mouse-star";
     
-    // 포인트에서 살짝 퍼지도록 랜덤 위치 부여
-    const offsetX = (Math.random() - 0.5) * 30;
-    const offsetY = (Math.random() - 0.5) * 30;
+    const offsetX = (Math.random() - 0.5) * 40; // 퍼지는 범위도 살짝 넓힘
+    const offsetY = (Math.random() - 0.5) * 40;
     
     star.style.left = (x + offsetX) + "px";
     star.style.top = (y + offsetY) + "px";
     
-    // 별의 크기도 랜덤하게 설정 (4px ~ 9px)
-    const size = Math.random() * 5 + 4;
+    // 별의 크기를 눈에 띄게 확 키움 (6px ~ 14px)
+    const size = Math.random() * 8 + 6;
     star.style.width = size + "px";
     star.style.height = size + "px";
 
-    // 애니메이션이 위로 흩어질 때 좌우로도 살짝 흔들리게 랜덤 변수 전달
-    const tx = (Math.random() - 0.5) * 50 + "px";
+    const tx = (Math.random() - 0.5) * 60 + "px";
     star.style.setProperty('--tx', tx);
 
     document.body.appendChild(star);
 
-    // 1.5초(여운이 끝나는 시간) 뒤에 생성된 별무리 삭제
+    // 잔상이 조금 더 오래(2초) 남도록 수정
     setTimeout(() => {
         star.remove();
-    }, 1500);
+    }, 2000);
 }
 
 // PC: 마우스 움직임 감지
@@ -164,10 +161,9 @@ document.addEventListener("mousemove", function(e) {
 
 // 모바일: 화면 터치 후 움직임 감지
 document.addEventListener("touchmove", function(e) {
-    // 터치 이벤트는 touches 배열 안에 좌표가 들어있습니다 (첫 번째 손가락 기준)
     const touch = e.touches[0];
     createStar(touch.clientX, touch.clientY);
-}, { passive: true }); // 스크롤 성능 저하 방지를 위한 옵션 추가
+}, { passive: true });
 // =========================================
 // 자동으로 모드가 바뀌는 실시간 디데이 카운터 로직
 // =========================================
