@@ -39,23 +39,103 @@ function toggleBGM() {
 // =========================================
 // 2번: 비밀 편지 잠금해제 로직
 // =========================================
+// =========================================
+// 1번 & 2번: 비밀 편지 잠금해제 및 타자기 효과 로직
+// (기존 checkPassword 함수를 덮어쓰기 하세요)
+// =========================================
 function checkPassword() {
     const input = document.getElementById("letter-password").value;
     const lockScreen = document.getElementById("lock-screen");
     const realContent = document.getElementById("letter-real-content");
+    const letterTextDiv = document.querySelector(".letter-text");
 
     // 비밀번호 설정: 0416
     if (input === "0416") {
         lockScreen.style.display = "none";
         realContent.style.display = "block";
         
-        // 폭죽 효과 대신 하트 콘솔 메시지 (선택 사항)
         console.log("사랑해 하은아! ❤️");
+
+        // 편지 내용 가져와서 타자기 효과 준비
+        const originalHTML = letterTextDiv.innerHTML;
+        letterTextDiv.innerHTML = ""; // 화면에서 일단 지움
+        
+        // 편지지가 펼쳐지는 애니메이션 시간(1초)을 기다렸다가 타자기 효과 시작
+        setTimeout(() => {
+            typeWriterEffect(letterTextDiv, originalHTML, 40); // 40은 타이핑 속도(ms)
+        }, 1000);
+        
     } else {
         alert("비밀번호가 틀렸어! 우리만의 소중한 날짜를 입력해줘.");
         document.getElementById("letter-password").value = "";
     }
 }
+
+// 타자기 효과를 만들어주는 마법의 함수
+function typeWriterEffect(element, html, speed) {
+    let i = 0;
+    let isTag = false;
+    let text = "";
+    function type() {
+        if (i < html.length) {
+            text += html.charAt(i);
+            element.innerHTML = text;
+            
+            // HTML 태그(<br>, <strong> 등)는 깨지지 않게 한 번에 출력하도록 처리
+            if (html.charAt(i) === '<') isTag = true;
+            if (html.charAt(i) === '>') isTag = false;
+            
+            i++;
+            // 태그 안을 지나고 있을 때는 딜레이 없이 0초로 넘기고, 일반 글자일때만 speed 적용
+            setTimeout(type, isTag ? 0 : speed);
+        }
+    }
+    type();
+}
+
+// =========================================
+// 3번: 갤러리 라이트박스 (사진 클릭 시 확대) 로직
+// =========================================
+document.addEventListener("DOMContentLoaded", function () {
+    const galleryImages = document.querySelectorAll(".item-image img");
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = document.getElementById("lightbox-img");
+
+    galleryImages.forEach(img => {
+        img.style.cursor = "pointer"; // 클릭 가능하다는 커서 표시
+        img.addEventListener("click", function() {
+            lightboxImg.src = this.src;
+            lightbox.classList.add("show");
+        });
+    });
+});
+
+// 라이트박스 닫기 함수
+function closeLightbox() {
+    document.getElementById("lightbox").classList.remove("show");
+}
+
+// =========================================
+// 4번: 마우스 별무리 트레일 로직
+// =========================================
+document.addEventListener("mousemove", function(e) {
+    // 모바일(화면 좁을 때)에서는 너무 지저분해질 수 있으니 PC에서만 작동하게 설정
+    if(window.innerWidth > 768) {
+        // 별 생성
+        const star = document.createElement("div");
+        star.className = "mouse-star";
+        
+        // 마우스 포인터 위치로 셋팅
+        star.style.left = e.clientX + "px";
+        star.style.top = e.clientY + "px";
+        document.body.appendChild(star);
+
+        // 0.8초 뒤에 생성된 별무리 삭제 (메모리 낭비 방지)
+        setTimeout(() => {
+            star.remove();
+        }, 800);
+    }
+});
 // =========================================
 // 자동으로 모드가 바뀌는 실시간 디데이 카운터 로직
 // =========================================
