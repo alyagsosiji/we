@@ -224,28 +224,53 @@ document.addEventListener("DOMContentLoaded", function () {
     if(msgElement) msgElement.innerText = randomMsg;
 });
 
-// 1번(패럴랙스) & 3번(스크롤 진행바) 동시 적용
+// =========================================
+// 1번 & 3번: 스크롤 진행바 부드럽게 + 패럴랙스 배경 고침
+// =========================================
+
+// 애니메이션 부드럽게 처리를 위한 변수 (보간법)
+let currentScrollPercent = 0;
+let targetScrollPercent = 0;
+let currentParallax = 0;
+let targetParallax = 0;
+
 window.addEventListener("scroll", function() {
     const scrollTop = window.scrollY;
-    
-    // 3번: 스크롤 진행바 로직
     const docHeight = document.body.scrollHeight - window.innerHeight;
-    const scrollPercent = (scrollTop / docHeight) * 100;
+    
+    // 목표값을 업데이트만 하고, 실제 움직임은 아래 애니메이션 루프에서 처리
+    targetScrollPercent = (scrollTop / docHeight) * 100;
+    
+    // 배경은 전체를 밀어내지 않고, 스크롤 방향의 반대로 살짝 땡겨서 끊김 현상 방지
+    // (이동 범위를 50px 이내로 제한하여 빈 공간이 보이지 않게 함)
+    targetParallax = (scrollTop / docHeight) * 30; 
+});
+
+// 60프레임으로 부드럽게 따라가는 애니메이션 루프
+function smoothScrollAnimation() {
     const scrollBar = document.getElementById("scroll-bar");
     const scrollStar = document.getElementById("scroll-star");
-    
-    if(scrollBar) scrollBar.style.width = scrollPercent + "%";
-    if(scrollStar) scrollStar.style.transform = `rotate(${scrollPercent * 3.6}deg)`; // 스크롤에 맞춰 별 회전
-
-    // 1번: 패럴랙스 배경 움직임 로직 (별과 오로라가 스크롤에 반응)
     const stars = document.querySelector(".stars");
-    const aurora = document.querySelector(".aurora");
     
-    // 모바일에서는 성능을 위해 아주 살짝만, PC에서는 눈에 띄게 움직임
-    if(stars) stars.style.transform = `translateY(${scrollTop * 0.2}px)`;
-    if(aurora) aurora.style.transform = `translateY(${scrollTop * 0.08}px)`;
-});
-// 1초(1000 밀리초)마다 함수를 실행해서 시계처럼 작동하게 만들기
-setInterval(updateDday, 1000);
-// 페이지 접속하자마자 즉시 한 번 실행
-updateDday();
+    // 0.1의 속도로 목표치까지 부드럽게 따라가기 (Lerp)
+    currentScrollPercent += (targetScrollPercent - currentScrollPercent) * 0.1;
+    currentParallax += (targetParallax - currentParallax) * 0.1;
+
+    // 진행바 너비와 별 회전 업데이트
+    if(scrollBar) {
+        scrollBar.style.width = currentScrollPercent + "%";
+    }
+    if(scrollStar) {
+        scrollStar.style.transform = `rotate(${currentScrollPercent * 3.6}deg)`;
+    }
+
+    // 우주 배경을 살짝만 위로 당겨서 입체감은 주되, 끊기지 않게 방어
+    if(stars) {
+        stars.style.transform = `translateY(-${currentParallax}px)`; 
+    }
+
+    // 다음 프레임 요청
+    requestAnimationFrame(smoothScrollAnimation);
+}
+// 애니메이션 무한 반복 시작
+smoothScrollAnimation();
