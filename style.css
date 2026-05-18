@@ -292,3 +292,98 @@ footer {
         font-size: 2.8rem;
     }
 }
+/* =========================================
+   새로 추가된 갤러리 섹션 스타일 
+========================================= */
+.gallery-section {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px 20px 100px 20px;
+    position: relative;
+    z-index: 2;
+}
+
+.gallery-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.gallery-title {
+    font-size: 2.2rem;
+    color: #ffffff;
+    margin-bottom: 10px;
+    text-shadow: 0 0 15px rgba(199, 164, 255, 0.4);
+}
+
+.gallery-sub {
+    color: #bcafd0;
+    font-size: 1rem;
+    letter-spacing: 1px;
+}
+
+/* 갤러리 바둑판(그리드) 배열 */
+.gallery-grid {
+    display: grid;
+    /* 화면 크기에 맞춰서 카드가 300px 이상이면 옆으로, 아니면 아래로 자동 배치 */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+/* 개별 사진 액자 (카드) */
+.gallery-item {
+    background: rgba(25, 20, 45, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(199, 164, 255, 0.25);
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    opacity: 0;
+    transform: translateY(40px);
+}
+
+.gallery-item:hover {
+    transform: translateY(-8px);
+    border-color: rgba(199, 164, 255, 0.6);
+    box-shadow: 0 15px 35px rgba(199, 164, 255, 0.2);
+}
+
+/* 제목 - 사진 - 설명 순서에 맞춘 스타일 */
+.item-title {
+    font-size: 1.25rem;
+    color: #e5d9f2;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.item-image {
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+
+.item-image img {
+    width: 100%;
+    height: 350px; /* 사진 높이 통일 (정사각형 느낌을 원하면 줄이셔도 됩니다) */
+    object-fit: cover; /* 사진이 찌그러지지 않고 꽉 차게 */
+    transition: transform 0.5s ease;
+}
+
+.gallery-item:hover .item-image img {
+    transform: scale(1.08); /* 마우스 올리면 사진 살짝 커짐 */
+}
+
+.item-desc {
+    color: #ccc5da;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* 스크롤 애니메이션 클래스 */
+.gallery-item.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
