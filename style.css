@@ -410,3 +410,68 @@ footer {
     transform: translateY(-5px); /* 위로 살짝 떠오름 */
     text-shadow: 0 0 15px rgba(199, 164, 255, 0.8); /* 보라색 네온 빛 */
 }
+/* =========================================
+   실시간 디데이 카운터 스타일
+========================================= */
+.d-day-counter {
+    margin-top: 40px;
+    margin-bottom: 20px;
+    background: rgba(25, 20, 45, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(199, 164, 255, 0.3);
+    border-radius: 20px;
+    padding: 20px 30px;
+    display: inline-block;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(199, 164, 255, 0.1);
+}
+
+.d-day-label {
+    font-size: 1rem;
+    color: #e5d9f2;
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+}
+
+.time-blocks {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.time-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+}
+
+.time-box span {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 0 15px rgba(199, 164, 255, 0.9);
+    font-family: 'Courier New', Courier, monospace; /* 숫자가 고정폭으로 깔끔하게 변하도록 설정 */
+}
+
+.time-box p {
+    font-size: 0.9rem;
+    color: #bcafd0;
+    margin-top: 5px;
+}
+
+/* 모바일 화면 최적화 */
+@media screen and (max-width: 768px) {
+    .d-day-counter {
+        padding: 15px 20px;
+    }
+    .time-blocks {
+        gap: 12px;
+    }
+    .time-box {
+        min-width: 50px;
+    }
+    .time-box span {
+        font-size: 1.8rem;
+    }
+}
