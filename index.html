@@ -13,7 +13,11 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
+    <div class="scroll-progress-container">
+        <div class="scroll-progress-bar" id="scroll-bar">
+            <i class="fa-solid fa-star" id="scroll-star"></i>
+        </div>
+    </div>
     <div class="stars"></div>
     <div class="aurora"></div>
 
@@ -43,6 +47,7 @@
                     <div class="time-box"><span id="seconds">00</span><p>초</p></div>
                 </div>
             </div>
+            <p id="random-message" class="random-message"></p>
             <div class="scroll-down">
                 <p>아래로 내려서 우리의 기록장을 확인해보세요!</p>
                 <i class="fa-solid fa-chevron-down bouncing"></i>
@@ -172,6 +177,7 @@
                     <strong>사랑해. 하은아.</strong>
                 </div>
                 <p class="letter-signature">- by. 아시 -</p>
+                <a href="" id="reply-btn" class="reply-btn">아시에게 답장 보내기 <i class="fa-solid fa-paper-plane"></i></a>
             </div>
         </div>
         </section>
