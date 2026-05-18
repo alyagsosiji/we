@@ -5,12 +5,15 @@
     box-sizing: border-box;
 }
 
+/* style.css 파일의 맨 위 body 태그 부분을 찾아 아래 속성을 추가하세요 */
 body {
     font-family: 'Gowun Batang', 'Nanum Myeongjo', serif;
     background-color: #070714;
     color: #ffffff;
     overflow-x: hidden;
     position: relative;
+    overscroll-behavior-y: none; /* iOS 바운스 스크롤 방지 추가 */
+    touch-action: pan-y; /* 수직 스크롤은 브라우저에 맡기고, 터치는 JS가 감지하도록 최적화 */
 }
 
 /* 깊은 우주의 오로라 빛 배경 */
