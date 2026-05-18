@@ -43,37 +43,38 @@ function toggleBGM() {
 // 1번 & 2번: 비밀 편지 잠금해제 및 타자기 효과 로직
 // (기존 checkPassword 함수를 덮어쓰기 하세요)
 // =========================================
+// =========================================
+// 비밀 편지 및 타자기 효과 (+ 답장 버튼 연동)
+// =========================================
 function checkPassword() {
     const input = document.getElementById("letter-password").value;
     const lockScreen = document.getElementById("lock-screen");
     const realContent = document.getElementById("letter-real-content");
     const letterTextDiv = document.querySelector(".letter-text");
+    const replyBtn = document.getElementById("reply-btn");
 
-    // 비밀번호 설정: 0416
     if (input === "0416") {
         lockScreen.style.display = "none";
         realContent.style.display = "block";
+        replyBtn.style.display = "none"; // 타이핑 중엔 버튼 숨김
         
-        console.log("사랑해 하은아! ❤️");
-
-        // 편지 내용 가져와서 타자기 효과 준비
         const originalHTML = letterTextDiv.innerHTML;
-        letterTextDiv.innerHTML = ""; // 화면에서 일단 지움
+        letterTextDiv.innerHTML = ""; 
         
-        // 편지지가 펼쳐지는 애니메이션 시간(1초)을 기다렸다가 타자기 효과 시작
         setTimeout(() => {
-            typeWriterEffect(letterTextDiv, originalHTML, 40); // 40은 타이핑 속도(ms)
+            // 타자기가 끝나면 버튼이 부드럽게 나타나도록 콜백 함수 전달
+            typeWriterEffect(letterTextDiv, originalHTML, 40, () => {
+                replyBtn.style.display = "inline-block";
+                replyBtn.animate([ { opacity: 0 }, { opacity: 1 } ], { duration: 1000, fill: "forwards" });
+            });
         }, 1000);
-        
     } else {
         alert("비밀번호가 틀렸어! 우리만의 소중한 날짜를 입력해줘.");
         document.getElementById("letter-password").value = "";
     }
 }
 
-// 타자기 효과를 만들어주는 마법의 함수
-function typeWriterEffect(element, html, baseSpeed) {
-    // 텍스트와 HTML 태그를 분리하는 정규식
+function typeWriterEffect(element, html, baseSpeed, onComplete) {
     const tokens = html.match(/<[^>]+>|[^<]/g) || [];
     let i = 0;
     element.innerHTML = "";
@@ -86,19 +87,19 @@ function typeWriterEffect(element, html, baseSpeed) {
             element.innerHTML = currentHTML;
             i++;
 
-            // 현재 출력하는 것이 HTML 태그(<br>, <strong> 등)라면 딜레이 없이 즉시 다음으로
             if (token.startsWith("<")) {
                 type();
             } else {
-                // 타이핑 속도를 살짝 랜덤하게 주어 사람(기계가 아닌)이 치는 것처럼 자연스럽게 연출
                 let randomSpeed = baseSpeed + (Math.random() * 40 - 20); 
                 setTimeout(type, randomSpeed);
             }
+        } else {
+            // 모든 글자를 다 쳤을 때 콜백 실행
+            if(onComplete) onComplete();
         }
     }
     type();
 }
-
 // =========================================
 // 3번: 갤러리 라이트박스 (사진 클릭 시 확대) 로직
 // =========================================
@@ -199,7 +200,46 @@ function updateDday() {
     document.getElementById("minutes").innerText = minutes.toString().padStart(2, '0');
     document.getElementById("seconds").innerText = seconds.toString().padStart(2, '0');
 }
+// =========================================
+// 새로 추가된 기능들 (패럴랙스, 랜덤 문구, 진행바)
+// =========================================
 
+document.addEventListener("DOMContentLoaded", function () {
+    // 2. 랜덤 애정 문구 출력
+    const loveMessages = [
+        "사랑해. 하은아.",
+        "언제나 곁에 있어줘.",
+        "우리의 이야기가 언제나 행복하기를.",
+        "언제나 웃어줘, 그럼 나도 웃을테니.",
+        "밤하늘의 별처럼 언제나 밝게 빛나기를.",
+        "나에게 넌 언제나 밝게 빛나는 밤하늘의 별이야."
+    ];
+    const randomMsg = loveMessages[Math.floor(Math.random() * loveMessages.length)];
+    const msgElement = document.getElementById("random-message");
+    if(msgElement) msgElement.innerText = randomMsg;
+});
+
+// 1번(패럴랙스) & 3번(스크롤 진행바) 동시 적용
+window.addEventListener("scroll", function() {
+    const scrollTop = window.scrollY;
+    
+    // 3번: 스크롤 진행바 로직
+    const docHeight = document.body.scrollHeight - window.innerHeight;
+    const scrollPercent = (scrollTop / docHeight) * 100;
+    const scrollBar = document.getElementById("scroll-bar");
+    const scrollStar = document.getElementById("scroll-star");
+    
+    if(scrollBar) scrollBar.style.width = scrollPercent + "%";
+    if(scrollStar) scrollStar.style.transform = `rotate(${scrollPercent * 3.6}deg)`; // 스크롤에 맞춰 별 회전
+
+    // 1번: 패럴랙스 배경 움직임 로직 (별과 오로라가 스크롤에 반응)
+    const stars = document.querySelector(".stars");
+    const aurora = document.querySelector(".aurora");
+    
+    // 모바일에서는 성능을 위해 아주 살짝만, PC에서는 눈에 띄게 움직임
+    if(stars) stars.style.transform = `translateY(${scrollTop * 0.2}px)`;
+    if(aurora) aurora.style.transform = `translateY(${scrollTop * 0.08}px)`;
+});
 // 1초(1000 밀리초)마다 함수를 실행해서 시계처럼 작동하게 만들기
 setInterval(updateDday, 1000);
 // 페이지 접속하자마자 즉시 한 번 실행
