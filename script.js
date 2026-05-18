@@ -53,6 +53,30 @@ function toggleBGM() {
 // =========================================
 // 비밀 편지 및 타자기 효과 (+ 답장 버튼 연동)
 // =========================================
+// =========================================
+// 1. BGM 플레이어 로직 (답답한 에러 메시지 대신 원인 안내)
+// =========================================
+function toggleBGM() {
+    const audio = document.getElementById("myAudio");
+    const icon = document.getElementById("bgm-icon");
+    
+    if (audio.paused) {
+        audio.play().then(() => {
+            icon.classList.add("rotating");
+        }).catch(error => {
+            console.error("BGM 재생 오류:", error);
+            // 웹에 올리면 해결된다는 친절한 알림창
+            alert("지금은 내 컴퓨터에서 파일을 열어서 브라우저 보안상 음악이 막혀있어!\n\n나중에 이 사이트를 진짜 인터넷에 올리면(호스팅) 하은이 폰에서는 문제없이 예쁘게 재생될 테니 걱정 마! 😉");
+        });
+    } else {
+        audio.pause();
+        icon.classList.remove("rotating");
+    }
+}
+
+// =========================================
+// 2. 비밀 편지 잠금해제 (타자 속도 15로 쾌속 설정!)
+// =========================================
 function checkPassword() {
     const input = document.getElementById("letter-password").value;
     const lockScreen = document.getElementById("lock-screen");
@@ -63,24 +87,27 @@ function checkPassword() {
     if (input === "0416") {
         lockScreen.style.display = "none";
         realContent.style.display = "block";
-        replyBtn.style.display = "none"; // 타이핑 중엔 버튼 숨김
+        replyBtn.style.display = "none"; 
         
         const originalHTML = letterTextDiv.innerHTML;
         letterTextDiv.innerHTML = ""; 
         
         setTimeout(() => {
-            // 타자기가 끝나면 버튼이 부드럽게 나타나도록 콜백 함수 전달
-            typeWriterEffect(letterTextDiv, originalHTML, 40, () => {
+            // 속도를 기존 40 -> 15로 대폭 낮췄습니다! (숫자가 작을수록 빠름)
+            typeWriterEffect(letterTextDiv, originalHTML, 20, () => {
                 replyBtn.style.display = "inline-block";
                 replyBtn.animate([ { opacity: 0 }, { opacity: 1 } ], { duration: 1000, fill: "forwards" });
             });
-        }, 1000);
+        }, 800); // 편지지가 열리고 타자가 시작되는 대기 시간도 조금 줄였습니다.
     } else {
-        alert("비밀번호가 틀렸어! 우리의 소중한 날짜를 입력해줘.");
+        alert("비밀번호가 틀렸어! 우리만의 소중한 날짜를 입력해줘.");
         document.getElementById("letter-password").value = "";
     }
 }
 
+// =========================================
+// 3. 타자기 효과 함수 (편차를 줄여서 매끄럽고 빠르게)
+// =========================================
 function typeWriterEffect(element, html, baseSpeed, onComplete) {
     const tokens = html.match(/<[^>]+>|[^<]/g) || [];
     let i = 0;
@@ -95,13 +122,13 @@ function typeWriterEffect(element, html, baseSpeed, onComplete) {
             i++;
 
             if (token.startsWith("<")) {
-                type();
+                type(); // HTML 태그는 딜레이 없이 즉시 통과
             } else {
-                let randomSpeed = baseSpeed + (Math.random() * 40 - 20); 
+                // 편차를 기존 40에서 20으로 줄여서 버벅거림 없이 타다닥 쳐지게 만듦
+                let randomSpeed = Math.max(5, baseSpeed + (Math.random() * 20 - 10)); 
                 setTimeout(type, randomSpeed);
             }
         } else {
-            // 모든 글자를 다 쳤을 때 콜백 실행
             if(onComplete) onComplete();
         }
     }
