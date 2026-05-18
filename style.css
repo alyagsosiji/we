@@ -387,3 +387,26 @@ footer {
     opacity: 1;
     transform: translateY(0);
 }
+/* =========================================
+   SNS 링크 스타일 (푸터)
+========================================= */
+.sns-links {
+    margin: 25px 0 15px 0; /* 위아래 여백 */
+    display: flex;
+    justify-content: center;
+    gap: 25px; /* 아이콘 사이 간격 */
+}
+
+.sns-links a {
+    color: #bcafd0; /* 기본 아이콘 색상 */
+    font-size: 1.8rem; /* 아이콘 크기 */
+    transition: all 0.3s ease; /* 부드러운 애니메이션 효과 */
+    text-decoration: none;
+}
+
+/* 마우스 올렸을 때 효과 */
+.sns-links a:hover {
+    color: #ffffff; /* 흰색으로 변함 */
+    transform: translateY(-5px); /* 위로 살짝 떠오름 */
+    text-shadow: 0 0 15px rgba(199, 164, 255, 0.8); /* 보라색 네온 빛 */
+}
