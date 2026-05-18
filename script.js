@@ -126,8 +126,8 @@ function closeLightbox() {
 // =========================================
 
 function createStar(x, y) {
-    // 이전보다 별이 더 자주(60% 확률) 생성되도록 수정하여 풍성하게 만듦
-    if (Math.random() > 0.6) return;
+    // 이전보다 별이 더 자주(80% 확률) 생성되도록 수정하여 풍성하게 만듦
+    if (Math.random() > 0.8) return;
 
     const star = document.createElement("div");
     star.className = "mouse-star";
