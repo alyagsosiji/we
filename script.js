@@ -47,14 +47,23 @@ function toggleBGM() {
 // =========================================
 // 2. 비밀 편지 잠금해제 (타자 속도 10로 쾌속 설정!)
 // =========================================
+// =========================================
+// 수정된 비밀 편지 잠금해제 (중복 실행 방지)
+// =========================================
 function checkPassword() {
     const input = document.getElementById("letter-password").value;
     const lockScreen = document.getElementById("lock-screen");
     const realContent = document.getElementById("letter-real-content");
     const letterTextDiv = document.querySelector(".letter-text");
     const replyBtn = document.getElementById("reply-btn");
+    
+    // 버튼을 가져와서 비활성화 시키기 위한 변수 (추가)
+    const submitBtn = document.querySelector(".password-field button");
 
     if (input === "0416") {
+        // 이미 실행 중이면 다시 실행 안 되게 버튼 잠금 (추가)
+        if (submitBtn) submitBtn.disabled = true;
+
         lockScreen.style.display = "none";
         realContent.style.display = "block";
         replyBtn.style.display = "none"; 
@@ -63,12 +72,11 @@ function checkPassword() {
         letterTextDiv.innerHTML = ""; 
         
         setTimeout(() => {
-            // 속도를 기존 40 -> 15로 대폭 낮췄습니다! (숫자가 작을수록 빠름)
             typeWriterEffect(letterTextDiv, originalHTML, 10, () => {
                 replyBtn.style.display = "inline-block";
                 replyBtn.animate([ { opacity: 0 }, { opacity: 1 } ], { duration: 1000, fill: "forwards" });
             });
-        }, 800); // 편지지가 열리고 타자가 시작되는 대기 시간도 조금 줄였습니다.
+        }, 800); 
     } else {
         alert("비밀번호가 틀렸어! 우리의 소중한 날짜를 입력해줘.");
         document.getElementById("letter-password").value = "";
@@ -310,3 +318,21 @@ function sendReply() {
 }
 // 애니메이션 무한 반복 시작
 smoothScrollAnimation();
+// =========================================
+// 디데이 카운터 실시간 작동 (추가된 코드)
+// =========================================
+document.addEventListener("DOMContentLoaded", function () {
+    // 1. 디데이 타이머 실행
+    updateDday(); 
+    setInterval(updateDday, 1000); 
+
+    // 2. 비밀번호 창 엔터키 작동 기능
+    const passwordInput = document.getElementById("letter-password");
+    if(passwordInput) {
+        passwordInput.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                checkPassword();
+            }
+        });
+    }
+});
