@@ -89,7 +89,7 @@ body {
 .timeline-container::after {
     content: '';
     position: absolute;
-    width: 2px;
+    width: 1px;
     background: linear-gradient(to bottom, rgba(174, 147, 235, 0.1), rgba(174, 147, 235, 0.8), rgba(174, 147, 235, 0.1));
     top: 0;
     bottom: 0;
