@@ -648,29 +648,34 @@ footer {
 .close-lightbox:hover { color: #c7a4ff; transform: scale(1.1); }
 
 /* =========================================
-   새로운 효과: 4. 마우스 별무리 트레일 (몽환적 업그레이드)
+   새로운 효과: 4. 마우스 별무리 트레일 (가시성 극대화)
 ========================================= */
 .mouse-star {
     position: fixed; 
     pointer-events: none;
-    background: rgba(255, 255, 255, 0.85); 
+    background: #ffffff; /* 중심은 완전한 흰색으로 쨍하게 */
     border-radius: 50%;
-    /* 더 부드럽고 몽환적인 오로라빛 번짐 효과 */
-    box-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(199, 164, 255, 0.6);
-    /* 아래로 떨어지지 않고 위로 스르르 떠오르며 사라지는 애니메이션 */
-    animation: driftUpAndFade 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    /* 3중 레이어로 보라색 빛 번짐을 아주 강하고 넓게 설정 */
+    box-shadow: 0 0 15px rgba(255, 255, 255, 1), 
+                0 0 30px rgba(199, 164, 255, 0.9), 
+                0 0 45px rgba(199, 164, 255, 0.6);
+    /* 2초 동안 천천히 여운을 남기며 사라짐 */
+    animation: driftUpAndFade 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
     z-index: 9998;
     will-change: transform, opacity;
 }
 
 @keyframes driftUpAndFade {
     0% { 
-        opacity: 0.8; 
-        transform: scale(1) translate(0, 0); 
+        opacity: 1; /* 처음엔 100% 밝기로 뽝! 등장 */
+        transform: scale(0.5) translate(0, 0); 
+    }
+    30% {
+        opacity: 1;
+        transform: scale(1.2) translate(calc(var(--tx) / 3), -20px); /* 살짝 커지면서 빛남 (블룸 효과) */
     }
     100% { 
         opacity: 0; 
-        /* var(--tx)는 자바스크립트에서 준 좌우 랜덤 흔들림 값 */
-        transform: scale(0.1) translate(var(--tx), -60px); 
+        transform: scale(0.2) translate(var(--tx), -90px); /* 위로 길게 날아가며 소멸 */
     }
 }
