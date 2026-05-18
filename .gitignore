@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우리의 기록장</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nanum+Myeongjo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="stars"></div>
+    <div class="twinkling"></div>
+
+    <header class="intro-section">
+        <div class="intro-content">
+            <p class="sub-title">너와 함께한 모든 순간</p>
+            <h1 class="main-title">우리의 기록장</h1>
+            <div class="scroll-down">
+                <p>아래로 내려서 우리의 추억을 확인해보세요</p>
+                <i class="fa-solid fa-chevron-down bouncing"></i>
+            </div>
+        </div>
+    </header>
+
+    <main class="timeline-container">
+        
+        <div class="timeline-item fade-in">
+            <div class="timeline-dot"><i class="fa-solid fa-heart"></i></div>
+            <div class="timeline-date">2024. 04. 12</div>
+            <div class="timeline-content">
+                <h2>첫 만남, 설렘의 시작</h2>
+                <div class="image-wrapper">
+                    <img src="your-photo1.jpg" alt="첫 만남 사진" onerror="this.src='https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=500&auto=format&fit=crop&q=60'">
+                </div>
+                <p>흐드러지게 벚꽃이 피던 날, 처음 너를 보았던 순간을 기억해. 봄바람보다 더 설레던 네 미소가 아직도 선명해.</p>
+            </div>
+        </div>
+
+        <div class="timeline-item fade-in">
+            <div class="timeline-dot"><i class="fa-solid fa-camera"></i></div>
+            <div class="timeline-date">2024. 08. 05</div>
+            <div class="timeline-content">
+                <h2>첫 바다, 그리고 우리</h2>
+                <div class="image-wrapper">
+                    <img src="your-photo2.jpg" alt="첫 바다 사진" onerror="this.src='https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=500&auto=format&fit=crop&q=60'">
+                </div>
+                <p>푸른 바다 앞에서 마주 보며 웃던 날. 뜨거운 여름 햇살보다 우리 마음이 더 뜨거웠던 기억.</p>
+            </div>
+        </div>
+
+        <div class="timeline-item fade-in">
+            <div class="timeline-dot"><i class="fa-solid fa-cake-candles"></i></div>
+            <div class="timeline-date">2025. 01. 01</div>
+            <div class="timeline-content">
+                <h2>새해를 함께 맞이하며</h2>
+                <div class="image-wrapper">
+                    <img src="your-photo3.jpg" alt="새해 사진" onerror="this.src='https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60'">
+                </div>
+                <p>새해 카운트다운을 하며 서로에게 했던 약속들. 올 한 해도, 내년에도 언제나 너의 곁을 지켜줄게.</p>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <p>앞으로도 더 많은 추억을 함께 그려나가자. 사랑해.</p>
+            <p class="copyright">© 2026. alyagsosiji All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

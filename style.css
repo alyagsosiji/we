@@ -1,0 +1,248 @@
+/* 기본 리셋 및 폰트 설정 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Gowun Batang', 'Nanum Myeongjo', serif;
+    background: linear-gradient(to bottom, #0B0B1E, #161633, #2C1B4D);
+    color: #ffffff;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* 몽환적인 배경 애니메이션 (우주 공간 느낌) */
+.stars, .twinkling {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: -1;
+}
+
+.stars {
+    background: #000 url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=1600') repeat top center;
+    opacity: 0.4;
+}
+
+/* 인트로 섹션 */
+.intro-section {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: relative;
+}
+
+.intro-content {
+    animation: fadeIn 2s ease-in-out;
+}
+
+.sub-title {
+    font-size: 1.2rem;
+    letter-spacing: 4px;
+    color: #dfd3f7;
+    margin-bottom: 15px;
+    text-shadow: 0 0 10px rgba(223, 211, 247, 0.5);
+}
+
+.main-title {
+    font-size: 3.5rem;
+    font-weight: 700;
+    letter-spacing: 6px;
+    background: linear-gradient(45deg, #ae93eb, #e8dbfc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 20px rgba(174, 147, 235, 0.3);
+}
+
+.scroll-down {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9rem;
+    color: #a399b8;
+}
+
+.bouncing {
+    margin-top: 10px;
+    animation: bounce 2s infinite;
+}
+
+/* 타임라인 레이아웃 */
+.timeline-container {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 100px 20px;
+}
+
+/* 가운데 세로줄 선 */
+.timeline-container::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    background: linear-gradient(to bottom, rgba(174, 147, 235, 0.1), rgba(174, 147, 235, 0.8), rgba(174, 147, 235, 0.1));
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* 타임라인 개별 아이템 */
+.timeline-item {
+    padding: 20px 30px;
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(174, 147, 235, 0.1);
+    backdrop-filter: blur(8px);
+    border-radius: 15px;
+    margin-bottom: 80px;
+    width: 45%;
+    clear: both;
+    transition: all 0.5s ease;
+    opacity: 0; /* JS로 나타나게 할 예정 */
+    transform: translateY(40px);
+}
+
+/* 홀수/짝수 배치 */
+.timeline-item:nth-child(odd) {
+    float: left;
+    text-align: right;
+}
+
+.timeline-item:nth-child(even) {
+    float: right;
+    text-align: left;
+}
+
+/* 타임라인 중심 아이콘 아이콘 */
+.timeline-dot {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: #2C1B4D;
+    border: 2px solid #ae93eb;
+    border-radius: 50%;
+    top: 25px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ae93eb;
+    font-size: 0.8rem;
+    z-index: 2;
+    box-shadow: 0 0 10px rgba(174, 147, 235, 0.6);
+}
+
+.timeline-item:nth-child(odd) .timeline-dot {
+    right: -45px;
+}
+
+.timeline-item:nth-child(even) .timeline-dot {
+    left: -45px;
+}
+
+/* 날짜 및 본문 스타일 */
+.timeline-date {
+    font-size: 1.1rem;
+    color: #ae93eb;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.timeline-content h2 {
+    font-size: 1.4rem;
+    margin-bottom: 15px;
+    color: #ffffff;
+}
+
+.image-wrapper {
+    width: 100%;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 15px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.image-wrapper img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.image-wrapper:hover img {
+    transform: scale(1.05);
+}
+
+.timeline-content p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #ccc5da;
+}
+
+/* 스크롤 시 등장할 클래스 */
+.timeline-item.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* 푸터 스타일 */
+footer {
+    text-align: center;
+    padding: 100px 20px 40px 20px;
+    background: linear-gradient(to top, #060612, transparent);
+    clear: both;
+}
+
+.footer-content p {
+    font-size: 1.1rem;
+    color: #dfd3f7;
+    margin-bottom: 20px;
+}
+
+.copyright {
+    font-size: 0.8rem !important;
+    color: #6a617e !important;
+    letter-spacing: 1px;
+}
+
+/* 애니메이션 Keyframes */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+/* 모바일 화면 최적화 (반응형) */
+@media screen and (max-width: 768px) {
+    .timeline-container::after {
+        left: 30px;
+    }
+    .timeline-item {
+        width: 100%;
+        float: none !important;
+        text-align: left !important;
+        padding-left: 50px;
+        background: transparent;
+        border: none;
+        backdrop-filter: none;
+    }
+    .timeline-dot {
+        left: 15px !important;
+        right: auto !important;
+    }
+}
