@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 // =========================================
-// BGM 플레이어 로직 (브라우저 정책 우회 및 에러 핸들링 강화)
+// 1. BGM 플레이어 로직 (웹 서버 배포용 최종 버전)
 // =========================================
 function toggleBGM() {
     const audio = document.getElementById("myAudio");
@@ -29,17 +29,16 @@ function toggleBGM() {
     
     if (audio.paused) {
         audio.play().then(() => {
+            // 재생 성공 시 디스크 아이콘 회전
             icon.classList.add("rotating");
         }).catch(error => {
             console.error("BGM 재생 오류:", error);
-            // 오류 발생 시 볼륨을 줄이고 강제 재생 시도
-            audio.volume = 0.5;
-            alert("브라우저 보안 때문에 로컬 파일 재생이 막혔어! 예비 음원(웹)으로 재생해볼게.");
-            audio.load(); 
-            audio.play().then(() => icon.classList.add("rotating")).catch(e => alert("예비 음원도 막혀있네! 웹에 올리면 정상 작동할 거야."));
+            // 웹 서버에서는 보통 잘 되지만, 간혹 아이폰/갤럭시의 '절전 모드'나 '무음 모드' 때문에 브라우저가 소리를 막을 때만 짧게 알려줍니다.
+            alert("음원을 재생할 수 없어! 기기의 소리 설정이나 절전 모드를 확인해줘 🥺");
         });
     } else {
         audio.pause();
+        // 일시정지 시 디스크 아이콘 회전 멈춤
         icon.classList.remove("rotating");
     }
 }
