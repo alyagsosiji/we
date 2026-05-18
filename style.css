@@ -539,10 +539,14 @@ footer {
     margin-bottom: 20px;
 }
 
+/* =========================================
+   수정: 비밀 편지 암호 입력창 점(••••) 쏠림 방지 및 정렬
+========================================= */
 .password-field {
     margin-top: 25px;
     display: flex;
     justify-content: center;
+    align-items: center; /* 입력창과 버튼을 수직 중앙으로 완벽하게 맞춤 */
     gap: 10px;
 }
 
@@ -550,28 +554,45 @@ footer {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid #c7a4ff;
     border-radius: 10px;
-    padding: 10px;
+    padding: 0 10px; 
     color: white;
-    width: 100px;
+    width: 120px;
+    height: 50px; /* 높이를 명확하게 고정 */
     text-align: center;
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     letter-spacing: 5px;
+    font-family: Arial, sans-serif; /* 바탕체 충돌로 인한 점(••••) 바닥 쏠림 방지 */
+    box-sizing: border-box;
+    outline: none;
+}
+
+#letter-password::placeholder {
+    font-size: 1.2rem;
+    letter-spacing: 2px;
+    transform: translateY(-2px); /* 플레이스홀더 위치 미세조정 */
 }
 
 .password-field button {
     background: #c7a4ff;
     border: none;
     color: #1a1a2e;
-    padding: 10px 20px;
+    padding: 0 20px;
+    height: 50px; /* 입력창과 높이 완벽하게 통일 */
     border-radius: 10px;
     font-weight: bold;
+    font-size: 1.05rem;
     cursor: pointer;
     transition: 0.3s;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .password-field button:hover {
     background: #ffffff;
     box-shadow: 0 0 15px #c7a4ff;
+    transform: translateY(-3px); /* 마우스 올렸을 때 살짝 뜨는 효과 추가 */
 }
 
 /* 실제 편지 내용 스타일 */
