@@ -56,3 +56,47 @@ function checkPassword() {
         document.getElementById("letter-password").value = "";
     }
 }
+// =========================================
+// 자동으로 모드가 바뀌는 실시간 디데이 카운터 로직
+// =========================================
+function updateDday() {
+    // 기준일 설정: 2026년 4월 16일 자정 기준
+    const startDate = new Date("2026-04-16T00:00:00").getTime();
+    const now = new Date().getTime();
+    
+    // 현재 시간과 기준일의 차이 계산 (밀리초)
+    let distance = now - startDate;
+    
+    const labelElement = document.querySelector(".d-day-label");
+
+    // 1. 지정한 날짜가 아직 안 되었을 때 (미래일 때: 카운트다운 모드)
+    if (distance < 0) {
+        // 타이틀 문구 자동 변경
+        if(labelElement) labelElement.innerText = "우리의 이야기가 시작되기까지";
+        
+        // 남은 시간 계산을 위해 부호를 반대로 변경
+        distance = startDate - now; 
+    } 
+    // 2. 지정한 날짜가 지났을 때 (과거일 때: 지난 날짜 카운트 모드)
+    else {
+        // 타이틀 문구 자동 변경
+        if(labelElement) labelElement.innerText = "우리의 이야기가 시작된 지";
+    }
+    
+    // 일, 시간, 분, 초 계산
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+    
+    // HTML 화면에 숫자 실시간 업데이트
+    document.getElementById("days").innerText = days;
+    document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
+    document.getElementById("minutes").innerText = minutes.toString().padStart(2, '0');
+    document.getElementById("seconds").innerText = seconds.toString().padStart(2, '0');
+}
+
+// 1초(1000 밀리초)마다 함수를 실행해서 시계처럼 작동하게 만들기
+setInterval(updateDday, 1000);
+// 페이지 접속하자마자 즉시 한 번 실행
+updateDday();
