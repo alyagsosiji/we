@@ -72,7 +72,7 @@ function checkPassword() {
         letterTextDiv.innerHTML = ""; 
         
         setTimeout(() => {
-            typeWriterEffect(letterTextDiv, originalHTML, 10, () => {
+            typeWriterEffect(letterTextDiv, originalHTML, 7, () => {
                 replyBtn.style.display = "inline-block";
                 replyBtn.animate([ { opacity: 0 }, { opacity: 1 } ], { duration: 1000, fill: "forwards" });
             });
