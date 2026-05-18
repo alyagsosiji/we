@@ -648,34 +648,36 @@ footer {
 .close-lightbox:hover { color: #c7a4ff; transform: scale(1.1); }
 
 /* =========================================
-   새로운 효과: 4. 마우스 별무리 트레일 (가시성 극대화)
+   새로운 효과: 4. 마우스 별무리 트레일 (마우스 궤적만 따라가게 수정)
 ========================================= */
 .mouse-star {
     position: fixed; 
     pointer-events: none;
-    background: #ffffff; /* 중심은 완전한 흰색으로 쨍하게 */
+    background: #ffffff; 
     border-radius: 50%;
-    /* 3중 레이어로 보라색 빛 번짐을 아주 강하고 넓게 설정 */
     box-shadow: 0 0 15px rgba(255, 255, 255, 1), 
                 0 0 30px rgba(199, 164, 255, 0.9), 
                 0 0 45px rgba(199, 164, 255, 0.6);
-    /* 2초 동안 천천히 여운을 남기며 사라짐 */
-    animation: driftUpAndFade 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+    /* 제자리에서 1초 동안 사라지는 애니메이션 적용 */
+    animation: sparkleTrail 1s ease-out forwards;
     z-index: 9998;
     will-change: transform, opacity;
+    
+    /* 마우스 포인터의 정중앙에 별이 생성되도록 위치 보정 */
+    transform: translate(-50%, -50%); 
 }
 
-@keyframes driftUpAndFade {
+@keyframes sparkleTrail {
     0% { 
-        opacity: 1; /* 처음엔 100% 밝기로 뽝! 등장 */
-        transform: scale(0.5) translate(0, 0); 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(0.5); 
     }
     30% {
         opacity: 1;
-        transform: scale(1.2) translate(calc(var(--tx) / 3), -20px); /* 살짝 커지면서 빛남 (블룸 효과) */
+        transform: translate(-50%, -50%) scale(1.2); /* 제자리에서 살짝 커지며 반짝! */
     }
     100% { 
         opacity: 0; 
-        transform: scale(0.2) translate(var(--tx), -90px); /* 위로 길게 날아가며 소멸 */
+        transform: translate(-50%, -50%) scale(0.1); /* 제자리에서 점처럼 작아지며 소멸 */
     }
 }
