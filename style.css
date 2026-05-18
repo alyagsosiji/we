@@ -595,3 +595,70 @@ footer {
     from { opacity: 0; transform: scale(0.8) rotate(0deg); }
     to { opacity: 1; transform: scale(1) rotate(-1deg); }
 }
+/* =========================================
+   새로운 효과: 2. 별똥별(유성우) 애니메이션
+========================================= */
+.shooting-stars {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    z-index: -1; transform: rotate(-45deg);
+    pointer-events: none;
+}
+.shooting-stars span {
+    position: absolute;
+    top: 50%; left: 50%; width: 100px; height: 2px;
+    background: linear-gradient(90deg, #ffffff, transparent);
+    box-shadow: 0 0 10px #ffffff;
+    animation: shooting 3s linear infinite;
+    opacity: 0;
+}
+/* 각 별똥별의 위치와 속도 다르게 설정 */
+.shooting-stars span:nth-child(1) { top: 10%; left: 80%; animation-delay: 0s; animation-duration: 3s; }
+.shooting-stars span:nth-child(2) { top: 30%; left: 60%; animation-delay: 1.5s; animation-duration: 4s; }
+.shooting-stars span:nth-child(3) { top: -10%; left: 40%; animation-delay: 2.5s; animation-duration: 3.5s; }
+.shooting-stars span:nth-child(4) { top: 70%; left: 90%; animation-delay: 0.8s; animation-duration: 2.5s; }
+
+@keyframes shooting {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(-1000px); opacity: 0; }
+}
+
+/* =========================================
+   새로운 효과: 3. 갤러리 라이트박스 (사진 확대)
+========================================= */
+.lightbox {
+    display: none; position: fixed; z-index: 9999;
+    top: 0; left: 0; width: 100%; height: 100vh;
+    background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(8px);
+    justify-content: center; align-items: center;
+    opacity: 0; transition: opacity 0.4s ease;
+}
+.lightbox.show { display: flex; opacity: 1; }
+.lightbox img {
+    max-width: 90%; max-height: 90%;
+    border-radius: 15px; box-shadow: 0 0 30px rgba(199, 164, 255, 0.4);
+    transform: scale(0.8); transition: transform 0.4s ease;
+}
+.lightbox.show img { transform: scale(1); }
+.close-lightbox {
+    position: absolute; top: 30px; right: 40px;
+    font-size: 3rem; color: #fff; cursor: pointer; text-shadow: 0 0 10px #c7a4ff;
+    transition: 0.3s;
+}
+.close-lightbox:hover { color: #c7a4ff; transform: scale(1.1); }
+
+/* =========================================
+   새로운 효과: 4. 마우스 별무리 트레일
+========================================= */
+.mouse-star {
+    position: fixed; pointer-events: none;
+    width: 8px; height: 8px;
+    background: #ffffff; border-radius: 50%;
+    box-shadow: 0 0 10px #ffffff, 0 0 20px #c7a4ff;
+    animation: fallAndFade 1s linear forwards;
+    z-index: 9998;
+}
+@keyframes fallAndFade {
+    0% { opacity: 0.8; transform: scale(1) translateY(0); }
+    100% { opacity: 0; transform: scale(0.2) translateY(40px); }
+}
