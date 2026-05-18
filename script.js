@@ -72,22 +72,28 @@ function checkPassword() {
 }
 
 // 타자기 효과를 만들어주는 마법의 함수
-function typeWriterEffect(element, html, speed) {
+function typeWriterEffect(element, html, baseSpeed) {
+    // 텍스트와 HTML 태그를 분리하는 정규식
+    const tokens = html.match(/<[^>]+>|[^<]/g) || [];
     let i = 0;
-    let isTag = false;
-    let text = "";
+    element.innerHTML = "";
+    let currentHTML = "";
+
     function type() {
-        if (i < html.length) {
-            text += html.charAt(i);
-            element.innerHTML = text;
-            
-            // HTML 태그(<br>, <strong> 등)는 깨지지 않게 한 번에 출력하도록 처리
-            if (html.charAt(i) === '<') isTag = true;
-            if (html.charAt(i) === '>') isTag = false;
-            
+        if (i < tokens.length) {
+            let token = tokens[i];
+            currentHTML += token;
+            element.innerHTML = currentHTML;
             i++;
-            // 태그 안을 지나고 있을 때는 딜레이 없이 0초로 넘기고, 일반 글자일때만 speed 적용
-            setTimeout(type, isTag ? 0 : speed);
+
+            // 현재 출력하는 것이 HTML 태그(<br>, <strong> 등)라면 딜레이 없이 즉시 다음으로
+            if (token.startsWith("<")) {
+                type();
+            } else {
+                // 타이핑 속도를 살짝 랜덤하게 주어 사람(기계가 아닌)이 치는 것처럼 자연스럽게 연출
+                let randomSpeed = baseSpeed + (Math.random() * 40 - 20); 
+                setTimeout(type, randomSpeed);
+            }
         }
     }
     type();
@@ -116,24 +122,38 @@ function closeLightbox() {
 }
 
 // =========================================
-// 4번: 마우스 별무리 트레일 로직
+// 4번: 마우스 별무리 트레일 로직 (몽환적이고 부드럽게 업그레이드)
 // =========================================
 document.addEventListener("mousemove", function(e) {
-    // 모바일(화면 좁을 때)에서는 너무 지저분해질 수 있으니 PC에서만 작동하게 설정
     if(window.innerWidth > 768) {
-        // 별 생성
+        // 별이 너무 빽빽하게 생성되지 않도록 30% 확률로만 생성 (부드러운 여운)
+        if (Math.random() > 0.3) return;
+
         const star = document.createElement("div");
         star.className = "mouse-star";
         
-        // 마우스 포인터 위치로 셋팅
-        star.style.left = e.clientX + "px";
-        star.style.top = e.clientY + "px";
+        // 마우스 포인트에서 살짝 퍼지도록 랜덤 위치 부여
+        const offsetX = (Math.random() - 0.5) * 30;
+        const offsetY = (Math.random() - 0.5) * 30;
+        
+        star.style.left = (e.clientX + offsetX) + "px";
+        star.style.top = (e.clientY + offsetY) + "px";
+        
+        // 별의 크기도 랜덤하게 설정 (4px ~ 9px)
+        const size = Math.random() * 5 + 4;
+        star.style.width = size + "px";
+        star.style.height = size + "px";
+
+        // 애니메이션이 위로 흩어질 때 좌우로도 살짝 흔들리게 랜덤 변수 전달
+        const tx = (Math.random() - 0.5) * 50 + "px";
+        star.style.setProperty('--tx', tx);
+
         document.body.appendChild(star);
 
-        // 0.8초 뒤에 생성된 별무리 삭제 (메모리 낭비 방지)
+        // 1.5초(여운이 끝나는 시간) 뒤에 생성된 별무리 삭제
         setTimeout(() => {
             star.remove();
-        }, 800);
+        }, 1500);
     }
 });
 // =========================================
