@@ -29,8 +29,9 @@
         <div class="bgm-disk">
             <i class="fa-solid fa-compact-disc" id="bgm-icon"></i>
         </div>
-        <audio id="myAudio" loop>
-            <source src="Night_Sky_City_2026_Plum.mp3" type="audio/mpeg">
+        <audio id="myAudio" loop preload="auto">
+            <source src="Night_Sky_City_2026_Plum.mp3.mp3" type="audio/mpeg">
+            <source src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Debussy_-_Clair_de_Lune.ogg" type="audio/ogg">
         </audio>
     </div>
 
@@ -177,7 +178,16 @@
                     <strong>사랑해. 하은아.</strong>
                 </div>
                 <p class="letter-signature">- by. 아시 -</p>
-                <a href="https://open.kakao.com/o/Hoshino_Ashi" target="_blank" id="reply-btn" class="reply-btn">아시에게 답장 보내기 <i class="fa-solid fa-paper-plane"></i></a>
+                <button onclick="openReplyBox()" id="reply-btn" class="reply-btn">아시에게 답장 쓰기 <i class="fa-solid fa-pen-nib"></i></button>
+            </div>
+        </div>
+
+        <div id="reply-modal" class="reply-modal">
+            <div class="reply-box">
+                <span class="close-reply" onclick="closeReplyBox()">&times;</span>
+                <h3>To. 아시</h3>
+                <textarea id="reply-text" placeholder="여기에 아시에게 전하고 싶은 진심을 적어줘..."></textarea>
+                <button class="send-letter-btn" onclick="sendReply()">편지 보내기 <i class="fa-solid fa-paper-plane"></i></button>
             </div>
         </div>
         </section>
