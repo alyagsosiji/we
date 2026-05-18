@@ -96,7 +96,7 @@ body {
 /* 타임라인 레이아웃 (세로줄 문제 완벽 해결) */
 .timeline-container {
     position: relative;
-    max-width: 900px; /* 카드가 넉넉하게 들어가도록 넓이 조정 */
+    max-width: 900px; 
     margin: 0 auto;
     padding: 50px 20px 100px 20px;
 }
@@ -110,18 +110,20 @@ body {
     top: 0;
     bottom: 0;
     left: 50%;
-    margin-left: -1px; /* 2px 선을 완벽한 중앙으로 이동 */
+    transform: translateX(-50%); /* 정확히 50% 지점 중앙 정렬 */
     box-shadow: 0 0 15px rgba(199, 164, 255, 0.7);
+    z-index: 1;
 }
 
-/* 타임라인 개별 아이템 구조 */
+/* 타임라인 개별 아이템 구조 수정 (흐름 안깨지게 여백으로 밀어내기) */
 .timeline-item {
     width: 50%;
     position: relative;
     margin-bottom: 80px;
     opacity: 0;
     transform: translateY(40px);
-    transition: all 0.9s cubic-bezier(0.25, 1, 0.5, 1); /* 더 부드럽게 나타남 */
+    transition: all 0.9s cubic-bezier(0.25, 1, 0.5, 1);
+    z-index: 2; /* 카드와 아이콘이 선 위로 올라오도록 처리 */
 }
 
 /* 스크롤 시 등장할 클래스 */
@@ -130,18 +132,19 @@ body {
     transform: translateY(0);
 }
 
-/* 홀수는 왼쪽, 짝수는 오른쪽에 배치 */
+/* 홀수는 왼쪽 공간 차지 */
 .timeline-item:nth-child(odd) {
-    left: 0;
-    padding-right: 45px; /* 선과 카드 사이 여백 */
+    margin-left: 0;
+    padding-right: 45px;
 }
 
+/* 짝수는 오른쪽 공간 차지 (margin-left로 자연스럽게 밀어냄) */
 .timeline-item:nth-child(even) {
-    left: 50%;
+    margin-left: 50%;
     padding-left: 45px;
 }
 
-/* 반투명 유리 질감의 카드 박스 (글래스모피즘) */
+/* 반투명 유리 질감의 카드 박스 */
 .timeline-card {
     background: rgba(25, 20, 45, 0.45);
     backdrop-filter: blur(12px);
@@ -159,7 +162,7 @@ body {
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(199, 164, 255, 0.15);
 }
 
-/* 맥박이 뛰는 빛나는 동그라미 아이콘 */
+/* 맥박이 뛰는 하트 동그라미 아이콘 */
 .timeline-dot {
     position: absolute;
     width: 36px;
@@ -167,20 +170,20 @@ body {
     background: #0d0a20;
     border: 3px solid #c7a4ff;
     border-radius: 50%;
-    top: 30px; /* 카드 상단에 맞춤 */
+    top: 30px; 
     display: flex;
     justify-content: center;
     align-items: center;
     color: #c7a4ff;
     font-size: 0.9rem;
-    z-index: 2;
+    z-index: 3;
     box-shadow: 0 0 20px rgba(199, 164, 255, 0.8), inset 0 0 10px rgba(199, 164, 255, 0.4);
     animation: heartPulse 2.5s infinite;
 }
 
-/* 아이콘 위치 완벽 정렬 (수학적 계산) */
+/* 아이콘 위치 완벽 정렬 */
 .timeline-item:nth-child(odd) .timeline-dot {
-    right: -18px; /* 36px 너비의 절반 */
+    right: -18px; /* 50% 경계선에 딱 맞게 안착 */
 }
 
 .timeline-item:nth-child(even) .timeline-dot {
@@ -219,7 +222,7 @@ body {
 }
 
 .timeline-card:hover .image-wrapper img {
-    transform: scale(1.05); /* 마우스 올렸을 때 사진이 스르륵 커지는 효과 */
+    transform: scale(1.05);
 }
 
 .timeline-card p {
@@ -271,16 +274,14 @@ footer {
 /* 모바일 화면 최적화 (반응형 완벽 대응) */
 @media screen and (max-width: 768px) {
     .timeline-container::after {
-        left: 30px; /* 모바일에서는 선을 왼쪽으로 치우치게 */
+        left: 30px; 
+        transform: translateX(0); /* 모바일에서는 선 고정 */
     }
     .timeline-item {
         width: 100%;
+        margin-left: 0 !important; /* 모바일에서는 여백 제거 */
         padding-left: 70px !important;
         padding-right: 0 !important;
-    }
-    .timeline-item:nth-child(odd),
-    .timeline-item:nth-child(even) {
-        left: 0;
     }
     .timeline-item:nth-child(odd) .timeline-dot,
     .timeline-item:nth-child(even) .timeline-dot {
