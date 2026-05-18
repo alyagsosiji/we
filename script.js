@@ -21,15 +21,20 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 // =========================================
-// 4번: BGM 플레이어 로직
+// 수정: BGM 플레이어 로직 (오류 알림 기능 추가)
 // =========================================
 function toggleBGM() {
     const audio = document.getElementById("myAudio");
     const icon = document.getElementById("bgm-icon");
     
     if (audio.paused) {
-        audio.play();
-        icon.classList.add("rotating"); // 음악 재생 시 아이콘 회전
+        // 재생을 시도하고, 만약 파일이 없거나 오류가 나면 알림을 띄워줍니다.
+        audio.play().then(() => {
+            icon.classList.add("rotating");
+        }).catch(error => {
+            console.error("BGM 재생 오류:", error);
+            alert("음원을 재생할 수 없어! 폴더에 'bgm.mp3' 파일이 정확히 있는지 확인해줘.");
+        });
     } else {
         audio.pause();
         icon.classList.remove("rotating");
