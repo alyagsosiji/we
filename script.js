@@ -94,7 +94,7 @@ function checkPassword() {
         
         setTimeout(() => {
             // 속도를 기존 40 -> 15로 대폭 낮췄습니다! (숫자가 작을수록 빠름)
-            typeWriterEffect(letterTextDiv, originalHTML, 20, () => {
+            typeWriterEffect(letterTextDiv, originalHTML, 10, () => {
                 replyBtn.style.display = "inline-block";
                 replyBtn.animate([ { opacity: 0 }, { opacity: 1 } ], { duration: 1000, fill: "forwards" });
             });
