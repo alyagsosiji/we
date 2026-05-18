@@ -29,14 +29,18 @@ body {
 /* 별빛 배경 애니메이션 */
 .stars {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    /* 배경이 살짝 움직여도 빈 공간이 안 보이게 상하좌우로 여유 공간(-20px) 추가 */
+    top: -30px; 
+    left: -30px; 
+    width: calc(100% + 60px); 
+    height: calc(100% + 60px); 
     background: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=1600') repeat top center;
+    background-size: cover; /* 이미지가 꽉 차도록 설정 */
     opacity: 0.35;
     z-index: -2;
-    animation: slowDrift 150s linear infinite;
+    will-change: transform; /* 애니메이션 성능 최적화 */
+    /* 기존의 무한 스크롤 애니메이션은 유지하거나, 패럴랙스랑 겹치면 주석처리 해도 됨 */
+    animation: slowDrift 150s linear infinite; 
 }
 
 @keyframes slowDrift {
@@ -723,11 +727,14 @@ footer {
     background: transparent; z-index: 10000;
 }
 .scroll-progress-bar {
-    height: 100%; width: 0%;
+    height: 100%; 
+    width: 0%;
     background: #c7a4ff;
     box-shadow: 0 0 10px #c7a4ff, 0 0 20px #ffffff;
     position: relative;
     border-radius: 0 2px 2px 0;
+    /* CSS transition을 빼고 JS의 requestAnimationFrame으로만 부드럽게 제어 */
+    will-change: width;
 }
 #scroll-star {
     position: absolute; right: -8px; top: -6px;
