@@ -126,7 +126,7 @@ function closeLightbox() {
 // =========================================
 
 function createStar(x, y) {
-    if (Math.random() > 0.7) return;
+    if (Math.random() > 0.75) return;
 
     const star = document.createElement("div");
     star.className = "mouse-star";
