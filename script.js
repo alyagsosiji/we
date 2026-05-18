@@ -26,21 +26,34 @@ document.addEventListener("DOMContentLoaded", function () {
 function toggleBGM() {
     const audio = document.getElementById("myAudio");
     const icon = document.getElementById("bgm-icon");
+    const player = document.getElementById("bgm-container");
     
+    if (!audio) return;
+
     if (audio.paused) {
         audio.play().then(() => {
-            // 재생 성공 시 디스크 아이콘 회전
-            icon.classList.add("rotating");
+            icon?.classList.add("rotating");
+            player?.classList.add("playing");
         }).catch(error => {
             console.error("BGM 재생 오류:", error);
-            // 웹 서버에서는 보통 잘 되지만, 간혹 아이폰/갤럭시의 '절전 모드'나 '무음 모드' 때문에 브라우저가 소리를 막을 때만 짧게 알려줍니다.
             alert("음원을 재생할 수 없어! 기기의 소리 설정이나 절전 모드를 확인해줘 🥺");
         });
     } else {
         audio.pause();
-        // 일시정지 시 디스크 아이콘 회전 멈춤
-        icon.classList.remove("rotating");
+        icon?.classList.remove("rotating");
+        player?.classList.remove("playing");
     }
+}
+
+function toggleMute(event) {
+    if (event) event.stopPropagation();
+
+    const audio = document.getElementById("myAudio");
+    const muteIcon = document.getElementById("bgm-mute-icon");
+    if (!audio || !muteIcon) return;
+
+    audio.muted = !audio.muted;
+    muteIcon.className = audio.muted ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
 }
 
 
@@ -50,18 +63,29 @@ function toggleBGM() {
 // =========================================
 // 수정된 비밀 편지 잠금해제 (중복 실행 방지)
 // =========================================
-function checkPassword() {
+async function sha256(text) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    return Array.from(new Uint8Array(hashBuffer))
+        .map(byte => byte.toString(16).padStart(2, "0"))
+        .join("");
+}
+
+async function checkPassword() {
     const input = document.getElementById("letter-password").value;
     const lockScreen = document.getElementById("lock-screen");
     const realContent = document.getElementById("letter-real-content");
     const letterTextDiv = document.querySelector(".letter-text");
     const replyBtn = document.getElementById("reply-btn");
-    
-    // 버튼을 가져와서 비활성화 시키기 위한 변수 (추가)
     const submitBtn = document.querySelector(".password-field button");
+    
+    // 기존 비밀번호 0416을 직접 노출하지 않고 SHA-256 해시값으로 비교합니다.
+    // 참고: 프론트엔드만으로는 완벽한 보안은 아니지만, 평문 비교보다는 안전합니다.
+    const savedPasswordHash = "2b96f66cdf6078a21dbed6acf077787ecdb2c4d349bb6bcc02f003c4c6c1a09f";
+    const inputHash = await sha256(input);
 
-    if (input === "0416") {
-        // 이미 실행 중이면 다시 실행 안 되게 버튼 잠금 (추가)
+    if (inputHash === savedPasswordHash) {
         if (submitBtn) submitBtn.disabled = true;
 
         lockScreen.style.display = "none";
@@ -336,3 +360,160 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 });
+
+// =========================================
+// 추가 기능: 로딩 화면, 첫 방문 안내, BGM 볼륨, 사진 슬라이드쇼, 모바일 메뉴
+// =========================================
+function hideLoadingScreen() {
+    const loadingScreen = document.getElementById("loading-screen");
+    if (!loadingScreen) return;
+
+    loadingScreen.classList.add("hide");
+    setTimeout(() => {
+        loadingScreen.style.display = "none";
+    }, 700);
+}
+
+function closeWelcomeModal() {
+    const modal = document.getElementById("welcome-modal");
+    if (!modal) return;
+
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
+    localStorage.setItem("memorySiteWelcomeSeen", "true");
+}
+
+window.addEventListener("load", hideLoadingScreen);
+setTimeout(hideLoadingScreen, 2500);
+
+document.addEventListener("DOMContentLoaded", function () {
+    // 첫 방문 안내 팝업
+    const welcomeModal = document.getElementById("welcome-modal");
+    const hasSeenWelcome = localStorage.getItem("memorySiteWelcomeSeen") === "true";
+
+    if (welcomeModal && !hasSeenWelcome) {
+        setTimeout(() => {
+            welcomeModal.classList.add("show");
+            welcomeModal.setAttribute("aria-hidden", "false");
+        }, 900);
+    }
+
+    // BGM 기본 볼륨 및 볼륨 슬라이더
+    const audio = document.getElementById("myAudio");
+    const volumeSlider = document.getElementById("bgm-volume");
+    const muteIcon = document.getElementById("bgm-mute-icon");
+
+    if (audio && volumeSlider) {
+        audio.volume = Number(volumeSlider.value);
+        volumeSlider.addEventListener("input", function (event) {
+            event.stopPropagation();
+            audio.volume = Number(this.value);
+            audio.muted = audio.volume === 0;
+            if (muteIcon) {
+                muteIcon.className = audio.muted ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
+            }
+        });
+    }
+
+    // 사진 슬라이드쇼 초기화
+    initSlideshow();
+
+    // 모바일 메뉴 현재 위치 표시
+    initMobileNavActiveState();
+});
+
+let slideIndex = 0;
+let slideTimer = null;
+let slides = [];
+
+function initSlideshow() {
+    const galleryItems = document.querySelectorAll(".gallery-item");
+    const dotsContainer = document.getElementById("slide-dots");
+
+    if (!galleryItems.length || !dotsContainer) return;
+
+    slides = Array.from(galleryItems).map(item => {
+        const img = item.querySelector("img");
+        return {
+            src: img?.getAttribute("src") || "",
+            fallback: img?.getAttribute("onerror") || "",
+            title: item.querySelector(".item-title")?.innerText || "우리의 순간",
+            desc: item.querySelector(".item-desc")?.innerText || "소중한 기억"
+        };
+    });
+
+    dotsContainer.innerHTML = "";
+    slides.forEach((_, index) => {
+        const dot = document.createElement("button");
+        dot.type = "button";
+        dot.className = "slide-dot";
+        dot.setAttribute("aria-label", `${index + 1}번째 사진 보기`);
+        dot.addEventListener("click", () => showSlide(index, true));
+        dotsContainer.appendChild(dot);
+    });
+
+    showSlide(0);
+    startSlideTimer();
+}
+
+function showSlide(index, resetTimer = false) {
+    if (!slides.length) return;
+
+    slideIndex = (index + slides.length) % slides.length;
+    const currentSlide = slides[slideIndex];
+    const slideImage = document.getElementById("slide-image");
+    const slideTitle = document.getElementById("slide-title");
+    const slideDesc = document.getElementById("slide-desc");
+    const dots = document.querySelectorAll(".slide-dot");
+
+    if (slideImage) {
+        slideImage.classList.remove("show");
+        setTimeout(() => {
+            slideImage.src = currentSlide.src;
+            slideImage.alt = currentSlide.title;
+            slideImage.classList.add("show");
+        }, 120);
+    }
+    if (slideTitle) slideTitle.innerText = currentSlide.title;
+    if (slideDesc) slideDesc.innerText = currentSlide.desc;
+
+    dots.forEach((dot, dotIndex) => {
+        dot.classList.toggle("active", dotIndex === slideIndex);
+    });
+
+    if (resetTimer) startSlideTimer();
+}
+
+function changeSlide(direction) {
+    showSlide(slideIndex + direction, true);
+}
+
+function startSlideTimer() {
+    clearInterval(slideTimer);
+    slideTimer = setInterval(() => {
+        showSlide(slideIndex + 1);
+    }, 3500);
+}
+
+function initMobileNavActiveState() {
+    const navLinks = document.querySelectorAll(".mobile-nav a");
+    const sections = ["home", "timeline", "gallery", "letter"]
+        .map(id => document.getElementById(id))
+        .filter(Boolean);
+
+    if (!navLinks.length || !sections.length) return;
+
+    const navObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+
+            navLinks.forEach(link => {
+                link.classList.toggle("active", link.getAttribute("href") === `#${entry.target.id}`);
+            });
+        });
+    }, {
+        threshold: 0.35
+    });
+
+    sections.forEach(section => navObserver.observe(section));
+}
