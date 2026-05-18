@@ -20,3 +20,39 @@ document.addEventListener("DOMContentLoaded", function () {
         observer.observe(item);
     });
 });
+// =========================================
+// 4번: BGM 플레이어 로직
+// =========================================
+function toggleBGM() {
+    const audio = document.getElementById("myAudio");
+    const icon = document.getElementById("bgm-icon");
+    
+    if (audio.paused) {
+        audio.play();
+        icon.classList.add("rotating"); // 음악 재생 시 아이콘 회전
+    } else {
+        audio.pause();
+        icon.classList.remove("rotating");
+    }
+}
+
+// =========================================
+// 2번: 비밀 편지 잠금해제 로직
+// =========================================
+function checkPassword() {
+    const input = document.getElementById("letter-password").value;
+    const lockScreen = document.getElementById("lock-screen");
+    const realContent = document.getElementById("letter-real-content");
+
+    // 비밀번호 설정: 0416
+    if (input === "0416") {
+        lockScreen.style.display = "none";
+        realContent.style.display = "block";
+        
+        // 폭죽 효과 대신 하트 콘솔 메시지 (선택 사항)
+        console.log("사랑해 하은아! ❤️");
+    } else {
+        alert("비밀번호가 틀렸어! 우리만의 소중한 날짜를 입력해줘.");
+        document.getElementById("letter-password").value = "";
+    }
+}
