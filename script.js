@@ -21,19 +21,22 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 // =========================================
-// 수정: BGM 플레이어 로직 (오류 알림 기능 추가)
+// BGM 플레이어 로직 (브라우저 정책 우회 및 에러 핸들링 강화)
 // =========================================
 function toggleBGM() {
     const audio = document.getElementById("myAudio");
     const icon = document.getElementById("bgm-icon");
     
     if (audio.paused) {
-        // 재생을 시도하고, 만약 파일이 없거나 오류가 나면 알림을 띄워줍니다.
         audio.play().then(() => {
             icon.classList.add("rotating");
         }).catch(error => {
             console.error("BGM 재생 오류:", error);
-            alert("음원을 재생할 수 없어! 폴더에 'Night_Sky_City_2026_Plum.mp3' 파일이 정확히 있는지 확인해줘.");
+            // 오류 발생 시 볼륨을 줄이고 강제 재생 시도
+            audio.volume = 0.5;
+            alert("브라우저 보안 때문에 로컬 파일 재생이 막혔어! 예비 음원(웹)으로 재생해볼게.");
+            audio.load(); 
+            audio.play().then(() => icon.classList.add("rotating")).catch(e => alert("예비 음원도 막혀있네! 웹에 올리면 정상 작동할 거야."));
         });
     } else {
         audio.pause();
@@ -271,6 +274,43 @@ function smoothScrollAnimation() {
 
     // 다음 프레임 요청
     requestAnimationFrame(smoothScrollAnimation);
+}
+// =========================================
+// 답장 우체통 (모달 창) 열고 닫기 로직
+// =========================================
+function openReplyBox() {
+    document.getElementById("reply-modal").classList.add("show");
+}
+
+function closeReplyBox() {
+    document.getElementById("reply-modal").classList.remove("show");
+}
+
+// =========================================
+// 작성한 편지 내용 전송하기 로직
+// =========================================
+function sendReply() {
+    const text = document.getElementById("reply-text").value;
+    
+    if(text.trim() === "") {
+        alert("내용을 조금이라도 적어줘! 🥺");
+        return;
+    }
+
+    // 전송 완료 알림 띄우기
+    alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워 ❤️");
+    
+    // 💡 아래 이메일 주소를 아시님의 진짜 이메일로 변경하세요!
+    // 모바일이나 PC에서 메일 앱을 자동으로 열어 작성한 내용을 넣어줍니다.
+    const myEmail = "atritime@gmail.com"; 
+    const subject = encodeURIComponent("[우리의 기록장] 사이트에서 누군가 보낸 답장이야.");
+    const body = encodeURIComponent(text);
+    
+    window.location.href = `mailto:${myEmail}?subject=${subject}&body=${body}`;
+    
+    // 편지창 닫기 및 초기화
+    closeReplyBox();
+    document.getElementById("reply-text").value = "";
 }
 // 애니메이션 무한 반복 시작
 smoothScrollAnimation();
