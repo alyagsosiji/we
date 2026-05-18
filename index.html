@@ -13,6 +13,21 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <div id="loading-screen" class="loading-screen" aria-label="로딩 중..">
+        <div class="loading-star"><i class="fa-solid fa-star"></i></div>
+        <p>우리의 기록장을 여는 중...</p>
+    </div>
+
+    <div id="welcome-modal" class="welcome-modal" aria-hidden="true">
+        <div class="welcome-box">
+            <button class="welcome-close" type="button" onclick="closeWelcomeModal()" aria-label="처음 방문 안내 닫기">&times;</button>
+            <i class="fa-solid fa-moon welcome-icon"></i>
+            <h2>우리의 작은 우주에 온 걸 환영해</h2>
+            <p>음악 버튼을 누르고, 천천히 아래로 내려가며 우리의 기록을 확인해줘.</p>
+            <button class="welcome-start-btn" type="button" onclick="closeWelcomeModal()">기록장 열어보기</button>
+        </div>
+    </div>
     <div class="scroll-progress-container">
         <div class="scroll-progress-bar" id="scroll-bar">
             <i class="fa-solid fa-star" id="scroll-star"></i>
@@ -25,9 +40,21 @@
         <span></span><span></span><span></span><span></span>
     </div>
     
-    <div id="bgm-container" onclick="toggleBGM()">
-        <div class="bgm-disk">
-            <i class="fa-solid fa-compact-disc" id="bgm-icon"></i>
+    <div id="bgm-container" class="bgm-player">
+        <button class="bgm-main-btn" type="button" onclick="toggleBGM()" aria-label="BGM 재생 또는 일시정지">
+            <div class="bgm-disk">
+                <i class="fa-solid fa-compact-disc" id="bgm-icon"></i>
+            </div>
+        </button>
+        <div class="music-info">
+            <p>Now Playing</p>
+            <strong id="bgm-title">Night Sky City 2026 - Plum</strong>
+            <div class="bgm-controls">
+                <button id="bgm-mute-btn" type="button" onclick="toggleMute(event)" aria-label="BGM 음소거">
+                    <i class="fa-solid fa-volume-high" id="bgm-mute-icon"></i>
+                </button>
+                <input id="bgm-volume" type="range" min="0" max="1" step="0.05" value="0.6" aria-label="BGM 볼륨 조절">
+            </div>
         </div>
         <audio id="myAudio" loop preload="auto">
             <source src="Night_Sky_City_2026_Plum.mp3" type="audio/mpeg">
@@ -35,7 +62,7 @@
         </audio>
     </div>
 
-    <header class="intro-section">
+    <header id="home" class="intro-section">
         <div class="intro-content">
             <p class="sub-title">너와 함께한 순간들의 기록</p>
             <h1 class="main-title">우리의 기록장</h1>
@@ -56,7 +83,7 @@
         </div>
     </header>
 
-    <main class="timeline-container">
+    <main id="timeline" class="timeline-container">
         
         <div class="timeline-item fade-in">
             <div class="timeline-dot"><i class="fa-solid fa-heart"></i></div>
@@ -96,7 +123,26 @@
 
     </main>
     <main>
-        <section class="gallery-section">
+        <section id="slideshow" class="slideshow-section">
+            <div class="slideshow-header">
+                <h2>별빛 사진 슬라이드</h2>
+                <p>우리가 남긴 순간들이 천천히 흘러가도록</p>
+            </div>
+            <div class="slideshow-frame">
+                <button class="slide-btn prev" type="button" onclick="changeSlide(-1)" aria-label="이전 사진"><i class="fa-solid fa-chevron-left"></i></button>
+                <div class="slide-image-wrap">
+                    <img id="slide-image" src="" alt="추억 사진 슬라이드">
+                    <div class="slide-caption">
+                        <h3 id="slide-title"></h3>
+                        <p id="slide-desc"></p>
+                    </div>
+                </div>
+                <button class="slide-btn next" type="button" onclick="changeSlide(1)" aria-label="다음 사진"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            <div id="slide-dots" class="slide-dots" aria-label="슬라이드 위치"></div>
+        </section>
+
+        <section id="gallery" class="gallery-section">
             <div class="gallery-header">
                 <h2 class="gallery-title">내가 사랑하는 너의 모습들</h2>
                 <p class="gallery-sub">내 시선에 담긴 가장 예쁜 순간들</p>
@@ -154,7 +200,7 @@
     
             </div>
         </section>
-        <section class="secret-letter-section">
+        <section id="letter" class="secret-letter-section">
         <div class="letter-lock-container" id="lock-screen">
             <i class="fa-solid fa-lock"></i>
             <h3>우리의 암호를 입력해줘!</h3>
@@ -192,6 +238,14 @@
         </div>
         </section>
     </main>
+
+
+    <nav class="mobile-nav" aria-label="모바일 빠른 이동 메뉴">
+        <a href="#home"><i class="fa-solid fa-house"></i><span>홈</span></a>
+        <a href="#timeline"><i class="fa-solid fa-heart"></i><span>기록</span></a>
+        <a href="#gallery"><i class="fa-solid fa-image"></i><span>사진</span></a>
+        <a href="#letter"><i class="fa-solid fa-envelope"></i><span>편지</span></a>
+    </nav>
 
 <footer>
         <div class="footer-content">
