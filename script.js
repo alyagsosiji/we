@@ -126,32 +126,28 @@ function closeLightbox() {
 // =========================================
 
 function createStar(x, y) {
-    // 이전보다 별이 더 자주(80% 확률) 생성되도록 수정하여 풍성하게 만듦
-    if (Math.random() > 0.8) return;
+    if (Math.random() > 0.7) return;
 
     const star = document.createElement("div");
     star.className = "mouse-star";
     
-    const offsetX = (Math.random() - 0.5) * 40; // 퍼지는 범위도 살짝 넓힘
-    const offsetY = (Math.random() - 0.5) * 40;
+    // 마우스 궤적을 정확히 따라가도록 퍼지는 범위를 대폭 축소 (15px 이내)
+    const offsetX = (Math.random() - 0.5) * 15; 
+    const offsetY = (Math.random() - 0.5) * 15;
     
     star.style.left = (x + offsetX) + "px";
     star.style.top = (y + offsetY) + "px";
     
-    // 별의 크기를 눈에 띄게 확 키움 (6px ~ 14px)
-    const size = Math.random() * 8 + 6;
+    const size = Math.random() * 6 + 6; // 6px ~ 12px
     star.style.width = size + "px";
     star.style.height = size + "px";
 
-    const tx = (Math.random() - 0.5) * 60 + "px";
-    star.style.setProperty('--tx', tx);
-
     document.body.appendChild(star);
 
-    // 잔상이 조금 더 오래(2초) 남도록 수정
+    // 제자리에서 사라지므로 1초 정도면 궤적이 깔끔하고 예쁘게 남습니다
     setTimeout(() => {
         star.remove();
-    }, 2000);
+    }, 1000);
 }
 
 // PC: 마우스 움직임 감지
