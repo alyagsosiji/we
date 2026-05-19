@@ -1583,7 +1583,7 @@
         document.body.classList.add("theme-our-night");
         document.body.classList.add("our-night-unlocked");
         writeStorage("memorySiteHiddenTheme", "our-night");
-        showEasterToast("우리만의 밤 테마가 열렸어.", 3200);
+        showEasterToast("우리의 밤 테마가 열렸어.", 3200);
         burstAt(document.querySelector(".theme-toggle-btn") || document.querySelector(".welcome-icon") || document.body, 1);
 
         clearTimeout(activateOurNightTheme._timer);
@@ -1676,7 +1676,7 @@
                 heartClickCount = 0;
                 writeStorage("memorySiteHeartClicks", "0");
                 document.body.classList.add("heart-reward-active");
-                showEasterToast("마음이 가득 차서 별이 되었어.", 3600);
+                showEasterToast("마음이 가득 차서 별이 되었어!", 3600);
                 burstAt(heartButton, 3);
                 setTimeout(() => {
                     document.body.classList.remove("heart-reward-active");
