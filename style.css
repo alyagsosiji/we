@@ -2819,3 +2819,46 @@ body.maintenance-active {
 .Github:active {
     color: green; /* 파란색 */
 }
+/* =========================================
+로딩 화면 문구 크기/위치 고정
+========================================= */
+
+.loading-screen {
+    gap: 22px;
+}
+
+.loading-screen p {
+    width: min(90vw, 420px);
+    min-height: 32px;
+    line-height: 32px;
+    margin: 0;
+    text-align: center;
+
+    font-size: 1.1rem;
+    font-weight: 400;
+    letter-spacing: 2px;
+
+    transform: none !important;
+    animation: none !important;
+    transition: none !important;
+    will-change: auto;
+}
+
+/* 별 아이콘만 움직이게 고정 */
+.loading-star {
+    flex: 0 0 72px;
+}
+
+.loading-star i {
+    line-height: 1;
+}
+
+/* 모바일에서도 글자 크기 고정 */
+@media screen and (max-width: 480px) {
+    .loading-screen p {
+        font-size: 1rem;
+        line-height: 30px;
+        min-height: 30px;
+        letter-spacing: 1.5px;
+    }
+}
