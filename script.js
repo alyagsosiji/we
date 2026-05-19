@@ -1241,55 +1241,102 @@
     onReady(init);
 })();
 // =========================================
-// 사이트 점검중 화면 제어
+// 사이트 점검중 화면 제어 - 유지형 수정본
 // =========================================
 
-// 전체 방문자에게 점검중 화면을 보여주고 싶으면 true로 변경
-// 평소에는 false 유지
-const MAINTENANCE_MODE = true;
+(function () {
+    "use strict";
 
-function showMaintenanceScreen() {
-    const screen = document.getElementById("maintenance-screen");
-    if (!screen) return;
+    /*
+        전체 방문자에게 점검중 화면을 보여주고 싶으면 true
+        평소에는 false
+    */
+    const MAINTENANCE_MODE = true;
 
-    screen.classList.add("show");
-    screen.setAttribute("aria-hidden", "false");
-    document.body.classList.add("maintenance-active");
-}
+    const STORAGE_KEY = "memorySiteMaintenanceMode";
 
-function hideMaintenanceScreen() {
-    const screen = document.getElementById("maintenance-screen");
-    if (!screen) return;
-
-    screen.classList.remove("show");
-    screen.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("maintenance-active");
-}
-
-function initMaintenanceScreen() {
-    const params = new URLSearchParams(window.location.search);
-    const maintenanceParam = params.get("maintenance");
-
-    // 내 브라우저에서만 점검 화면 켜기
-    if (maintenanceParam === "on") {
-        localStorage.setItem("memorySiteMaintenancePreview", "true");
+    function saveMaintenanceState(value) {
+        try {
+            localStorage.setItem(STORAGE_KEY, value ? "on" : "off");
+        } catch (error) {
+            document.cookie = `${STORAGE_KEY}=${value ? "on" : "off"}; path=/; max-age=31536000`;
+        }
     }
 
-    // 내 브라우저에서만 점검 화면 끄기
-    if (maintenanceParam === "off") {
-        localStorage.removeItem("memorySiteMaintenancePreview");
+    function getMaintenanceState() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved === "on") return true;
+            if (saved === "off") return false;
+        } catch (error) {
+            const cookieValue = document.cookie
+                .split("; ")
+                .find(row => row.startsWith(`${STORAGE_KEY}=`))
+                ?.split("=")[1];
+
+            if (cookieValue === "on") return true;
+            if (cookieValue === "off") return false;
+        }
+
+        return false;
     }
 
-    const previewMode = localStorage.getItem("memorySiteMaintenancePreview") === "true";
+    function showMaintenanceScreen() {
+        const screen = document.getElementById("maintenance-screen");
+        if (!screen) return;
 
-    if (MAINTENANCE_MODE || previewMode) {
+        screen.classList.add("show");
+        screen.setAttribute("aria-hidden", "false");
+        document.body.classList.add("maintenance-active");
+    }
+
+    function hideMaintenanceScreen() {
+        const screen = document.getElementById("maintenance-screen");
+        if (!screen) return;
+
+        screen.classList.remove("show");
+        screen.setAttribute("aria-hidden", "true");
+        document.body.classList.remove("maintenance-active");
+    }
+
+    function initMaintenanceScreen() {
+        const params = new URLSearchParams(window.location.search);
+        const maintenanceParam = params.get("maintenance");
+
+        /*
+            ?maintenance=on  → 점검 화면 켜고 유지
+            ?maintenance=off → 점검 화면 끄고 유지 해제
+        */
+        if (maintenanceParam === "on") {
+            saveMaintenanceState(true);
+        }
+
+        if (maintenanceParam === "off") {
+            saveMaintenanceState(false);
+        }
+
+        const savedMode = getMaintenanceState();
+
+        if (MAINTENANCE_MODE || savedMode) {
+            showMaintenanceScreen();
+        } else {
+            hideMaintenanceScreen();
+        }
+    }
+
+    window.showMaintenanceScreen = function () {
+        saveMaintenanceState(true);
         showMaintenanceScreen();
-    } else {
+    };
+
+    window.hideMaintenanceScreen = function () {
+        saveMaintenanceState(false);
         hideMaintenanceScreen();
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initMaintenanceScreen);
+    } else {
+        initMaintenanceScreen();
     }
-}
-
-document.addEventListener("DOMContentLoaded", initMaintenanceScreen);
-
-window.showMaintenanceScreen = showMaintenanceScreen;
-window.hideMaintenanceScreen = hideMaintenanceScreen;
+})();
