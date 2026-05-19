@@ -1073,3 +1073,70 @@
     setTimeout(hideLoadingScreen, 2500);
     onReady(init);
 })();
+// =========================================
+// 모바일 하단 메뉴 → 오른쪽 세로 메뉴 토글
+// =========================================
+
+function toggleMobileNav(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    const nav = document.querySelector(".mobile-nav");
+    const toggleBtn = document.querySelector(".mobile-nav-toggle");
+    const icon = toggleBtn?.querySelector("i");
+
+    if (!nav || !toggleBtn) return;
+
+    const isOpen = nav.classList.toggle("open");
+    toggleBtn.setAttribute("aria-expanded", String(isOpen));
+
+    if (icon) {
+        icon.className = isOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars";
+    }
+}
+
+function closeMobileNav() {
+    const nav = document.querySelector(".mobile-nav");
+    const toggleBtn = document.querySelector(".mobile-nav-toggle");
+    const icon = toggleBtn?.querySelector("i");
+
+    if (!nav || !toggleBtn) return;
+
+    nav.classList.remove("open");
+    toggleBtn.setAttribute("aria-expanded", "false");
+
+    if (icon) {
+        icon.className = "fa-solid fa-bars";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    const nav = document.querySelector(".mobile-nav");
+
+    if (!nav) return;
+
+    document.querySelectorAll(".mobile-nav a").forEach(link => {
+        link.addEventListener("click", function () {
+            closeMobileNav();
+        });
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!nav.classList.contains("open")) return;
+        if (nav.contains(event.target)) return;
+
+        closeMobileNav();
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            closeMobileNav();
+        }
+    });
+
+    window.addEventListener("resize", function () {
+        closeMobileNav();
+    });
+});
