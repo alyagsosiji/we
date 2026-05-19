@@ -1248,7 +1248,7 @@
     "use strict";
 
     // 모든 방문자에게 점검중 화면을 보여주려면 true
-    const FORCE_MAINTENANCE_FOR_ALL = true;
+    const FORCE_MAINTENANCE_FOR_ALL = false;
 
     const STORAGE_KEY = "memorySiteMaintenanceModeFixed";
 
