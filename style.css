@@ -1,4 +1,4 @@
-/* credits-fixed-v3: 엔딩 크레딧 애니메이션 실제 반영본 */
+/* credits-reached-v4: 엔딩 도달 시 재생 + 마지막 To be continued 고정본 */
 /* 기본 리셋 및 폰트 설정 */
 * {
     margin: 0;
@@ -2052,5 +2052,122 @@ body.season-summer .seasonal-particle {
         bottom: auto;
         transform: none;
         margin-top: 36px;
+    }
+}
+
+/* credits-reached-v4: 엔딩 도달 시 재생 + 마지막 To be continued 고정 */
+.ending-credits-section {
+    position: relative;
+    z-index: 2;
+    padding: 110px 20px 160px;
+    overflow: visible !important;
+    text-align: center;
+}
+
+.credits-mask {
+    --credits-box-height: clamp(560px, 72vh, 700px);
+    --credits-roll-start: calc(var(--credits-box-height) + 40px);
+    --credits-roll-end: 1900px;
+    --credits-duration: 64s;
+    position: relative;
+    width: min(92vw, 760px);
+    height: var(--credits-box-height);
+    margin: 0 auto;
+    overflow: hidden !important;
+    border-radius: 24px;
+    border: 1px solid rgba(199, 164, 255, 0.3);
+    background: rgba(25, 20, 45, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.4),
+        inset 0 0 20px rgba(199, 164, 255, 0.1);
+}
+
+.credits-roll {
+    position: absolute !important;
+    left: 0;
+    right: 0;
+    top: 0;
+    padding: 56px 30px 180px;
+    opacity: 1;
+    visibility: visible;
+    transform: translate3d(0, var(--credits-roll-start), 0);
+    will-change: transform, opacity;
+    animation: none !important;
+}
+
+.ending-credits-section.play:not(.ended) .credits-roll {
+    animation: movieCreditsRoll var(--credits-duration) linear 1 forwards !important;
+}
+
+.ending-credits-section.resetting .credits-roll,
+.ending-credits-section:not(.play) .credits-roll {
+    animation: none !important;
+}
+
+.ending-credits-section.ended .credits-roll {
+    opacity: 0;
+    visibility: hidden;
+    animation: none !important;
+}
+
+.credits-final-message {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+    text-align: center;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(0.96);
+    transition: opacity 1s ease, transform 1s ease, visibility 1s ease;
+}
+
+.credits-final-message h3 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+    letter-spacing: 3px;
+    line-height: 1.5;
+    text-shadow:
+        0 0 18px rgba(199, 164, 255, 0.75),
+        0 0 35px rgba(255, 255, 255, 0.18);
+}
+
+.ending-credits-section.ended .credits-final-message {
+    opacity: 1;
+    visibility: visible;
+    transform: scale(1);
+}
+
+@keyframes movieCreditsRoll {
+    0% {
+        transform: translate3d(0, var(--credits-roll-start), 0);
+    }
+    100% {
+        transform: translate3d(0, calc(-1 * var(--credits-roll-end)), 0);
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .credits-mask {
+        --credits-box-height: min(62vh, 540px);
+        width: min(92vw, 430px);
+        height: var(--credits-box-height);
+        border-radius: 22px;
+    }
+
+    .credits-roll {
+        padding: 44px 18px 130px;
+    }
+
+    .credits-final-message h3 {
+        font-size: clamp(1.55rem, 8vw, 2.4rem);
+        letter-spacing: 2px;
     }
 }
