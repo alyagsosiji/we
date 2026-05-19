@@ -2862,3 +2862,38 @@ body.maintenance-active {
         letter-spacing: 1.5px;
     }
 }
+/* =========================================
+로딩 화면 글자 크기/위치 흔들림 고정
+========================================= */
+
+.loading-screen {
+    text-align: center;
+    overflow: hidden;
+}
+
+.loading-screen p {
+    width: min(86vw, 360px);
+    min-height: 34px;
+    margin: 0;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    font-weight: 600;
+    letter-spacing: 2px;
+    white-space: nowrap;
+
+    color: #e5d9f2;
+    text-shadow: 0 0 12px rgba(199, 164, 255, 0.7);
+
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+
+    font-synthesis: none;
+    text-rendering: geometricPrecision;
+}
