@@ -2897,3 +2897,37 @@ body.maintenance-active {
     font-synthesis: none;
     text-rendering: geometricPrecision;
 }
+/* =========================================
+로딩 중 뒤 화면 안 보이게 고정
+========================================= */
+
+.loading-screen {
+    background:
+        radial-gradient(circle at center, rgba(30, 18, 60, 1), rgba(7, 7, 20, 1)) !important;
+    opacity: 1;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+.loading-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(199, 164, 255, 0.18), transparent 45%),
+        radial-gradient(circle at 80% 70%, rgba(255, 143, 216, 0.12), transparent 45%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.loading-screen > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* 로딩이 끝날 때 뒤 화면이 서서히 비치는 현상 방지 */
+.loading-screen.hide {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
