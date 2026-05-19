@@ -1,3 +1,4 @@
+/* credits-fixed-v3: 엔딩 크레딧 애니메이션 실제 반영본 */
 /* 기본 리셋 및 폰트 설정 */
 * {
     margin: 0;
@@ -1642,18 +1643,18 @@ body.season-summer .seasonal-particle {
     100% { transform: translate3d(var(--season-drift), -112vh, 0) scale(1.25); opacity: 0; }
 }
 
-/* 엔딩 크레딧 */
+/* 엔딩 크레딧 - D-day 네모 박스 안에서 항상 영화 크레딧처럼 올라가도록 수정 */
 .ending-credits-section {
     position: relative;
     z-index: 2;
-    min-height: 900px;
-    padding: 100px 20px 180px;
+    min-height: auto;
+    padding: 110px 20px 160px;
     overflow: visible;
     text-align: center;
 }
 
 .credits-header {
-    margin-bottom: 46px;
+    margin-bottom: 34px;
 }
 
 .credits-header p {
@@ -1668,30 +1669,79 @@ body.season-summer .seasonal-particle {
     text-shadow: 0 0 15px rgba(199, 164, 255, 0.4);
 }
 
+/* D-day 카운터와 같은 반투명 네모 카드 */
 .credits-mask {
-    max-width: 800px;
+    --credits-box-height: clamp(560px, 72vh, 700px);
+    --credits-roll-start: 78%;
+    --credits-roll-end: 1900px;
+    --credits-duration: 58s;
+    position: relative;
+    width: min(92vw, 760px);
+    height: var(--credits-box-height);
     margin: 0 auto;
-    height: auto;
-    max-height: none;
-    overflow: visible;
+    overflow: hidden;
+    border-radius: 24px;
+    border: 1px solid rgba(199, 164, 255, 0.3);
+    background: rgba(25, 20, 45, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.4),
+        inset 0 0 20px rgba(199, 164, 255, 0.1);
+}
+
+/* 영화관 크레딧처럼 위아래가 자연스럽게 사라지는 마스크 */
+.credits-mask::before,
+.credits-mask::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 120px;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.credits-mask::before {
+    top: 0;
+    background: linear-gradient(to bottom, rgba(25, 20, 45, 0.98), rgba(25, 20, 45, 0));
+}
+
+.credits-mask::after {
+    bottom: 0;
+    background: linear-gradient(to top, rgba(25, 20, 45, 0.98), rgba(25, 20, 45, 0));
 }
 
 .credits-roll {
-    position: relative;
-    height: auto;
-    max-height: none;
-    overflow: visible;
-    transform: none;
-    opacity: 0.86;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    padding: 56px 30px 180px;
+    opacity: 1;
+    transform: translate3d(0, var(--credits-roll-start), 0);
+    will-change: transform;
+
+    /* 핵심 수정: .play 클래스가 없어도 실제 파일을 열면 바로 움직이도록 적용 */
+    animation: movieCreditsRoll var(--credits-duration) linear infinite;
 }
 
+/* JS가 붙이는 클래스와도 호환되도록 유지 */
 .ending-credits-section.play .credits-roll {
-    animation: creditsSoftReveal 1.2s ease forwards;
+    animation: movieCreditsRoll var(--credits-duration) linear infinite !important;
 }
 
-@keyframes creditsSoftReveal {
-    from { opacity: 0; transform: translateY(24px); }
-    to { opacity: 1; transform: translateY(0); }
+.ending-credits-section.resetting .credits-roll {
+    animation: none !important;
+}
+
+@keyframes movieCreditsRoll {
+    0% {
+        transform: translate3d(0, var(--credits-roll-start), 0);
+    }
+    100% {
+        transform: translate3d(0, calc(-1 * var(--credits-roll-end)), 0);
+    }
 }
 
 .credits-roll p,
@@ -1703,8 +1753,16 @@ body.season-summer .seasonal-particle {
     line-height: 1.8;
 }
 
+.credits-roll h3 {
+    font-size: 1.65rem;
+    color: #ffffff;
+    letter-spacing: 2px;
+    text-shadow: 0 0 18px rgba(199, 164, 255, 0.45);
+}
+
 .credits-roll strong {
     color: #ffffff;
+    font-size: 1.08rem;
     text-shadow: 0 0 10px rgba(199, 164, 255, 0.35);
 }
 
@@ -1724,8 +1782,8 @@ body.season-summer .seasonal-particle {
 #replay-ending-btn {
     position: relative;
     z-index: 10;
-    margin-top: 50px;
-    margin-bottom: 100px;
+    margin-top: 34px;
+    margin-bottom: 70px;
     border: none;
     border-radius: 999px;
     padding: 12px 24px;
@@ -1734,9 +1792,50 @@ body.season-summer .seasonal-particle {
     font-weight: 700;
     cursor: pointer;
     box-shadow: 0 8px 24px rgba(199, 164, 255, 0.35);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.replay-credits-btn:hover,
+.replay-ending-btn:hover,
+.ending-replay-btn:hover,
+#replay-ending-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(199, 164, 255, 0.55);
+}
+
+
 @media screen and (max-width: 768px) {
+    .ending-credits-section {
+        min-height: auto;
+        padding: 90px 18px 130px;
+    }
+
+    .credits-mask {
+        --credits-box-height: min(62vh, 540px);
+        --credits-roll-start: 76%;
+        width: min(92vw, 430px);
+        height: var(--credits-box-height);
+        border-radius: 22px;
+    }
+
+    .credits-mask::before,
+    .credits-mask::after {
+        height: 86px;
+    }
+
+    .credits-roll {
+        padding: 44px 18px 130px;
+    }
+
+    .credits-roll h3 {
+        font-size: 1.38rem;
+    }
+
+    .credits-roll strong {
+        font-size: 1rem;
+    }
+
+
     body {
         padding-bottom: calc(92px + env(safe-area-inset-bottom));
     }
