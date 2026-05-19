@@ -1875,3 +1875,40 @@ body.season-summer .seasonal-particle {
     margin-top: 40px;
     margin-bottom: 80px;
 }
+/* =========================================
+   엔딩 크레딧 아래 내용 안 보이는 문제 최종 수정
+========================================= */
+
+.ending-credit-section,
+.ending-credits-section,
+.ending-section {
+    height: auto !important;
+    min-height: 900px !important;
+    padding: 100px 20px 180px !important;
+    overflow: visible !important;
+}
+
+.ending-credit-box,
+.ending-credits-box,
+.ending-content {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.ending-credit-roll,
+.ending-credits,
+.credits-roll {
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+
+.replay-ending-btn,
+.ending-replay-btn,
+#replay-ending-btn {
+    position: relative;
+    z-index: 10;
+    margin-top: 50px !important;
+    margin-bottom: 100px !important;
+}
