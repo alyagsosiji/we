@@ -330,10 +330,16 @@
     </div>
 
 <nav class="mobile-nav" aria-label="모바일 빠른 이동 메뉴">
-    <a href="#home"><i class="fa-solid fa-house"></i><span>홈</span></a>
-    <a href="#timeline"><i class="fa-solid fa-heart"></i><span>기록</span></a>
-    <a href="#gallery"><i class="fa-solid fa-image"></i><span>사진</span></a>
-    <a href="#letter"><i class="fa-solid fa-envelope"></i><span>편지</span></a>
+    <button class="mobile-nav-toggle" type="button" onclick="toggleMobileNav(event)" aria-label="모바일 메뉴 열기" aria-expanded="false">
+        <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <div class="mobile-nav-links">
+        <a href="#home"><i class="fa-solid fa-house"></i><span>홈</span></a>
+        <a href="#timeline"><i class="fa-solid fa-heart"></i><span>기록</span></a>
+        <a href="#gallery"><i class="fa-solid fa-image"></i><span>사진</span></a>
+        <a href="#letter"><i class="fa-solid fa-envelope"></i><span>편지</span></a>
+    </div>
 </nav>
 
 <div id="lightbox" class="lightbox" onclick="closeLightbox(event)">
