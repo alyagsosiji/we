@@ -1,7 +1,7 @@
 (() => {
     "use strict";
 
-    // credits-reached-v4: 엔딩 도달 시 재생 + 마지막 To be continued 고정본
+    // final-v6: 슬라이드 일시정지 + 로딩 최적화 + 라이트박스 설명 + 엔딩 완료 표시
 
     if (window.__memorySiteFinalScriptLoaded) return;
     window.__memorySiteFinalScriptLoaded = true;
@@ -17,15 +17,23 @@
         "나에게 넌 언제나 밝게 빛나는 밤하늘의 별이야."
     ];
 
+    const LOADING_MIN_VISIBLE_MS = 700;
+    const LOADING_MAX_VISIBLE_MS = 1800;
+    const loadingStartedAt = Date.now();
+
     let slideIndex = 0;
     let slideTimer = null;
     let slides = [];
+    let slidePaused = false;
+    let slidePauseLocked = false;
+    let slideResumeTimer = null;
     let secretToastTimer = null;
     let titleClickCount = 0;
     let footerClickCount = 0;
     let bgmSecretClickCount = 0;
     let typedSecretBuffer = "";
     let endingFireworkPlayed = false;
+    let endingFinishTimer = null;
     let currentScrollPercent = 0;
     let targetScrollPercent = 0;
     let currentParallax = 0;
@@ -92,11 +100,22 @@
         const loadingScreen = document.getElementById("loading-screen");
         if (!loadingScreen || loadingScreen.dataset.hidden === "true") return;
 
+        const elapsed = Date.now() - loadingStartedAt;
+        const remaining = Math.max(0, LOADING_MIN_VISIBLE_MS - elapsed);
+
+        if (remaining > 0 && loadingScreen.dataset.hideScheduled !== "true") {
+            loadingScreen.dataset.hideScheduled = "true";
+            setTimeout(hideLoadingScreen, remaining);
+            return;
+        }
+
+        if (remaining > 0) return;
+
         loadingScreen.dataset.hidden = "true";
         loadingScreen.classList.add("hide");
         setTimeout(() => {
             loadingScreen.style.display = "none";
-        }, 700);
+        }, 580);
     }
 
     function closeWelcomeModal() {
@@ -328,14 +347,23 @@
         }
 
         lightbox.classList.remove("show");
+        document.body.classList.remove("lightbox-open");
+
         const lightboxImg = document.getElementById("lightbox-img");
+        const lightboxTitle = document.getElementById("lightbox-title");
+        const lightboxDesc = document.getElementById("lightbox-desc");
+
         if (lightboxImg) lightboxImg.removeAttribute("src");
+        if (lightboxTitle) lightboxTitle.innerText = "";
+        if (lightboxDesc) lightboxDesc.innerText = "";
     }
 
     function initLightbox() {
         const galleryImages = $$(".item-image img");
         const lightbox = document.getElementById("lightbox");
         const lightboxImg = document.getElementById("lightbox-img");
+        const lightboxTitle = document.getElementById("lightbox-title");
+        const lightboxDesc = document.getElementById("lightbox-desc");
         const closeButton = $(".close-lightbox");
         if (!lightbox || !lightboxImg) return;
 
@@ -344,8 +372,17 @@
             img.addEventListener("click", event => {
                 event.preventDefault();
                 event.stopPropagation();
-                setSafeImage(lightboxImg, img.currentSrc || img.src, img.dataset.fallback || DEFAULT_FALLBACK_IMAGE, img.alt || "확대된 사진");
+
+                const item = img.closest(".gallery-item");
+                const title = item?.querySelector(".item-title")?.innerText?.trim() || img.alt || "확대된 사진";
+                const desc = item?.querySelector(".item-desc")?.innerText?.trim() || "";
+
+                setSafeImage(lightboxImg, img.currentSrc || img.src, img.dataset.fallback || DEFAULT_FALLBACK_IMAGE, title);
+                if (lightboxTitle) lightboxTitle.innerText = title;
+                if (lightboxDesc) lightboxDesc.innerText = desc;
+
                 lightbox.classList.add("show");
+                document.body.classList.add("lightbox-open");
             });
         });
 
@@ -549,6 +586,7 @@
 
         showSlide(0);
         startSlideTimer();
+        initSlideshowPauseControls();
     }
 
     function showSlide(index, resetTimer = false) {
@@ -583,7 +621,73 @@
         showSlide(slideIndex + direction, true);
     }
 
+    function stopSlideTimer() {
+        if (slideTimer) {
+            clearInterval(slideTimer);
+            slideTimer = null;
+        }
+    }
+
+    function updateSlidePauseButton() {
+        const pauseButton = document.getElementById("slide-pause-btn");
+        if (!pauseButton) return;
+
+        const icon = pauseButton.querySelector("i");
+        const text = pauseButton.querySelector("span");
+        const isPaused = slidePaused || slidePauseLocked;
+
+        pauseButton.classList.toggle("paused", isPaused);
+        pauseButton.setAttribute("aria-pressed", String(isPaused));
+
+        if (icon) icon.className = isPaused ? "fa-solid fa-play" : "fa-solid fa-pause";
+        if (text) text.innerText = isPaused ? "슬라이드 다시 재생" : "슬라이드 일시정지";
+    }
+
+    function setSlidePaused(paused, lock = false) {
+        if (lock) slidePauseLocked = paused;
+        slidePaused = paused;
+
+        if (paused) {
+            stopSlideTimer();
+        } else if (!slidePauseLocked) {
+            startSlideTimer();
+        }
+
+        updateSlidePauseButton();
+    }
+
+    function toggleSlidePause() {
+        const nextPaused = !slidePauseLocked;
+        setSlidePaused(nextPaused, true);
+    }
+
+    function pauseSlideTemporarily() {
+        if (slidePauseLocked) return;
+        clearTimeout(slideResumeTimer);
+        setSlidePaused(true, false);
+        slideResumeTimer = setTimeout(() => {
+            if (!slidePauseLocked) setSlidePaused(false, false);
+        }, 4500);
+    }
+
+    function initSlideshowPauseControls() {
+        const slideshow = document.getElementById("slideshow");
+        if (!slideshow) return;
+
+        slideshow.addEventListener("mouseenter", () => {
+            if (!slidePauseLocked) setSlidePaused(true, false);
+        });
+
+        slideshow.addEventListener("mouseleave", () => {
+            if (!slidePauseLocked) setSlidePaused(false, false);
+        });
+
+        slideshow.addEventListener("touchstart", pauseSlideTemporarily, { passive: true });
+        updateSlidePauseButton();
+    }
+
     function startSlideTimer() {
+        if (slidePaused || slidePauseLocked) return;
         if (slideTimer) clearInterval(slideTimer);
         slideTimer = setInterval(() => showSlide(slideIndex + 1), 3500);
     }
@@ -904,6 +1008,7 @@
         if (!credits || !roll) return false;
 
         updateEndingCreditsDistance();
+        clearTimeout(endingFinishTimer);
         credits.classList.add("resetting");
         credits.classList.remove("play", "ended");
         setEndingFinalVisible(false);
@@ -916,10 +1021,21 @@
         const credits = document.getElementById("ending-credits");
         if (!credits) return;
 
+        clearTimeout(endingFinishTimer);
         credits.classList.remove("play");
         credits.classList.add("ended");
         credits.dataset.creditsStarted = "ended";
         setEndingFinalVisible(true);
+    }
+
+    function getCreditsDurationMs() {
+        const mask = document.querySelector(".credits-mask");
+        const roll = document.getElementById("credits-roll");
+        const cssDuration = mask ? getComputedStyle(mask).getPropertyValue("--credits-duration").trim() : "";
+        const computedDuration = roll ? getComputedStyle(roll).animationDuration : "";
+        const raw = cssDuration || computedDuration || "60s";
+        const seconds = Number.parseFloat(raw);
+        return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 60000;
     }
 
     function startEndingCredits(force = false) {
@@ -936,6 +1052,8 @@
         credits.dataset.creditsStarted = "true";
         requestAnimationFrame(() => {
             credits.classList.add("play");
+            clearTimeout(endingFinishTimer);
+            endingFinishTimer = setTimeout(finishEndingCredits, getCreditsDurationMs() + 350);
         });
 
         if (!endingFireworkPlayed) {
@@ -1032,6 +1150,52 @@
         }, { passive: true });
     }
 
+    function toggleMobileNav(event) {
+        event?.preventDefault();
+        event?.stopPropagation();
+
+        const nav = document.querySelector(".mobile-nav");
+        const toggleBtn = document.querySelector(".mobile-nav-toggle");
+        const icon = toggleBtn?.querySelector("i");
+        if (!nav || !toggleBtn) return;
+
+        const isOpen = nav.classList.toggle("open");
+        toggleBtn.setAttribute("aria-expanded", String(isOpen));
+        if (icon) icon.className = isOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars";
+    }
+
+    function closeMobileNav() {
+        const nav = document.querySelector(".mobile-nav");
+        const toggleBtn = document.querySelector(".mobile-nav-toggle");
+        const icon = toggleBtn?.querySelector("i");
+        if (!nav || !toggleBtn) return;
+
+        nav.classList.remove("open");
+        toggleBtn.setAttribute("aria-expanded", "false");
+        if (icon) icon.className = "fa-solid fa-bars";
+    }
+
+    function initMobileNavToggle() {
+        const nav = document.querySelector(".mobile-nav");
+        if (!nav) return;
+
+        $$(".mobile-nav a").forEach(link => {
+            link.addEventListener("click", closeMobileNav);
+        });
+
+        document.addEventListener("click", event => {
+            if (!nav.classList.contains("open")) return;
+            if (nav.contains(event.target)) return;
+            closeMobileNav();
+        });
+
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape") closeMobileNav();
+        });
+
+        window.addEventListener("resize", closeMobileNav);
+    }
+
     function init() {
         initImageFallbacks();
         initFadeObserver();
@@ -1042,6 +1206,7 @@
         initPasswordEnterKey();
         initSlideshow();
         initMobileNavActiveState();
+        initMobileNavToggle();
         initThemeSwitcher();
         updateVisitCount();
         initBasicProtection();
@@ -1063,6 +1228,8 @@
     window.sendReply = sendReply;
     window.closeLightbox = closeLightbox;
     window.changeSlide = changeSlide;
+    window.toggleSlidePause = toggleSlidePause;
+    window.toggleMobileNav = toggleMobileNav;
     window.toggleThemePanel = toggleThemePanel;
     window.setSiteTheme = setSiteTheme;
     window.launchHeartFireworks = launchHeartFireworks;
@@ -1070,73 +1237,6 @@
     window.restartEndingCredits = restartEndingCredits;
 
     window.addEventListener("load", hideLoadingScreen);
-    setTimeout(hideLoadingScreen, 2500);
+    setTimeout(hideLoadingScreen, LOADING_MAX_VISIBLE_MS);
     onReady(init);
 })();
-// =========================================
-// 모바일 하단 메뉴 → 오른쪽 세로 메뉴 토글
-// =========================================
-
-function toggleMobileNav(event) {
-    if (event) {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-
-    const nav = document.querySelector(".mobile-nav");
-    const toggleBtn = document.querySelector(".mobile-nav-toggle");
-    const icon = toggleBtn?.querySelector("i");
-
-    if (!nav || !toggleBtn) return;
-
-    const isOpen = nav.classList.toggle("open");
-    toggleBtn.setAttribute("aria-expanded", String(isOpen));
-
-    if (icon) {
-        icon.className = isOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars";
-    }
-}
-
-function closeMobileNav() {
-    const nav = document.querySelector(".mobile-nav");
-    const toggleBtn = document.querySelector(".mobile-nav-toggle");
-    const icon = toggleBtn?.querySelector("i");
-
-    if (!nav || !toggleBtn) return;
-
-    nav.classList.remove("open");
-    toggleBtn.setAttribute("aria-expanded", "false");
-
-    if (icon) {
-        icon.className = "fa-solid fa-bars";
-    }
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-    const nav = document.querySelector(".mobile-nav");
-
-    if (!nav) return;
-
-    document.querySelectorAll(".mobile-nav a").forEach(link => {
-        link.addEventListener("click", function () {
-            closeMobileNav();
-        });
-    });
-
-    document.addEventListener("click", function (event) {
-        if (!nav.classList.contains("open")) return;
-        if (nav.contains(event.target)) return;
-
-        closeMobileNav();
-    });
-
-    document.addEventListener("keydown", function (event) {
-        if (event.key === "Escape") {
-            closeMobileNav();
-        }
-    });
-
-    window.addEventListener("resize", function () {
-        closeMobileNav();
-    });
-});
