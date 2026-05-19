@@ -1241,16 +1241,13 @@
     onReady(init);
 })();
 // =========================================
-// 사이트 점검중 화면 제어 - 사라짐 방지 고정본
+// 사이트 점검중 화면 제어 - 검은 화면 방지 안정본
 // =========================================
 
 (function () {
     "use strict";
 
-    /*
-        전체 방문자에게 항상 점검중 화면을 보여주고 싶으면 true
-        평소에는 false
-    */
+    // 모든 방문자에게 점검중 화면을 보여주려면 true
     const FORCE_MAINTENANCE_FOR_ALL = true;
 
     const STORAGE_KEY = "memorySiteMaintenanceModeFixed";
@@ -1281,9 +1278,46 @@
         return false;
     }
 
+    function createMaintenanceScreenIfMissing() {
+        let screen = document.getElementById("maintenance-screen");
+
+        if (screen) return screen;
+
+        screen = document.createElement("div");
+        screen.id = "maintenance-screen";
+        screen.className = "maintenance-screen";
+        screen.setAttribute("aria-hidden", "true");
+
+        screen.innerHTML = `
+            <div class="maintenance-card">
+                <div class="maintenance-orbit" aria-hidden="true">
+                    <span></span>
+                    <i class="fa-solid fa-star"></i>
+                </div>
+
+                <p class="maintenance-label">SITE MAINTENANCE</p>
+                <h1>우리의 기록장을 잠시 정리하는 중이야.</h1>
+                <p class="maintenance-message">
+                    더 예쁜 추억을 담기 위해 별빛을 다시 고르고 있어.<br>
+                    잠시 후 다시 찾아와줘.
+                </p>
+
+                <div class="maintenance-progress">
+                    <span></span>
+                </div>
+
+                <p class="maintenance-small">
+                    To be continued under the same night sky.
+                </p>
+            </div>
+        `;
+
+        document.body.prepend(screen);
+        return screen;
+    }
+
     function enableMaintenanceScreen() {
-        const screen = document.getElementById("maintenance-screen");
-        if (!screen) return;
+        const screen = createMaintenanceScreenIfMissing();
 
         screen.classList.add("show");
         screen.setAttribute("aria-hidden", "false");
@@ -1291,7 +1325,6 @@
         document.documentElement.classList.add("maintenance-mode-active");
         document.body.classList.add("maintenance-mode-active");
 
-        // 다른 팝업/로딩 화면이 위에 올라오는 것 방지
         const loadingScreen = document.getElementById("loading-screen");
         const welcomeModal = document.getElementById("welcome-modal");
 
@@ -1308,10 +1341,11 @@
 
     function disableMaintenanceScreen() {
         const screen = document.getElementById("maintenance-screen");
-        if (!screen) return;
 
-        screen.classList.remove("show");
-        screen.setAttribute("aria-hidden", "true");
+        if (screen) {
+            screen.classList.remove("show");
+            screen.setAttribute("aria-hidden", "true");
+        }
 
         document.documentElement.classList.remove("maintenance-mode-active");
         document.body.classList.remove("maintenance-mode-active");
@@ -1333,8 +1367,6 @@
 
         if (shouldShow) {
             enableMaintenanceScreen();
-
-            // 기존 JS가 나중에 화면을 바꿔도 다시 점검 화면을 고정
             setTimeout(enableMaintenanceScreen, 100);
             setTimeout(enableMaintenanceScreen, 500);
             setTimeout(enableMaintenanceScreen, 1200);
