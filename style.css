@@ -2326,3 +2326,34 @@ body.season-summer .seasonal-particle {
         font-size: 0.88rem !important;
     }
 }
+/* =========================================
+모바일 세로 메뉴 오른쪽 → 왼쪽 이동
+========================================= */
+
+@media screen and (max-width: 768px) {
+    .mobile-nav {
+        left: 16px !important;
+        right: auto !important;
+        align-items: flex-start !important;
+    }
+
+    .mobile-nav-links {
+        transform-origin: bottom left !important;
+    }
+
+    .mobile-nav a {
+        justify-content: flex-start !important;
+    }
+
+    .mobile-nav a.active,
+    .mobile-nav a:hover {
+        transform: translateX(4px) !important;
+    }
+}
+
+@media screen and (max-width: 420px) {
+    .mobile-nav {
+        left: 12px !important;
+        right: auto !important;
+    }
+}
