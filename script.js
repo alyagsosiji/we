@@ -1241,33 +1241,33 @@
     onReady(init);
 })();
 // =========================================
-// 사이트 점검중 화면 제어 - 유지형 수정본
+// 사이트 점검중 화면 제어 - 사라짐 방지 고정본
 // =========================================
 
 (function () {
     "use strict";
 
     /*
-        전체 방문자에게 점검중 화면을 보여주고 싶으면 true
+        전체 방문자에게 항상 점검중 화면을 보여주고 싶으면 true
         평소에는 false
     */
-    const MAINTENANCE_MODE = false;
+    const FORCE_MAINTENANCE_FOR_ALL = false;
 
-    const STORAGE_KEY = "memorySiteMaintenanceMode";
+    const STORAGE_KEY = "memorySiteMaintenanceModeFixed";
 
-    function saveMaintenanceState(value) {
+    function setSavedMode(isOn) {
         try {
-            localStorage.setItem(STORAGE_KEY, value ? "on" : "off");
+            localStorage.setItem(STORAGE_KEY, isOn ? "on" : "off");
         } catch (error) {
-            document.cookie = `${STORAGE_KEY}=${value ? "on" : "off"}; path=/; max-age=31536000`;
+            document.cookie = `${STORAGE_KEY}=${isOn ? "on" : "off"}; path=/; max-age=31536000; SameSite=Lax`;
         }
     }
 
-    function getMaintenanceState() {
+    function getSavedMode() {
         try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved === "on") return true;
-            if (saved === "off") return false;
+            const value = localStorage.getItem(STORAGE_KEY);
+            if (value === "on") return true;
+            if (value === "off") return false;
         } catch (error) {
             const cookieValue = document.cookie
                 .split("; ")
@@ -1281,62 +1281,84 @@
         return false;
     }
 
-    function showMaintenanceScreen() {
+    function enableMaintenanceScreen() {
         const screen = document.getElementById("maintenance-screen");
         if (!screen) return;
 
         screen.classList.add("show");
         screen.setAttribute("aria-hidden", "false");
-        document.body.classList.add("maintenance-active");
+
+        document.documentElement.classList.add("maintenance-mode-active");
+        document.body.classList.add("maintenance-mode-active");
+
+        // 다른 팝업/로딩 화면이 위에 올라오는 것 방지
+        const loadingScreen = document.getElementById("loading-screen");
+        const welcomeModal = document.getElementById("welcome-modal");
+
+        if (loadingScreen) {
+            loadingScreen.classList.add("hide");
+            loadingScreen.style.display = "none";
+        }
+
+        if (welcomeModal) {
+            welcomeModal.classList.remove("show");
+            welcomeModal.setAttribute("aria-hidden", "true");
+        }
     }
 
-    function hideMaintenanceScreen() {
+    function disableMaintenanceScreen() {
         const screen = document.getElementById("maintenance-screen");
         if (!screen) return;
 
         screen.classList.remove("show");
         screen.setAttribute("aria-hidden", "true");
-        document.body.classList.remove("maintenance-active");
+
+        document.documentElement.classList.remove("maintenance-mode-active");
+        document.body.classList.remove("maintenance-mode-active");
     }
 
-    function initMaintenanceScreen() {
+    function applyMaintenanceMode() {
         const params = new URLSearchParams(window.location.search);
-        const maintenanceParam = params.get("maintenance");
+        const mode = params.get("maintenance");
 
-        /*
-            ?maintenance=on  → 점검 화면 켜고 유지
-            ?maintenance=off → 점검 화면 끄고 유지 해제
-        */
-        if (maintenanceParam === "on") {
-            saveMaintenanceState(true);
+        if (mode === "on") {
+            setSavedMode(true);
         }
 
-        if (maintenanceParam === "off") {
-            saveMaintenanceState(false);
+        if (mode === "off") {
+            setSavedMode(false);
         }
 
-        const savedMode = getMaintenanceState();
+        const shouldShow = FORCE_MAINTENANCE_FOR_ALL || getSavedMode();
 
-        if (MAINTENANCE_MODE || savedMode) {
-            showMaintenanceScreen();
+        if (shouldShow) {
+            enableMaintenanceScreen();
+
+            // 기존 JS가 나중에 화면을 바꿔도 다시 점검 화면을 고정
+            setTimeout(enableMaintenanceScreen, 100);
+            setTimeout(enableMaintenanceScreen, 500);
+            setTimeout(enableMaintenanceScreen, 1200);
+            setTimeout(enableMaintenanceScreen, 2600);
         } else {
-            hideMaintenanceScreen();
+            disableMaintenanceScreen();
         }
     }
 
     window.showMaintenanceScreen = function () {
-        saveMaintenanceState(true);
-        showMaintenanceScreen();
+        setSavedMode(true);
+        enableMaintenanceScreen();
     };
 
     window.hideMaintenanceScreen = function () {
-        saveMaintenanceState(false);
-        hideMaintenanceScreen();
+        setSavedMode(false);
+        disableMaintenanceScreen();
     };
 
     if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initMaintenanceScreen);
+        document.addEventListener("DOMContentLoaded", applyMaintenanceMode);
     } else {
-        initMaintenanceScreen();
+        applyMaintenanceMode();
     }
+
+    window.addEventListener("load", applyMaintenanceMode);
 })();
