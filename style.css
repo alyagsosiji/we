@@ -2931,3 +2931,29 @@ body.maintenance-active {
     visibility: hidden;
     transition: opacity 0.25s ease, visibility 0.25s ease;
 }
+/* =========================================
+점검중 화면 사라짐 방지 / 다른 화면 강제 숨김
+========================================= */
+
+html.maintenance-mode-active,
+body.maintenance-mode-active {
+    overflow: hidden !important;
+}
+
+/* 점검 모드일 때 body 바로 아래 요소는 전부 숨김 */
+body.maintenance-mode-active > * {
+    display: none !important;
+}
+
+/* 단, 점검 화면만 다시 표시 */
+body.maintenance-mode-active > #maintenance-screen {
+    display: flex !important;
+}
+
+#maintenance-screen.show {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: 999999 !important;
+}
