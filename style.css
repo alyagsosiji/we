@@ -1801,113 +1801,77 @@ body.season-summer .seasonal-particle {
 }
 
 /* =========================================
-   추가 기능 15: 마지막 엔딩 크레딧
+   엔딩 크레딧 잘림 문제 수정
 ========================================= */
-.ending-credits-section {
-    max-width: 920px;
-    margin: 90px auto 40px;
-    padding: 20px;
+
+.ending-credit-section,
+.ending-credits-section,
+.ending-section {
     position: relative;
     z-index: 2;
+
+    /* 기존 height가 작게 잡혀 있으면 아래 내용이 잘릴 수 있음 */
+    height: auto !important;
+    min-height: 650px;
+
+    /* 아래 내용이 보이도록 여유 공간 확보 */
+    padding: 100px 20px 140px;
+
+    /* 핵심: 잘림 방지 */
+    overflow: visible !important;
+
     text-align: center;
 }
 
-.credits-header p {
-    color: #c7a4ff;
-    letter-spacing: 4px;
-    font-size: 0.85rem;
-    margin-bottom: 10px;
+/* 크레딧이 들어있는 박스 */
+.ending-credit-box,
+.ending-credits-box,
+.ending-content {
+    max-width: 800px;
+    margin: 0 auto;
+
+    height: auto !important;
+    max-height: none !important;
+
+    overflow: visible !important;
 }
 
-.credits-header h2 {
-    font-size: 1.8rem;
-    margin-bottom: 28px;
-    text-shadow: 0 0 18px rgba(199,164,255,0.4);
-}
-
-.credits-mask {
-    height: 360px;
-    overflow: hidden;
-    border-radius: 28px;
-    border: 1px solid rgba(199,164,255,0.32);
-    background:
-        linear-gradient(to bottom, rgba(7,7,20,0.95), rgba(7,7,20,0.12) 18%, rgba(7,7,20,0.12) 82%, rgba(7,7,20,0.95)),
-        rgba(25, 20, 45, 0.42);
-    box-shadow: 0 18px 46px rgba(0,0,0,0.42), inset 0 0 30px rgba(199,164,255,0.08);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-
+/* 실제로 올라가는 크레딧 텍스트 */
+.ending-credit-roll,
+.ending-credits,
 .credits-roll {
-    min-height: 760px;
-    padding: 380px 24px 80px;
-    transform: translateY(0);
+    position: relative;
+
+    height: auto !important;
+    max-height: none !important;
+
+    overflow: visible !important;
+
+    /* 기존 애니메이션이 너무 위로 밀어내서 안 보이는 경우 방지 */
+    transform: none;
 }
 
-.ending-credits-section.play .credits-roll {
-    animation: creditsRoll 24s linear forwards;
-}
-
+/* 엔딩 문구들이 너무 붙지 않게 */
+.ending-credit-roll p,
+.ending-credit-roll h2,
+.ending-credit-roll h3,
+.ending-credits p,
+.ending-credits h2,
+.ending-credits h3,
+.credits-roll p,
+.credits-roll h2,
 .credits-roll h3 {
-    font-size: 2rem;
-    margin: 18px 0 26px;
-    color: #fff;
-}
-
-.credits-roll p {
-    color: #bcafd0;
-    margin: 24px 0 8px;
-    letter-spacing: 1px;
-}
-
-.credits-roll strong {
-    display: block;
-    color: #ffffff;
-    font-size: 1.25rem;
-    text-shadow: 0 0 12px rgba(199,164,255,0.42);
-}
-
-.credit-small {
-    font-size: 0.85rem;
-    letter-spacing: 3px !important;
-    color: #82739f !important;
-}
-
-.credit-message {
-    margin-top: 44px !important;
-    color: #e5d9f2 !important;
+    margin-bottom: 28px;
     line-height: 1.8;
 }
 
-.replay-credits-btn {
-    margin-top: 22px;
-    padding: 12px 24px;
-    border: 1px solid rgba(199,164,255,0.38);
-    border-radius: 999px;
-    background: rgba(25, 20, 45, 0.55);
-    color: #fff;
-    font-family: inherit;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.25s ease, background 0.25s ease;
-}
+/* 엔딩 다시 보기 버튼 */
+.replay-ending-btn,
+.ending-replay-btn,
+#replay-ending-btn {
+    position: relative;
+    z-index: 5;
 
-.replay-credits-btn:hover {
-    transform: translateY(-3px);
-    background: rgba(199,164,255,0.22);
-}
-
-@keyframes creditsRoll {
-    from { transform: translateY(0); }
-    to { transform: translateY(-650px); }
-}
-
-@media screen and (max-width: 768px) {
-    .letter-envelope-stage { height: 150px; }
-    .letter-envelope { width: 220px; height: 128px; }
-    .envelope-paper-preview { width: 178px; height: 104px; left: 21px; top: 20px; padding-top: 22px; }
-    .secret-toast { bottom: 88px; border-radius: 22px; font-size: 0.92rem; }
-    .credits-mask { height: 310px; }
-    .credits-roll { padding-top: 330px; }
-    .ending-credits-section { margin-bottom: 90px; }
+    margin-top: 40px;
+    margin-bottom: 80px;
 }
