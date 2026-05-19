@@ -2570,3 +2570,240 @@ body.lightbox-open {
         font-size: 0.86rem !important;
     }
 }
+/* =========================================
+사이트 점검중 화면
+기본은 숨김, JS에서 show 클래스가 붙을 때만 표시
+========================================= */
+
+.maintenance-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 30000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 28px;
+    background:
+        radial-gradient(circle at 20% 25%, rgba(199, 164, 255, 0.20), transparent 42%),
+        radial-gradient(circle at 80% 70%, rgba(255, 143, 216, 0.14), transparent 45%),
+        rgba(7, 7, 20, 0.96);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    overflow: hidden;
+}
+
+.maintenance-screen.show {
+    display: flex;
+}
+
+.maintenance-screen::before {
+    content: '';
+    position: absolute;
+    inset: -40px;
+    background-image:
+        radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(199,164,255,0.6) 1px, transparent 1.5px);
+    background-size: 70px 70px, 110px 110px;
+    background-position: 0 0, 35px 45px;
+    opacity: 0.24;
+    animation: maintenanceStars 80s linear infinite;
+    pointer-events: none;
+}
+
+.maintenance-screen::after {
+    content: '';
+    position: absolute;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(199,164,255,0.24), transparent 65%);
+    filter: blur(4px);
+    animation: maintenanceGlow 4.5s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.maintenance-card {
+    position: relative;
+    z-index: 2;
+    width: min(92vw, 620px);
+    padding: 54px 34px 46px;
+    text-align: center;
+    border-radius: 30px;
+    border: 1px solid rgba(199, 164, 255, 0.34);
+    background: rgba(25, 20, 45, 0.62);
+    box-shadow:
+        0 22px 60px rgba(0, 0, 0, 0.58),
+        inset 0 0 26px rgba(199, 164, 255, 0.10);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    animation: maintenanceCardIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.maintenance-orbit {
+    position: relative;
+    width: 92px;
+    height: 92px;
+    margin: 0 auto 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.maintenance-orbit span {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(199, 164, 255, 0.42);
+    box-shadow: 0 0 24px rgba(199, 164, 255, 0.34);
+    animation: maintenanceOrbit 3.4s linear infinite;
+}
+
+.maintenance-orbit span::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow: 0 0 14px #c7a4ff;
+}
+
+.maintenance-orbit i {
+    color: #ffffff;
+    font-size: 2.2rem;
+    text-shadow: 0 0 20px rgba(199, 164, 255, 0.9);
+    animation: maintenanceTwinkle 1.7s ease-in-out infinite;
+}
+
+.maintenance-label {
+    margin-bottom: 14px;
+    color: #bcafd0;
+    font-size: 0.85rem;
+    letter-spacing: 4px;
+}
+
+.maintenance-card h1 {
+    margin-bottom: 20px;
+    color: #ffffff;
+    font-size: clamp(1.75rem, 5vw, 2.6rem);
+    line-height: 1.45;
+    text-shadow: 0 0 20px rgba(199, 164, 255, 0.42);
+}
+
+.maintenance-message {
+    color: #e5d9f2;
+    font-size: 1.05rem;
+    line-height: 1.9;
+    margin-bottom: 30px;
+}
+
+.maintenance-progress {
+    position: relative;
+    width: min(320px, 76vw);
+    height: 8px;
+    margin: 0 auto 24px;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.10);
+    border: 1px solid rgba(199, 164, 255, 0.22);
+}
+
+.maintenance-progress span {
+    position: absolute;
+    top: 0;
+    left: -45%;
+    width: 45%;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, #c7a4ff, #ff8fd8, transparent);
+    box-shadow: 0 0 18px rgba(199, 164, 255, 0.8);
+    animation: maintenanceLoading 1.9s ease-in-out infinite;
+}
+
+.maintenance-small {
+    color: rgba(229, 217, 242, 0.72);
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+}
+
+body.maintenance-active {
+    overflow: hidden;
+}
+
+@keyframes maintenanceStars {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        transform: translate3d(0, -260px, 0);
+    }
+}
+
+@keyframes maintenanceGlow {
+    0%, 100% {
+        opacity: 0.45;
+        transform: scale(0.96);
+    }
+    50% {
+        opacity: 0.85;
+        transform: scale(1.08);
+    }
+}
+
+@keyframes maintenanceCardIn {
+    from {
+        opacity: 0;
+        transform: translateY(28px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes maintenanceOrbit {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes maintenanceTwinkle {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.82;
+    }
+    50% {
+        transform: scale(1.18);
+        opacity: 1;
+    }
+}
+
+@keyframes maintenanceLoading {
+    0% {
+        left: -45%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .maintenance-card {
+        padding: 46px 24px 38px;
+        border-radius: 26px;
+    }
+
+    .maintenance-label {
+        font-size: 0.76rem;
+        letter-spacing: 3px;
+    }
+
+    .maintenance-message {
+        font-size: 0.96rem;
+    }
+}
