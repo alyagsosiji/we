@@ -1,7 +1,7 @@
 (() => {
     "use strict";
 
-    // credits-fixed-v3: 엔딩 크레딧 애니메이션 실제 반영본
+    // credits-reached-v4: 엔딩 도달 시 재생 + 마지막 To be continued 고정본
 
     if (window.__memorySiteFinalScriptLoaded) return;
     window.__memorySiteFinalScriptLoaded = true;
@@ -883,21 +883,60 @@
 
         const maskHeight = Math.max(mask.clientHeight, 1);
         const rollHeight = Math.max(roll.scrollHeight, 1);
-        const startY = Math.round(maskHeight * 0.78);
-        const endY = Math.round(rollHeight + maskHeight * 0.35);
-        const duration = Math.min(72, Math.max(44, Math.round((rollHeight + maskHeight) / 38)));
+        const startY = Math.round(maskHeight + 40);
+        const endY = Math.round(rollHeight + maskHeight * 0.45);
+        const duration = Math.min(82, Math.max(48, Math.round((rollHeight + maskHeight) / 32)));
 
         mask.style.setProperty("--credits-roll-start", `${startY}px`);
         mask.style.setProperty("--credits-roll-end", `${endY}px`);
         mask.style.setProperty("--credits-duration", `${duration}s`);
     }
 
-    function startEndingCredits() {
+    function setEndingFinalVisible(isVisible) {
+        const finalMessage = document.getElementById("credits-final-message");
+        if (!finalMessage) return;
+        finalMessage.setAttribute("aria-hidden", isVisible ? "false" : "true");
+    }
+
+    function prepareEndingCredits() {
+        const credits = document.getElementById("ending-credits");
+        const roll = document.getElementById("credits-roll");
+        if (!credits || !roll) return false;
+
+        updateEndingCreditsDistance();
+        credits.classList.add("resetting");
+        credits.classList.remove("play", "ended");
+        setEndingFinalVisible(false);
+        void roll.offsetHeight;
+        credits.classList.remove("resetting");
+        return true;
+    }
+
+    function finishEndingCredits() {
         const credits = document.getElementById("ending-credits");
         if (!credits) return;
 
-        updateEndingCreditsDistance();
-        credits.classList.add("play");
+        credits.classList.remove("play");
+        credits.classList.add("ended");
+        credits.dataset.creditsStarted = "ended";
+        setEndingFinalVisible(true);
+    }
+
+    function startEndingCredits(force = false) {
+        const credits = document.getElementById("ending-credits");
+        const roll = document.getElementById("credits-roll");
+        if (!credits || !roll) return;
+
+        if (!force && (credits.classList.contains("play") || credits.classList.contains("ended") || credits.dataset.creditsStarted === "true")) {
+            return;
+        }
+
+        if (!prepareEndingCredits()) return;
+
+        credits.dataset.creditsStarted = "true";
+        requestAnimationFrame(() => {
+            credits.classList.add("play");
+        });
 
         if (!endingFireworkPlayed) {
             endingFireworkPlayed = true;
@@ -909,53 +948,65 @@
 
     function checkEndingCreditsInView() {
         const credits = document.getElementById("ending-credits");
-        if (!credits) return;
+        if (!credits || credits.dataset.creditsStarted === "true" || credits.classList.contains("ended")) return;
 
         const rect = credits.getBoundingClientRect();
         const viewHeight = window.innerHeight || document.documentElement.clientHeight || 1;
 
-        if (rect.top < viewHeight * 0.95 && rect.bottom > viewHeight * 0.05) {
+        // 엔딩 크레딧 섹션에 실제로 도달했을 때 재생되도록 화면 중간 근처 진입 기준 사용
+        if (rect.top <= viewHeight * 0.72 && rect.bottom >= viewHeight * 0.22) {
             startEndingCredits();
         }
     }
 
     function initEndingCredits() {
         const credits = document.getElementById("ending-credits");
-        if (!credits) return;
+        const roll = document.getElementById("credits-roll");
+        if (!credits || !roll) return;
 
-        updateEndingCreditsDistance();
+        prepareEndingCredits();
+        credits.dataset.creditsStarted = "false";
 
-        // CSS 자체에 animation을 걸어두었기 때문에 JS 시작 조건이 실패해도 움직입니다.
-        credits.classList.add("play");
+        roll.addEventListener("animationend", function (event) {
+            if (event.animationName !== "movieCreditsRoll") return;
+            finishEndingCredits();
+        });
+
+        const observer = "IntersectionObserver" in window
+            ? new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) startEndingCredits();
+                });
+            }, { threshold: 0.28 })
+            : null;
+
+        if (observer) observer.observe(credits);
 
         const requestCheck = () => requestAnimationFrame(checkEndingCreditsInView);
         window.addEventListener("scroll", requestCheck, { passive: true });
         window.addEventListener("resize", () => {
+            const shouldKeepEnded = credits.classList.contains("ended");
             updateEndingCreditsDistance();
-            restartEndingCredits(false);
+            if (shouldKeepEnded) setEndingFinalVisible(true);
         });
         window.addEventListener("load", () => {
-            updateEndingCreditsDistance();
+            prepareEndingCredits();
+            credits.dataset.creditsStarted = "false";
             requestCheck();
         }, { once: true });
 
         setTimeout(() => {
             updateEndingCreditsDistance();
             requestCheck();
-        }, 200);
+        }, 250);
     }
 
     function restartEndingCredits(showToast = true) {
         const credits = document.getElementById("ending-credits");
-        const roll = document.getElementById("credits-roll");
-        if (!credits || !roll) return;
+        if (!credits) return;
 
-        updateEndingCreditsDistance();
-        credits.classList.add("resetting");
-        credits.classList.remove("play");
-        void roll.offsetHeight;
-        credits.classList.remove("resetting");
-        credits.classList.add("play");
+        credits.dataset.creditsStarted = "false";
+        startEndingCredits(true);
 
         if (showToast) showSecretToast("엔딩 크레딧을 다시 재생할게.", 2200);
     }
