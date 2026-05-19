@@ -1251,7 +1251,7 @@
         전체 방문자에게 점검중 화면을 보여주고 싶으면 true
         평소에는 false
     */
-    const MAINTENANCE_MODE = true;
+    const MAINTENANCE_MODE = false;
 
     const STORAGE_KEY = "memorySiteMaintenanceMode";
 
