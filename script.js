@@ -1,6 +1,8 @@
 (() => {
     "use strict";
 
+    // credits-fixed-v3: 엔딩 크레딧 애니메이션 실제 반영본
+
     if (window.__memorySiteFinalScriptLoaded) return;
     window.__memorySiteFinalScriptLoaded = true;
 
@@ -517,7 +519,7 @@
 
         slides = galleryItems.map(item => {
             const img = item.querySelector("img");
-            const fallback = extractFallbackFromOnError(img?.getAttribute("onerror"));
+            const fallback = img?.dataset.fallback || extractFallbackFromOnError(img?.getAttribute("onerror"));
             if (img) {
                 img.dataset.fallback = fallback;
                 img.onerror = function () {
@@ -874,41 +876,88 @@
         }
     }
 
+    function updateEndingCreditsDistance() {
+        const mask = document.querySelector(".credits-mask");
+        const roll = document.getElementById("credits-roll");
+        if (!mask || !roll) return;
+
+        const maskHeight = Math.max(mask.clientHeight, 1);
+        const rollHeight = Math.max(roll.scrollHeight, 1);
+        const startY = Math.round(maskHeight * 0.78);
+        const endY = Math.round(rollHeight + maskHeight * 0.35);
+        const duration = Math.min(72, Math.max(44, Math.round((rollHeight + maskHeight) / 38)));
+
+        mask.style.setProperty("--credits-roll-start", `${startY}px`);
+        mask.style.setProperty("--credits-roll-end", `${endY}px`);
+        mask.style.setProperty("--credits-duration", `${duration}s`);
+    }
+
+    function startEndingCredits() {
+        const credits = document.getElementById("ending-credits");
+        if (!credits) return;
+
+        updateEndingCreditsDistance();
+        credits.classList.add("play");
+
+        if (!endingFireworkPlayed) {
+            endingFireworkPlayed = true;
+            setTimeout(() => {
+                launchHeartFireworks({ currentTarget: credits.querySelector(".credits-header") || credits });
+            }, 900);
+        }
+    }
+
+    function checkEndingCreditsInView() {
+        const credits = document.getElementById("ending-credits");
+        if (!credits) return;
+
+        const rect = credits.getBoundingClientRect();
+        const viewHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+
+        if (rect.top < viewHeight * 0.95 && rect.bottom > viewHeight * 0.05) {
+            startEndingCredits();
+        }
+    }
+
     function initEndingCredits() {
         const credits = document.getElementById("ending-credits");
         if (!credits) return;
 
-        if (!("IntersectionObserver" in window)) {
-            credits.classList.add("play");
-            return;
-        }
+        updateEndingCreditsDistance();
 
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(entry => {
-                if (!entry.isIntersecting) return;
-                credits.classList.add("play");
+        // CSS 자체에 animation을 걸어두었기 때문에 JS 시작 조건이 실패해도 움직입니다.
+        credits.classList.add("play");
 
-                if (!endingFireworkPlayed) {
-                    endingFireworkPlayed = true;
-                    setTimeout(() => {
-                        launchHeartFireworks({ currentTarget: credits.querySelector(".credits-header") || credits });
-                    }, 900);
-                }
-            });
-        }, { threshold: 0.35 });
+        const requestCheck = () => requestAnimationFrame(checkEndingCreditsInView);
+        window.addEventListener("scroll", requestCheck, { passive: true });
+        window.addEventListener("resize", () => {
+            updateEndingCreditsDistance();
+            restartEndingCredits(false);
+        });
+        window.addEventListener("load", () => {
+            updateEndingCreditsDistance();
+            requestCheck();
+        }, { once: true });
 
-        observer.observe(credits);
+        setTimeout(() => {
+            updateEndingCreditsDistance();
+            requestCheck();
+        }, 200);
     }
 
-    function restartEndingCredits() {
+    function restartEndingCredits(showToast = true) {
         const credits = document.getElementById("ending-credits");
         const roll = document.getElementById("credits-roll");
         if (!credits || !roll) return;
 
+        updateEndingCreditsDistance();
+        credits.classList.add("resetting");
         credits.classList.remove("play");
-        void roll.offsetWidth;
+        void roll.offsetHeight;
+        credits.classList.remove("resetting");
         credits.classList.add("play");
-        showSecretToast("엔딩 크레딧을 다시 재생할게.", 2200);
+
+        if (showToast) showSecretToast("엔딩 크레딧을 다시 재생할게.", 2200);
     }
 
     function initImageFallbacks() {
