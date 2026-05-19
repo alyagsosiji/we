@@ -2175,3 +2175,11 @@ body.season-summer .seasonal-particle {
     text-decoration: none;
     color: blue;
 }
+.Github:hover {
+    color: yellow; /* 빨간색 */
+}
+
+/* 3. 클릭할 때(active) 색상 변경 */
+.Github:active {
+    color: green; /* 파란색 */
+}
