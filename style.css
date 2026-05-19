@@ -3568,3 +3568,58 @@ body.heart-reward-active .heart-burst-btn {
         word-break: keep-all;
     }
 }
+/* =========================================
+엔딩 배지 추가 시 아래 안내문 잘림 방지
+========================================= */
+
+/* 배지가 생겼을 때 인트로 하단 공간 확보 */
+body.has-ending-complete-badge .intro-section {
+    padding-bottom: 210px !important;
+}
+
+/* 안내 문구가 항상 위에 보이도록 */
+body.has-ending-complete-badge .scroll-down {
+    z-index: 5;
+}
+
+/* 배지가 생겼을 때 인트로 내용이 안내문과 너무 가까워지지 않게 */
+body.has-ending-complete-badge .intro-content {
+    transform: translateY(-18px);
+}
+
+/* 모바일에서는 더 여유 있게 */
+@media screen and (max-width: 768px) {
+    body.has-ending-complete-badge .intro-section {
+        padding-bottom: 230px !important;
+    }
+
+    body.has-ending-complete-badge .intro-content {
+        transform: translateY(-24px);
+    }
+
+    body.has-ending-complete-badge .scroll-down {
+        bottom: max(34px, env(safe-area-inset-bottom)) !important;
+    }
+}
+
+/* 화면 높이가 낮으면 absolute 고정을 풀어서 잘림 방지 */
+@media screen and (max-height: 760px) {
+    body.has-ending-complete-badge .intro-section {
+        min-height: auto !important;
+        padding-top: 80px !important;
+        padding-bottom: 80px !important;
+        flex-direction: column !important;
+    }
+
+    body.has-ending-complete-badge .intro-content {
+        transform: none !important;
+    }
+
+    body.has-ending-complete-badge .scroll-down {
+        position: relative !important;
+        left: auto !important;
+        bottom: auto !important;
+        transform: none !important;
+        margin-top: 42px !important;
+    }
+}
