@@ -411,7 +411,7 @@ function sendReply() {
     }
 
     // 전송 완료 알림 띄우기
-    alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워 ❤️");
+    alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워. ❤️");
     
     // 💡 아래 이메일 주소를 아시님의 진짜 이메일로 변경하세요!
     // 모바일이나 PC에서 메일 앱을 자동으로 열어 작성한 내용을 넣어줍니다.
@@ -811,7 +811,7 @@ function hideEasterSecret() {
 
     secretSection.classList.remove("revealed");
     secretSection.setAttribute("aria-hidden", "true");
-    showSecretToast("비밀 기록을 다시 별빛 속에 숨겼어 🌙", 2600);
+    showSecretToast("비밀 기록을 다시 별빛 속에 숨겼어.", 2600);
 }
 
 function initEasterEggs() {
