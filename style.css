@@ -3119,3 +3119,23 @@ Font Awesome 로딩 지연 방지
         0 0 12px rgba(255, 255, 255, 0.9),
         0 0 22px rgba(199, 164, 255, 0.9);
 }
+/* =========================================
+엔딩 크레딧 종료 후 To be continued 즉시 표시
+========================================= */
+
+.credits-final-message {
+    transition: none !important;
+}
+
+.ending-credits-section.ended .credits-final-message {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: scale(1) !important;
+    transition: none !important;
+}
+
+.ending-credits-section.ended .credits-roll {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    animation: none !important;
+}
