@@ -1240,3 +1240,56 @@
     setTimeout(hideLoadingScreen, LOADING_MAX_VISIBLE_MS);
     onReady(init);
 })();
+// =========================================
+// 사이트 점검중 화면 제어
+// =========================================
+
+// 전체 방문자에게 점검중 화면을 보여주고 싶으면 true로 변경
+// 평소에는 false 유지
+const MAINTENANCE_MODE = true;
+
+function showMaintenanceScreen() {
+    const screen = document.getElementById("maintenance-screen");
+    if (!screen) return;
+
+    screen.classList.add("show");
+    screen.setAttribute("aria-hidden", "false");
+    document.body.classList.add("maintenance-active");
+}
+
+function hideMaintenanceScreen() {
+    const screen = document.getElementById("maintenance-screen");
+    if (!screen) return;
+
+    screen.classList.remove("show");
+    screen.setAttribute("aria-hidden", "true");
+    document.body.classList.remove("maintenance-active");
+}
+
+function initMaintenanceScreen() {
+    const params = new URLSearchParams(window.location.search);
+    const maintenanceParam = params.get("maintenance");
+
+    // 내 브라우저에서만 점검 화면 켜기
+    if (maintenanceParam === "on") {
+        localStorage.setItem("memorySiteMaintenancePreview", "true");
+    }
+
+    // 내 브라우저에서만 점검 화면 끄기
+    if (maintenanceParam === "off") {
+        localStorage.removeItem("memorySiteMaintenancePreview");
+    }
+
+    const previewMode = localStorage.getItem("memorySiteMaintenancePreview") === "true";
+
+    if (MAINTENANCE_MODE || previewMode) {
+        showMaintenanceScreen();
+    } else {
+        hideMaintenanceScreen();
+    }
+}
+
+document.addEventListener("DOMContentLoaded", initMaintenanceScreen);
+
+window.showMaintenanceScreen = showMaintenanceScreen;
+window.hideMaintenanceScreen = hideMaintenanceScreen;
