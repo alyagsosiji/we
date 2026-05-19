@@ -1933,22 +1933,26 @@
         return badge;
     }
 
-    function showEndingCompleteBadge(save = true) {
-        const badge = createEndingCompleteBadge();
-        badge.classList.add("show");
+   function showEndingCompleteBadge(save = true) {
+    const badge = createEndingCompleteBadge();
+    badge.classList.add("show");
 
-        if (save) {
-            safeSet(STORAGE_KEYS.endingBadge, "true");
-        }
+    // 배지가 보일 때 인트로 하단 안내문 잘림 방지용 클래스 추가
+    document.body.classList.add("has-ending-complete-badge");
+
+    if (save) {
+        safeSet(STORAGE_KEYS.endingBadge, "true");
     }
+}
 
     function initEndingCompleteBadge() {
         const credits = document.getElementById("ending-credits");
         const badge = createEndingCompleteBadge();
 
         if (safeGet(STORAGE_KEYS.endingBadge) === "true") {
-            badge.classList.add("show");
-        }
+    badge.classList.add("show");
+    document.body.classList.add("has-ending-complete-badge");
+}
 
         if (!credits) return;
 
