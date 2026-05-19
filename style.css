@@ -3094,3 +3094,28 @@ body.maintenance-mode-active {
     0% { left: -45%; }
     100% { left: 100%; }
 }
+/* =========================================
+로딩 화면 별 아이콘 즉시 표시
+Font Awesome 로딩 지연 방지
+========================================= */
+
+.loading-star {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.loading-star i {
+    display: none !important;
+}
+
+.loading-star::before {
+    content: "★";
+    display: block;
+    color: #ffffff;
+    font-family: Arial, sans-serif;
+    font-size: 2rem;
+    line-height: 1;
+    text-shadow:
+        0 0 12px rgba(255, 255, 255, 0.9),
+        0 0 22px rgba(199, 164, 255, 0.9);
+}
