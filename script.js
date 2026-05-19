@@ -981,20 +981,49 @@
     }
 
     function updateEndingCreditsDistance() {
-        const mask = document.querySelector(".credits-mask");
-        const roll = document.getElementById("credits-roll");
-        if (!mask || !roll) return;
+    const mask = document.querySelector(".credits-mask");
+    const roll = document.getElementById("credits-roll");
+    if (!mask || !roll) return;
 
-        const maskHeight = Math.max(mask.clientHeight, 1);
-        const rollHeight = Math.max(roll.scrollHeight, 1);
-        const startY = Math.round(maskHeight + 40);
-        const endY = Math.round(rollHeight + maskHeight * 0.45);
-        const duration = Math.min(82, Math.max(48, Math.round((rollHeight + maskHeight) / 32)));
+    const maskHeight = Math.max(mask.clientHeight, 1);
 
-        mask.style.setProperty("--credits-roll-start", `${startY}px`);
-        mask.style.setProperty("--credits-roll-end", `${endY}px`);
-        mask.style.setProperty("--credits-duration", `${duration}s`);
+    /*
+        기존에는 roll.scrollHeight 전체를 기준으로 계산해서
+        아래 padding 때문에 크레딧이 다 사라진 뒤에도 빈 공간이 오래 올라갔음.
+        이제는 실제 마지막 크레딧 요소의 bottom 위치까지만 계산함.
+    */
+    const children = Array.from(roll.children).filter(child => {
+        return child.offsetParent !== null;
+    });
+
+    const lastChild = children[children.length - 1];
+    let lastContentBottom = roll.scrollHeight;
+
+    if (lastChild) {
+        const rollRect = roll.getBoundingClientRect();
+        const lastRect = lastChild.getBoundingClientRect();
+        lastContentBottom = lastRect.bottom - rollRect.top;
     }
+
+    const startY = Math.round(maskHeight + 36);
+
+    /*
+        마지막 글자가 박스 위로 완전히 사라지는 순간에 애니메이션 종료.
+        +8은 잘림 방지용 최소 여유.
+    */
+    const endY = Math.round(lastContentBottom + 8);
+
+    /*
+        이동 거리에 맞춰 속도 계산.
+        숫자를 줄이면 더 빠르고, 늘리면 더 천천히 올라감.
+    */
+    const travelDistance = startY + endY;
+    const duration = Math.min(76, Math.max(42, Math.round(travelDistance / 34)));
+
+    mask.style.setProperty("--credits-roll-start", `${startY}px`);
+    mask.style.setProperty("--credits-roll-end", `${endY}px`);
+    mask.style.setProperty("--credits-duration", `${duration}s`);
+}
 
     function setEndingFinalVisible(isVisible) {
         const finalMessage = document.getElementById("credits-final-message");
