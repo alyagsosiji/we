@@ -2183,3 +2183,146 @@ body.season-summer .seasonal-particle {
 .Github:active {
     color: green; /* 파란색 */
 }
+/* =========================================
+모바일 하단 메뉴 → 오른쪽 세로 플로팅 메뉴 수정
+========================================= */
+
+@media screen and (max-width: 768px) {
+    body {
+        padding-bottom: env(safe-area-inset-bottom) !important;
+    }
+
+    .mobile-nav {
+        position: fixed !important;
+        left: auto !important;
+        right: 16px !important;
+        bottom: calc(165px + env(safe-area-inset-bottom)) !important;
+        transform: none !important;
+        width: auto !important;
+        max-width: none !important;
+        display: flex !important;
+        flex-direction: column-reverse !important;
+        align-items: flex-end !important;
+        gap: 10px !important;
+        padding: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        z-index: 12000 !important;
+    }
+
+    .mobile-nav-toggle {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        border: 1px solid rgba(199, 164, 255, 0.45);
+        background: rgba(25, 20, 45, 0.82);
+        color: #ffffff;
+        font-size: 1.35rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 22px rgba(199, 164, 255, 0.45);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+    }
+
+    .mobile-nav.open .mobile-nav-toggle,
+    .mobile-nav-toggle:hover {
+        transform: rotate(90deg) scale(1.05);
+        background: rgba(199, 164, 255, 0.28);
+        box-shadow: 0 0 30px rgba(199, 164, 255, 0.75);
+    }
+
+    .mobile-nav-links {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 10px;
+        border-radius: 24px;
+        background: rgba(25, 20, 45, 0.86);
+        border: 1px solid rgba(199, 164, 255, 0.35);
+        box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(12px) scale(0.94);
+        transform-origin: bottom right;
+        transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    }
+
+    .mobile-nav.open .mobile-nav-links {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0) scale(1);
+    }
+
+    .mobile-nav a {
+        width: 126px !important;
+        min-height: 44px !important;
+        padding: 10px 14px !important;
+        border-radius: 16px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 10px !important;
+        text-decoration: none !important;
+        color: #bcafd0 !important;
+        font-size: 0.92rem !important;
+        background: rgba(255, 255, 255, 0.06) !important;
+        box-shadow: none !important;
+        transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease !important;
+    }
+
+    .mobile-nav a i {
+        width: 20px;
+        font-size: 1rem;
+        text-align: center;
+    }
+
+    .mobile-nav a span {
+        display: inline-block;
+        white-space: nowrap;
+    }
+
+    .mobile-nav a.active,
+    .mobile-nav a:hover {
+        color: #ffffff !important;
+        background: rgba(199, 164, 255, 0.24) !important;
+        transform: translateX(-4px) !important;
+        box-shadow: inset 0 0 12px rgba(199, 164, 255, 0.16) !important;
+    }
+
+    #bgm-container.bgm-player {
+        right: 16px !important;
+        bottom: calc(88px + env(safe-area-inset-bottom)) !important;
+    }
+}
+
+@media screen and (max-width: 420px) {
+    .mobile-nav {
+        right: 12px !important;
+        bottom: calc(150px + env(safe-area-inset-bottom)) !important;
+    }
+
+    .mobile-nav-toggle {
+        width: 54px;
+        height: 54px;
+        font-size: 1.25rem;
+    }
+
+    .mobile-nav a {
+        width: 116px !important;
+        font-size: 0.88rem !important;
+    }
+}
