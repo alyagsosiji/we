@@ -4013,3 +4013,157 @@ body.theme-letter .aurora, body.letter .aurora, [data-theme="letter"] .aurora {
     body.theme-letter .mobile-nav-links a, body.letter .mobile-nav-links a, [data-theme="letter"] .mobile-nav-links a { color: rgba(92, 64, 51, 0.6) !important; }
     body.theme-letter .mobile-nav-toggle { color: rgba(92, 64, 51, 1) !important; }
 }
+/* ==========================================================================
+   🚀 모바일 가려짐 해결 및 초고속 스크롤 60/120Hz 최적화 (내용/기능 100% 보존)
+   ========================================================================== */
+
+/* 1. 모바일 환경의 근본적인 터치 스크롤 물리 효과 안정화 */
+html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    /* 모바일 브라우저 고유의 쫀쫀한 관성 스크롤 복원 및 끊김 느낌 해소 */
+    overscroll-behavior-y: auto !important; 
+    -webkit-overflow-scrolling: touch !important;
+}
+
+/* 2. 터치 시 발생하는 투박한 네모 잔상 완벽 제거 */
+* {
+    -webkit-tap-highlight-color: transparent !important;
+    outline: none !important;
+}
+
+/* 3. 아래가 가려지는 현상 완벽 해결 (하단바 두께 + 노치 여백만큼 하단 여백 확보) */
+footer, .footer-section {
+    /* 모바일 하단바 뒤로 글씨가 절대 숨지 않도록 밀어 올리는 안전 마진 */
+    padding-bottom: calc(130px + env(safe-area-inset-bottom)) !important;
+}
+
+/* 스마트폰 및 태블릿 환경 (화면 폭 768px 이하) 부드러운 프레임 최적화 */
+@media screen and (max-width: 768px) {
+
+    /* 4. [렉의 주범] 배경 애니메이션 연산 방식을 GPU 하드웨어 가속으로 전환 */
+    .stars {
+        /* CPU를 마비시키는 background-position 애니메이션을 모바일에서 전면 차단 */
+        animation: none !important; 
+        background-attachment: scroll !important;
+        background-position: center top !important;
+        /* 하드웨어 가속 레이어로 독립시켜 스크롤 연산과 배경 렌더링을 완전히 분리 */
+        transform: translate3d(0, 0, 0) !important;
+        will-change: auto;
+    }
+
+    .aurora {
+        /* 오로라 배경 레이어도 하드웨어 가속 활성화 */
+        transform: translate3d(0, 0, 0) !important;
+        will-change: auto;
+    }
+
+    /* 5. 투명 블러(backdrop-filter) 중첩으로 인한 GPU 프레임 드랍(뚝뚝 끊김) 해결 */
+    .timeline-card,
+    .gallery-item,
+    .d-day-counter,
+    .welcome-box,
+    .letter-lock-container {
+        /* 실시간 화면 믹싱 부하를 줄이기 위해 블러 반경을 모바일 최적값(4px)으로 경량화 */
+        backdrop-filter: blur(4px) !important;
+        -webkit-backdrop-filter: blur(4px) !important;
+        /* 투명도를 고급스럽게 살려 가독성을 확보하고 렉은 차단 */
+        background: rgba(20, 16, 38, 0.9) !important; 
+        
+        /* 스크롤 시 부드럽게 밀리도록 하드웨어 3D 렌더링 명령 부여 */
+        transform: translate3d(0, 0, 0) !important;
+        will-change: transform;
+    }
+
+    /* 6. 모바일 토글 버튼 브라우저 기본 사각형 테두리 버그 박멸 */
+    .mobile-nav-toggle {
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        -webkit-appearance: none !important;
+        appearance: none !important;
+        padding: 12px !important;
+        cursor: pointer;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* 7. 줄바꿈 단어 단위 교정 (이쁜 문구들이 글자 하나하나 어색하게 쪼개지는 현상 방지) */
+    h1, h2, h3, p, span, a, .intro-content, .timeline-card p, .item-desc {
+        word-break: keep-all !important;
+        overflow-wrap: break-word !important;
+    }
+
+    /* 8. 좁은 모바일 화면 대응 1열 자동 정렬 및 마진 스케일링 */
+    .timeline-container {
+        padding: 30px 16px 60px !important;
+    }
+    .timeline-container::after {
+        left: 20px !important;
+        transform: none !important;
+    }
+    .timeline-item {
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 42px !important;
+        padding-right: 0 !important;
+        margin-bottom: 35px !important;
+    }
+    .timeline-item:nth-child(even) {
+        margin-left: 0 !important;
+        padding-left: 42px !important;
+    }
+    .timeline-item:nth-child(odd) .timeline-dot,
+    .timeline-item:nth-child(even) .timeline-dot {
+        left: 2px !important;
+        right: auto !important;
+        top: 25px !important;
+    }
+
+    .gallery-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+
+    /* 9. 모바일 하단 고정바 크기 고정 및 탈착 감지 */
+    .mobile-nav {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding-bottom: max(14px, env(safe-area-inset-bottom)) !important; /* 기기 하단바 영역 확보 */
+        z-index: 9999 !important;
+    }
+}
+
+/* ==========================================================================
+   🎨 테마 체인지 시 오로라 빛 & 모바일 하단바 컬러 동기화 무드 매칭
+   ========================================================================== */
+body.theme-cherry .aurora, body.cherry .aurora, [data-theme="cherry"] .aurora {
+    background: radial-gradient(circle at 20% 30%, rgba(255, 192, 203, 0.5) 0%, transparent 60%), radial-gradient(circle at 80% 70%, rgba(255, 140, 170, 0.3) 0%, transparent 60%) !important;
+}
+body.theme-ocean .aurora, body.ocean .aurora, [data-theme="ocean"] .aurora {
+    background: radial-gradient(circle at 20% 30%, rgba(0, 230, 240, 0.2) 0%, transparent 60%), radial-gradient(circle at 80% 70%, rgba(0, 100, 255, 0.3) 0%, transparent 60%) !important;
+}
+body.theme-letter .aurora, body.letter .aurora, [data-theme="letter"] .aurora {
+    background: radial-gradient(circle at 30% 20%, rgba(255, 248, 230, 0.7) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(225, 200, 165, 0.4) 0%, transparent 60%) !important;
+}
+
+@media screen and (max-width: 768px) {
+    body.theme-cherry .mobile-nav, body.cherry .mobile-nav, [data-theme="cherry"] .mobile-nav { background: rgba(255, 242, 245, 0.96) !important; border-top: 1px solid rgba(255, 105, 180, 0.18) !important; }
+    body.theme-cherry .mobile-nav-links a, body.cherry .mobile-nav-links a, [data-theme="cherry"] .mobile-nav-links a { color: rgba(165, 55, 85, 0.6) !important; }
+    body.theme-cherry .mobile-nav-toggle { color: rgba(165, 55, 85, 1) !important; }
+
+    body.theme-ocean .mobile-nav, body.ocean .mobile-nav, [data-theme="ocean"] .mobile-nav { background: rgba(6, 16, 33, 0.96) !important; border-top: 1px solid rgba(0, 206, 209, 0.18) !important; }
+    body.theme-ocean .mobile-nav-links a, body.ocean .mobile-nav-links a, [data-theme="ocean"] .mobile-nav-links a { color: rgba(100, 255, 218, 0.6) !important; }
+    body.theme-ocean .mobile-nav-toggle { color: rgba(100, 255, 218, 1) !important; }
+
+    body.theme-letter .mobile-nav, body.letter .mobile-nav, [data-theme="letter"] .mobile-nav { background: rgba(248, 242, 228, 0.97) !important; border-top: 1px solid rgba(139, 90, 43, 0.12) !important; }
+    body.theme-letter .mobile-nav-links a, body.letter .mobile-nav-links a, [data-theme="letter"] .mobile-nav-links a { color: rgba(92, 64, 51, 0.6) !important; }
+    body.theme-letter .mobile-nav-toggle { color: rgba(92, 64, 51, 1) !important; }
+}
