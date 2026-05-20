@@ -1,6 +1,6 @@
 @charset "UTF-8";
 
-/* final-v7-optimized: 중복 및 강제속성 제거 후 GPU 레이어 활성화 전체 파일 */
+/* final-v7-secured: 중복 오버라이딩 제거 및 데스크탑 환경 모바일 메뉴 가림 처리 완료 */
 
 /* =========================================
    1. 기본 리셋 및 폰트 설정
@@ -36,13 +36,18 @@ img {
     display: block;
 }
 
+/* 🔒 보안: 텍스트를 마우스 드래그로 선택하지 못하도록 차단 */
 body.protect-selection {
     -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
     user-select: none;
 }
 body.protect-selection input,
 body.protect-selection textarea {
     -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
     user-select: text;
 }
 
@@ -329,7 +334,7 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
 .image-wrapper img, .item-image img, #slide-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
 .timeline-card:hover .image-wrapper img, .gallery-item:hover .item-image img { transform: scale(1.04); }
 
-/* 이미지 로딩 보완 스켈레톤 단락 */
+/* 이미지 로딩 스켈레톤 단락 */
 .memory-img-skeleton { position: relative; overflow: hidden; background: rgba(25, 20, 45, 0.55); }
 .memory-img-skeleton::before {
     content: ''; position: absolute; inset: 0; z-index: 3;
@@ -432,8 +437,8 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
 .bgm-main-btn { background: transparent; border: none; cursor: pointer; color: #c7a4ff; font-size: 2rem; }
 .rotating { animation: rotateDisk 3s linear infinite; }
 @keyframes rotateDisk { to { transform: rotate(360deg); } }
-.music-info p { font-size: 0.7rem; color: #bcafd0; }
-.music-info strong { display: block; color: #ffffff; font-size: 0.88rem; }
+.music-info p { font-size: 0.7rem; color: #bcafd0; margin-bottom: 2px; letter-spacing: 1px; }
+.music-info strong { display: block; color: #ffffff; font-size: 0.88rem; max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bgm-controls { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
 #bgm-mute-btn { background: transparent; border: none; color: #c7a4ff; cursor: pointer; }
 #bgm-volume { width: 110px; accent-color: #c7a4ff; cursor: pointer; }
@@ -450,21 +455,19 @@ body.bgm-playing .stars { opacity: 0.48; filter: saturate(1.2) brightness(1.1); 
 .theme-options button { border: none; padding: 9px 14px; border-radius: 999px; background: rgba(255,255,255,0.1); color: #e5d9f2; cursor: pointer; }
 .theme-options button.active { background: #fff; color: #000; }
 
-/* Cherry 테마 가변 변조 */
+/* 테마 컬러 변경 */
 body.theme-cherry { background-color: #170b18; }
 body.theme-cherry .main-title { background: linear-gradient(45deg, #ff9acb, #fff0f7); -webkit-text-fill-color: transparent; -webkit-background-clip: text; }
 body.theme-cherry .bgm-disk, body.theme-cherry .timeline-dot, body.theme-cherry .bouncing { color: #ff9acb; border-color: #ff9acb; }
 body.theme-cherry .timeline-container::after { background: linear-gradient(to bottom, transparent, #ff9acb, transparent); }
 body.theme-cherry .send-letter-btn, body.theme-cherry .reply-btn, body.theme-cherry .welcome-start-btn { background: linear-gradient(45deg, #ff9acb, #ffc7df); color: #210f23; }
 
-/* Ocean 테마 가변 변조 */
 body.theme-ocean { background-color: #03141f; }
 body.theme-ocean .main-title { background: linear-gradient(45deg, #65d8ff, #eaffff); -webkit-text-fill-color: transparent; -webkit-background-clip: text; }
 body.theme-ocean .bgm-disk, body.theme-ocean .timeline-dot, body.theme-ocean .bouncing { color: #65d8ff; border-color: #65d8ff; }
 body.theme-ocean .timeline-container::after { background: linear-gradient(to bottom, transparent, #65d8ff, transparent); }
 body.theme-ocean .send-letter-btn, body.theme-ocean .reply-btn, body.theme-ocean .welcome-start-btn { background: linear-gradient(45deg, #65d8ff, #b6f0ff); color: #051624; }
 
-/* Letter 테마 가변 변조 */
 body.theme-letter { background-color: #120d18; }
 body.theme-letter .main-title { background: linear-gradient(45deg, #ffd98e, #fff8df); -webkit-text-fill-color: transparent; -webkit-background-clip: text; }
 body.theme-letter .bgm-disk, body.theme-letter .timeline-dot, body.theme-letter .bouncing { color: #ffd98e; border-color: #ffd98e; }
@@ -485,14 +488,12 @@ body.theme-our-night { background-color: #05020f; }
 .close-lightbox { position: absolute; top: 30px; right: 40px; font-size: 3rem; color: #fff; cursor: pointer; z-index: 2; }
 body.lightbox-open { overflow: hidden; }
 
-/* 별빛 마우스 트레일 모바일 경량화 */
 .mouse-star { position: fixed; background: #fff; border-radius: 50%; box-shadow: 0 0 15px #fff, 0 0 30px #c7a4ff; animation: sparkleTrail 0.95s ease-out forwards; pointer-events: none; z-index: 9998; will-change: transform, opacity; }
 @keyframes sparkleTrail {
     0% { transform: scale(0.5); opacity: 1; }
     100% { transform: scale(0.1); opacity: 0; }
 }
 
-/* 하트 폭죽 파티클 */
 .heart-particle {
     position: fixed; left: 0; top: 0; font-size: var(--heart-size); color: var(--heart-color);
     transform: translate3d(var(--start-x), var(--start-y), 0); animation: burstHeart var(--heart-duration) cubic-bezier(0.1, 0.8, 0.25, 1) forwards;
@@ -526,8 +527,6 @@ body.lightbox-open { overflow: hidden; }
     transition: opacity 0.58s ease, visibility 0.58s ease; 
     gap: 22px; 
     text-align: center; 
-    /* ✨ 핵심 해결책: 외부 구글 웹폰트가 로드되기 전이므로, 
-       가장 안정적인 시스템 고정 폰트를 적용해 글자 크기 변형(FOUT)을 원천 차단합니다. */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", dotum, sans-serif;
 }
 .loading-screen.hide { opacity: 0; visibility: hidden; }
@@ -542,7 +541,7 @@ body.lightbox-open { overflow: hidden; }
     justify-content: center; 
     border: 1px solid rgba(199, 164, 255, 0.45); 
     animation: loadingTwinkle 1.4s infinite; 
-    box-sizing: border-box; /* 패딩과 테두리로 인한 크기 뒤틀림 방지 */
+    box-sizing: border-box;
 }
 .loading-star i { display: none !important; }
 
@@ -551,8 +550,8 @@ body.lightbox-open { overflow: hidden; }
     display: block; 
     color: #fff; 
     font-size: 2rem; 
-    line-height: 1; /* 높이가 폰트에 따라 변하는 것 방지 */
-    font-family: sans-serif; /* 별 아이콘 모양 변형 방지 */
+    line-height: 1; 
+    font-family: sans-serif; 
     text-shadow: 0 0 12px rgba(255,255,255,0.9), 0 0 22px rgba(199,164,255,0.9); 
 }
 
@@ -563,12 +562,17 @@ body.lightbox-open { overflow: hidden; }
     font-weight: 600; 
     letter-spacing: 2px; 
     line-height: 1.4;
-    white-space: nowrap; /* 폰트 너비 변화로 모바일에서 글자가 아래줄로 밀려 깨지는 현상 방지 */
+    white-space: nowrap; 
 }
 
 @keyframes loadingTwinkle { 0%, 100% { opacity: 0.6; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1.04); } }
 
-/* 점검용 전용 모드 복원 */
+.welcome-modal { display: none; position: fixed; inset: 0; z-index: 15000; background: rgba(0,0,0,0.72); justify-content: center; align-items: center; }
+.welcome-modal.show { display: flex; }
+.welcome-box { background: rgba(25, 20, 45, 0.88); padding: 44px 32px; border-radius: 28px; text-align: center; border: 1px solid rgba(199,164,255,0.35); position: relative; }
+.welcome-close { position: absolute; top: 16px; right: 22px; background: transparent; border: none; color: #fff; font-size: 2rem; cursor: pointer; }
+.welcome-start-btn { padding: 13px 28px; border-radius: 999px; background: linear-gradient(45deg, #c7a4ff, #8263cf); border: none; font-weight: bold; cursor: pointer; color: #fff; margin-top: 15px; }
+
 html.maintenance-mode-active, body.maintenance-mode-active { overflow: hidden; }
 #maintenance-screen { position: fixed; inset: 0; z-index: 999999; display: none; align-items: center; justify-content: center; padding: 28px; background: radial-gradient(circle at center, rgba(32, 20, 62, 1), rgba(7, 7, 20, 1)); }
 #maintenance-screen.show { display: flex; }
@@ -576,7 +580,7 @@ html.maintenance-mode-active, body.maintenance-mode-active { overflow: hidden; }
 .maintenance-card h1 { color: #fff; font-size: 2.1rem; margin-top: 14px; margin-bottom: 12px; }
 .maintenance-message { color: #ccc5da; font-size: 1rem; line-height: 1.7; margin-bottom: 24px; }
 .maintenance-progress { height: 8px; background: rgba(255,255,255,0.1); border-radius: 999px; overflow: hidden; margin: 20px auto; width: min(80%, 300px); position: relative; }
-.maintenance-progress span { position: absolute; left: -45%; width: 45%; height: 100%; background: linear-gradient(90deg, #8263cf, #c7a4ff); box-shadow: 0 0 18px rgba(199, 164, 255, 0.8); animation: maintenanceLoading 1.9s ease-in-out infinite; }
+.maintenance-progress span { position: absolute; left: -45%; width: 45%; height: 100%; background: linear-gradient(90deg, #8263cf, #c7a4ff); box-shadow: 0 0 18px rgba(199, 164, 255, 0.8); animation: maintenanceLoading 1.9s infinite; }
 .maintenance-small { color: rgba(229, 217, 242, 0.72); font-size: 0.9rem; letter-spacing: 1px; }
 
 @keyframes maintenanceLoading { 0% { left: -45%; } 100% { left: 100%; } }
@@ -594,7 +598,6 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
 .secret-toast { position: fixed; bottom: 105px; left: 50%; transform: translate3d(-50%, 20px, 0); z-index: 10004; background: rgba(20, 15, 42, 0.86); padding: 14px 20px; border-radius: 999px; color: #fff; opacity: 0; transition: transform 0.3s, opacity 0.3s; border: 1px solid rgba(199,164,255,0.42); pointer-events: none; }
 .secret-toast.show { opacity: 1; transform: translate3d(-50%, 0, 0); }
 
-/* 제목 연타 이스터에그 카드 */
 .easter-secret-section { display: none; position: fixed; inset: 0; z-index: 10005; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); justify-content: center; align-items: center; padding: 24px; }
 .easter-secret-section.revealed { display: flex; }
 .easter-secret-card { background: rgba(25, 20, 45, 0.85); padding: 45px 30px; border-radius: 25px; border: 1px solid rgba(199,164,255,0.35); text-align: center; max-width: 480px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
@@ -603,7 +606,6 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
 .easter-secret-card p { color: #ccc5da; line-height: 1.7; margin-bottom: 25px; font-size: 0.98rem; }
 .easter-secret-card button { padding: 10px 24px; border: none; background: #c7a4ff; color: #1a1a2e; font-weight: bold; border-radius: 20px; cursor: pointer; }
 
-/* 별자리 드롭다운 단락 */
 .subtitle-constellation-easter { position: fixed; inset: 0; z-index: 16000; display: flex; justify-content: center; padding-top: 170px; opacity: 0; visibility: hidden; pointer-events: none; transition: 0.4s; background: rgba(5,2,15,0.4); backdrop-filter: blur(3px); }
 .subtitle-constellation-easter.show { opacity: 1; visibility: visible; pointer-events: auto; }
 .constellation-card { background: rgba(25, 20, 45, 0.9); padding: 30px; border-radius: 28px; border: 1px solid rgba(199,164,255,0.35); text-align: center; width: min(90vw, 380px); box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
@@ -617,6 +619,11 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
 ========================================= */
 .ending-credits-section {
     position: relative; z-index: 2; padding: 110px 20px 160px; text-align: center; overflow: visible;
+}
+
+/* 🖥️ 데스크톱 기본 상태: 모바일 전용 빠른 메뉴바 단락을 숨김 처리 (사용자 요청 문제 완벽 해결) */
+.mobile-nav {
+    display: none;
 }
 
 .credits-mask {
@@ -657,7 +664,7 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
     100% { transform: scale(1.04); text-shadow: 0 0 25px rgba(199, 164, 255, 0.9), 0 0 10px #fff; }
 }
 
-/* 📱 완벽 병합된 모바일 최적화 미디어 쿼리 (768px 이하) */
+/* 📱 768px 이하 모바일 화면 전용 오버라이딩 구역 */
 @media screen and (max-width: 768px) {
     body { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
     .intro-section { min-height: 100svh; padding: 80px 18px 145px; }
@@ -665,7 +672,6 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
     .sub-title { font-size: 0.98rem; letter-spacing: 2.4px; }
     .scroll-down { bottom: max(28px, env(safe-area-inset-bottom)); font-size: 0.9rem; width: 90vw; }
     
-    /* 타임라인 카드 배치 개편 (1열 최적화 흐름) */
     .timeline-container::after { left: 24px; transform: translateX(0); }
     .timeline-item { width: 100%; margin-left: 0 !important; padding-left: 55px !important; padding-right: 0 !important; margin-bottom: 50px; }
     .timeline-item:nth-child(odd) .timeline-dot, .timeline-item:nth-child(even) .timeline-dot { left: 6px; right: auto; }
@@ -680,10 +686,11 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
     .credits-roll { padding: 44px 18px 130px; }
     .credits-final-message h3 { font-size: clamp(1.55rem, 8vw, 2.4rem); letter-spacing: 2px; }
     
-    /* 하단 플로팅 단 단락 정렬 */
+    /* 📱 모바일 브라우저 전용 빠른 네비게이션 플로팅 제어 복원 선언 */
     .mobile-nav {
+        display: flex;
         position: fixed; left: 16px; bottom: calc(142px + env(safe-area-inset-bottom));
-        display: flex; flex-direction: column-reverse; align-items: flex-start; gap: 10px; z-index: 12000;
+        flex-direction: column-reverse; align-items: flex-start; gap: 10px; z-index: 12000;
     }
     .mobile-nav-toggle {
         width: 56px; height: 56px; border-radius: 50%; background: rgba(25, 20, 45, 0.82); color: #fff;
@@ -704,7 +711,6 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
     .theme-options { flex-direction: column; }
 }
 
-/* 감상 배지 연동 영역 겹침 제어 */
 body.has-ending-complete-badge .intro-section { padding-bottom: 210px; }
 body.has-ending-complete-badge .intro-content { transform: translate3d(0, -18px, 0); }
 @media screen and (max-width: 768px) {
