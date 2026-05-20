@@ -429,7 +429,7 @@
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        setText("days", String(days));
+        setText("days", String(days+1));
         setText("hours", String(hours).padStart(2, "0"));
         setText("minutes", String(minutes).padStart(2, "0"));
         setText("seconds", String(seconds).padStart(2, "0"));
