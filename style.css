@@ -512,22 +512,61 @@ body.lightbox-open { overflow: hidden; }
 .heart-burst-btn { display: block; margin: 18px auto 0; padding: 12px 26px; border-radius: 999px; background: linear-gradient(45deg, #c7a4ff, #ff8fd8); font-weight: bold; cursor: pointer; border: none; color: #100b26; }
 
 /* =========================================
-   9. 오버레이 화면 레이아웃 (로딩, 환영, 점검)
+   9. 오버레이 로딩 및 시스템 스크린 (글자 깨짐 및 크기 유동 방지)
 ========================================= */
-.loading-screen { position: fixed; inset: 0; z-index: 20000; display: flex; flex-direction: column; justify-content: center; align-items: center; background: radial-gradient(circle at center, rgba(30, 18, 60, 1), rgba(7, 7, 20, 1)); transition: opacity 0.58s ease, visibility 0.58s ease; gap: 22px; text-align: center; }
+.loading-screen { 
+    position: fixed; 
+    inset: 0; 
+    z-index: 20000; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    background: radial-gradient(circle at center, rgba(30, 18, 60, 1), rgba(7, 7, 20, 1)); 
+    transition: opacity 0.58s ease, visibility 0.58s ease; 
+    gap: 22px; 
+    text-align: center; 
+    /* ✨ 핵심 해결책: 외부 구글 웹폰트가 로드되기 전이므로, 
+       가장 안정적인 시스템 고정 폰트를 적용해 글자 크기 변형(FOUT)을 원천 차단합니다. */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", dotum, sans-serif;
+}
 .loading-screen.hide { opacity: 0; visibility: hidden; }
-.loading-star { flex: 0 0 72px; width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(199, 164, 255, 0.45); animation: loadingTwinkle 1.4s infinite; }
+
+.loading-star { 
+    flex: 0 0 72px; 
+    width: 72px; 
+    height: 72px; 
+    border-radius: 50%; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border: 1px solid rgba(199, 164, 255, 0.45); 
+    animation: loadingTwinkle 1.4s infinite; 
+    box-sizing: border-box; /* 패딩과 테두리로 인한 크기 뒤틀림 방지 */
+}
 .loading-star i { display: none !important; }
-.loading-star::before { content: "★"; display: block; color: #fff; font-size: 2rem; text-shadow: 0 0 12px rgba(255,255,255,0.9), 0 0 22px rgba(199,164,255,0.9); }
-.loading-screen p { margin: 0; font-size: 1.1rem; color: #e5d9f2; font-weight: 600; letter-spacing: 2px; }
+
+.loading-star::before { 
+    content: "★"; 
+    display: block; 
+    color: #fff; 
+    font-size: 2rem; 
+    line-height: 1; /* 높이가 폰트에 따라 변하는 것 방지 */
+    font-family: sans-serif; /* 별 아이콘 모양 변형 방지 */
+    text-shadow: 0 0 12px rgba(255,255,255,0.9), 0 0 22px rgba(199,164,255,0.9); 
+}
+
+.loading-screen p { 
+    margin: 0; 
+    font-size: 1.1rem; 
+    color: #e5d9f2; 
+    font-weight: 600; 
+    letter-spacing: 2px; 
+    line-height: 1.4;
+    white-space: nowrap; /* 폰트 너비 변화로 모바일에서 글자가 아래줄로 밀려 깨지는 현상 방지 */
+}
 
 @keyframes loadingTwinkle { 0%, 100% { opacity: 0.6; transform: scale(0.96); } 50% { opacity: 1; transform: scale(1.04); } }
-
-.welcome-modal { display: none; position: fixed; inset: 0; z-index: 15000; background: rgba(0,0,0,0.72); justify-content: center; align-items: center; }
-.welcome-modal.show { display: flex; }
-.welcome-box { background: rgba(25, 20, 45, 0.88); padding: 44px 32px; border-radius: 28px; text-align: center; border: 1px solid rgba(199,164,255,0.35); position: relative; }
-.welcome-close { position: absolute; top: 16px; right: 22px; background: transparent; border: none; color: #fff; font-size: 2rem; cursor: pointer; }
-.welcome-start-btn { padding: 13px 28px; border-radius: 999px; background: linear-gradient(45deg, #c7a4ff, #8263cf); border: none; font-weight: bold; cursor: pointer; color: #fff; margin-top: 15px; }
 
 /* 점검용 전용 모드 복원 */
 html.maintenance-mode-active, body.maintenance-mode-active { overflow: hidden; }
