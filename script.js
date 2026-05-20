@@ -2071,12 +2071,12 @@
     runWhenReady(initExtraSafeFeatures);
 })();
 // ==========================================================================
-// 📱 모바일 환경 최적화 버튼 제어 스크립트 (위치 & 가독성 보정 최종본)
+// 📱 모바일 전용 최적화 버튼 동적 제어 (데스크탑 차단 완료)
 // ==========================================================================
 function initMobilePerformanceMode() {
+    // 768px 초과하는 데스크탑(PC) 환경에서는 완전히 실행을 중단하여 순정 상태 유지
     if (window.innerWidth > 768) return;
 
-    // 중복 생성 방지
     if (document.getElementById("mobile-perf-toggle")) return;
 
     const perfBtn = document.createElement("button");
@@ -2087,7 +2087,7 @@ function initMobilePerformanceMode() {
 
     document.body.appendChild(perfBtn);
 
-    // 디폴트 활성화 (ON)
+    // 모바일 한정 디폴트 최적화 활성화 (ON)
     document.body.classList.add("perf-mode-active");
     let isOptimized = true;
 
