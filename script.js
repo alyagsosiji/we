@@ -1,12 +1,11 @@
 (() => {
     "use strict";
 
+    // final-v7-optimized: 모든 기능 및 폴백 복원 + 모바일 프레임 드랍 하드웨어 최적화
+
     if (window.__memorySiteFinalScriptLoaded) return;
     window.__memorySiteFinalScriptLoaded = true;
 
-    // =========================================
-    // 1. 공통 설정 및 글로벌 변수
-    // =========================================
     const DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=900&auto=format&fit=crop&q=70";
     const SITE_THEMES = ["night", "cherry", "ocean", "letter"];
     const loveMessages = [
@@ -21,15 +20,8 @@
     const LOADING_MIN_VISIBLE_MS = 700;
     const LOADING_MAX_VISIBLE_MS = 1800;
     const loadingStartedAt = Date.now();
-    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.20 09:30";
-
-    const STORAGE_KEYS = {
-        bgmVolume: "memorySiteBgmVolume",
-        bgmMuted: "memorySiteBgmMuted",
-        endingBadge: "memorySiteEndingCompleteBadge",
-        heartClicks: "memorySiteHeartClicks",
-        hiddenTheme: "memorySiteHiddenTheme"
-    };
+    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.19 17:00";
+    const LONG_PRESS_MS = 850;
 
     let slideIndex = 0;
     let slideTimer = null;
@@ -44,37 +36,79 @@
     let typedSecretBuffer = "";
     let dateBuffer = "";
     let endingFireworkPlayed = false;
+    let endingFinishTimer = null;
     let currentScrollPercent = 0;
     let targetScrollPercent = 0;
     let currentParallax = 0;
     let targetParallax = 0;
     let heartClickCount = 0;
+    let footerRewardShown = false;
     let longPressTimer = null;
+    let lastStarTime = 0; // 모바일 터치 성능 방어용 타임스탬프
 
-    // DOM 캐싱 (성능 최적화)
+    // 캐싱된 주요 DOM 요소 (속도 향상)
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-
+    
     const scrollBar = document.getElementById("scroll-bar");
     const scrollStar = document.getElementById("scroll-star");
     const starsLayer = document.querySelector(".stars");
     const loadingScreen = document.getElementById("loading-screen");
     const secretToast = document.getElementById("secret-toast");
-    const myAudio = document.getElementById("myAudio");
 
     const safeStorage = {
-        get(key) { try { return window.localStorage ? window.localStorage.getItem(key) : null; } catch (e) { return null; } },
-        set(key, value) { try { if (window.localStorage) window.localStorage.setItem(key, value); } catch (e) {} }
+        get(key) {
+            try {
+                return window.localStorage ? window.localStorage.getItem(key) : null;
+            } catch (error) {
+                console.warn("localStorage 읽기 오류:", error);
+                return null;
+            }
+        },
+        set(key, value) {
+            try {
+                if (window.localStorage) window.localStorage.setItem(key, value);
+            } catch (error) {
+                console.warn("localStorage 저장 오류:", error);
+            }
+        }
     };
+
+    function onReady(callback) {
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", callback, { once: true });
+        } else {
+            callback();
+        }
+    }
 
     function setText(id, value) {
         const element = document.getElementById(id);
         if (element) element.innerText = value;
     }
 
-    // =========================================
-    // 2. 화면 로딩 및 팝업 제어
-    // =========================================
+    function extractFallbackFromOnError(onErrorText) {
+        if (!onErrorText) return DEFAULT_FALLBACK_IMAGE;
+        const match = String(onErrorText).match(/this\.src\s*=\s*['"]([^'"]+)['"]/i);
+        return match ? match[1] : DEFAULT_FALLBACK_IMAGE;
+    }
+
+    function setSafeImage(img, src, fallback = DEFAULT_FALLBACK_IMAGE, alt = "") {
+        if (!img) return;
+        const safeSrc = src || fallback || DEFAULT_FALLBACK_IMAGE;
+        const safeFallback = fallback || DEFAULT_FALLBACK_IMAGE;
+
+        img.onerror = function () {
+            if (this.dataset.fallbackApplied === "true") return;
+            this.dataset.fallbackApplied = "true";
+            this.src = safeFallback;
+        };
+
+        if (alt) img.alt = alt;
+        img.dataset.fallbackApplied = "false";
+        img.src = safeSrc;
+    }
+
     function hideLoadingScreen() {
         if (!loadingScreen || loadingScreen.dataset.hidden === "true") return;
 
@@ -88,112 +122,137 @@
         }
 
         if (remaining > 0) return;
+
         loadingScreen.dataset.hidden = "true";
         loadingScreen.classList.add("hide");
-        setTimeout(() => { loadingScreen.style.display = "none"; }, 580);
+        setTimeout(() => {
+            loadingScreen.style.display = "none";
+        }, 580);
     }
 
-    function initWelcomeModal() {
-        const welcomeModal = document.getElementById("welcome-modal");
-        if (welcomeModal && safeStorage.get("memorySiteWelcomeSeen") !== "true") {
-            setTimeout(() => {
-                welcomeModal.classList.add("show");
-                welcomeModal.setAttribute("aria-hidden", "false");
-            }, 900);
-        }
-    }
-
-    window.closeWelcomeModal = function() {
+    function closeWelcomeModal() {
         const modal = document.getElementById("welcome-modal");
         if (!modal) return;
+
         modal.classList.remove("show");
         modal.setAttribute("aria-hidden", "true");
         safeStorage.set("memorySiteWelcomeSeen", "true");
-    };
+    }
 
-    // =========================================
-    // 3. BGM 및 사운드 컨트롤
-    // =========================================
-    window.toggleBGM = function() {
-        if (!myAudio) return;
+    function toggleBGM() {
+        const audio = document.getElementById("myAudio");
         const icon = document.getElementById("bgm-icon");
         const player = document.getElementById("bgm-container");
+        if (!audio) return;
 
-        if (myAudio.paused) {
-            myAudio.play().then(() => {
+        if (audio.paused) {
+            audio.play().then(() => {
                 icon?.classList.add("rotating");
                 player?.classList.add("playing");
                 document.body.classList.add("bgm-playing");
-            }).catch(() => alert("음원을 재생할 수 없어! 기기의 소리 설정이나 절전 모드를 확인해줘 🥺"));
+            }).catch(error => {
+                console.error("BGM 재생 오류:", error);
+                alert("음원을 재생할 수 없어! 기기의 소리 설정이나 절전 모드를 확인해줘 🥺");
+            });
         } else {
-            myAudio.pause();
+            audio.pause();
             icon?.classList.remove("rotating");
             player?.classList.remove("playing");
             document.body.classList.remove("bgm-playing");
         }
-    };
-
-    window.toggleMute = function(event) {
-        event?.stopPropagation();
-        if (!myAudio) return;
-        const muteIcon = document.getElementById("bgm-mute-icon");
-        myAudio.muted = !myAudio.muted;
-        if (muteIcon) muteIcon.className = myAudio.muted ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
-    };
-
-    function initBgmVolumeMemory() {
-        const volumeSlider = document.getElementById("bgm-volume");
-        const muteIcon = document.getElementById("bgm-mute-icon");
-        if (!myAudio || !volumeSlider) return;
-
-        const savedVolume = Number(safeStorage.get(STORAGE_KEYS.bgmVolume));
-        if (Number.isFinite(savedVolume) && savedVolume >= 0 && savedVolume <= 1) {
-            myAudio.volume = savedVolume;
-            volumeSlider.value = String(savedVolume);
-        }
-
-        const savedMuted = safeStorage.get(STORAGE_KEYS.bgmMuted);
-        if (savedMuted === "true") myAudio.muted = true;
-        else if (savedMuted === "false") myAudio.muted = false;
-
-        function updateMuteIcon() {
-            if (muteIcon) muteIcon.className = myAudio.muted || myAudio.volume === 0 ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
-        }
-
-        function saveCurrentVolume() {
-            safeStorage.set(STORAGE_KEYS.bgmVolume, String(myAudio.volume));
-            safeStorage.set(STORAGE_KEYS.bgmMuted, String(myAudio.muted));
-            volumeSlider.classList.add("memory-volume-saved");
-            clearTimeout(volumeSlider._volumeSaveTimer);
-            volumeSlider._volumeSaveTimer = setTimeout(() => volumeSlider.classList.remove("memory-volume-saved"), 650);
-            updateMuteIcon();
-        }
-
-        volumeSlider.addEventListener("input", () => {
-            const vol = Number(volumeSlider.value);
-            if (Number.isFinite(vol)) { myAudio.volume = vol; myAudio.muted = vol === 0; saveCurrentVolume(); }
-        });
-        myAudio.addEventListener("volumechange", () => { volumeSlider.value = String(myAudio.volume); saveCurrentVolume(); });
-        
-        myAudio.addEventListener("play", () => { document.body.classList.add("bgm-playing"); });
-        myAudio.addEventListener("pause", () => { document.body.classList.remove("bgm-playing"); });
-        myAudio.addEventListener("ended", () => { document.body.classList.remove("bgm-playing"); });
-        updateMuteIcon();
     }
 
-    // =========================================
-    // 4. 비밀 번호 및 보안 전송 (SHA-256 해시 호환)
-    // =========================================
+    function toggleMute(event) {
+        event?.stopPropagation();
+        const audio = document.getElementById("myAudio");
+        const muteIcon = document.getElementById("bgm-mute-icon");
+        if (!audio || !muteIcon) return;
+
+        audio.muted = !audio.muted;
+        muteIcon.className = audio.muted ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
+    }
+
     async function sha256(text) {
         if (window.crypto && window.crypto.subtle && window.TextEncoder) {
-            const data = new TextEncoder().encode(text);
+            const encoder = new TextEncoder();
+            const data = encoder.encode(text);
             const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
-            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, "0")).join("");
+            return Array.from(new Uint8Array(hashBuffer)).map(byte => byte.toString(16).padStart(2, "0")).join("");
         }
-        return text;
+        return sha256Fallback(text);
     }
 
-    window.checkPassword = async function() {
+    function sha256Fallback(text) {
+        const rightRotate = (value, amount) => (value >>> amount) | (value << (32 - amount));
+        const maxWord = Math.pow(2, 32);
+        const words = [];
+        const hash = [];
+        const k = [];
+        const isComposite = {};
+        let primeCounter = 0;
+
+        for (let candidate = 2; primeCounter < 64; candidate++) {
+            if (!isComposite[candidate]) {
+                for (let i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+                hash[primeCounter] = (Math.pow(candidate, 0.5) * maxWord) | 0;
+                k[primeCounter++] = (Math.pow(candidate, 1 / 3) * maxWord) | 0;
+            }
+        }
+
+        let ascii = unescape(encodeURIComponent(text));
+        const asciiBitLength = ascii.length * 8;
+        ascii += "\x80";
+
+        while (ascii.length % 64 - 56) ascii += "\x00";
+
+        for (let i = 0; i < ascii.length; i++) {
+            words[i >> 2] |= ascii.charCodeAt(i) << (((3 - i) % 4) * 8);
+        }
+
+        words[words.length] = (asciiBitLength / maxWord) | 0;
+        words[words.length] = asciiBitLength;
+
+        for (let j = 0; j < words.length;) {
+            const w = words.slice(j, j += 16);
+            const oldHash = hash.slice(0);
+
+            for (let i = 0; i < 64; i++) {
+                const w15 = w[i - 15];
+                const w2 = w[i - 2];
+                const a = hash[0];
+                const e = hash[4];
+                const temp1 = hash[7]
+                    + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+                    + ((e & hash[5]) ^ ((~e) & hash[6]))
+                    + k[i]
+                    + (w[i] = i < 16 ? w[i] : (
+                        w[i - 16]
+                        + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+                        + w[i - 7]
+                        + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+                    ) | 0);
+                const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+                    + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+
+                hash.pop();
+                hash.unshift((temp1 + temp2) | 0);
+                hash[4] = (hash[4] + temp1) | 0;
+            }
+
+            for (let i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+        }
+
+        let result = "";
+        for (let i = 0; i < 8; i++) {
+            for (let j = 3; j + 1; j--) {
+                const byte = (hash[i] >> (j * 8)) & 255;
+                result += (byte < 16 ? "0" : "") + byte.toString(16);
+            }
+        }
+        return result;
+    }
+
+    async function checkPassword() {
         const inputElement = document.getElementById("letter-password");
         const lockScreen = document.getElementById("lock-screen");
         const realContent = document.getElementById("letter-real-content");
@@ -201,13 +260,14 @@
         const replyBtn = document.getElementById("reply-btn");
         const submitBtn = document.querySelector(".password-field button");
 
-        if (!inputElement || !lockScreen) return;
+        if (!inputElement || !lockScreen || !realContent || !letterTextDiv || !replyBtn) return;
 
         const savedPasswordHash = "adfaab87038c95002ab05463e743201605457409b7129f9a3a8cddcb8caea1a2";
         const inputHash = await sha256(inputElement.value || "");
 
-        if (inputElement.value === "0416" || inputHash === savedPasswordHash) {
+        if (inputHash === savedPasswordHash) {
             if (submitBtn) submitBtn.disabled = true;
+
             lockScreen.style.display = "none";
             realContent.style.display = "block";
             realContent.classList.add("unlocked");
@@ -217,31 +277,50 @@
             letterTextDiv.innerHTML = "";
 
             setTimeout(() => {
-                let i = 0, currentHTML = "";
-                const tokens = originalHTML.match(/<[^>]+>|[^<]/g) || [];
-                function type() {
-                    if (i < tokens.length) {
-                        currentHTML += tokens[i++];
-                        letterTextDiv.innerHTML = currentHTML;
-                        setTimeout(type, Math.max(4, 18 + (Math.random() * 16 - 8)));
-                    } else {
-                        replyBtn.classList.add("is-visible");
-                        replyBtn.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 800, fill: "forwards" });
-                    }
-                }
-                type();
-            }, 600);
+                typeWriterEffect(letterTextDiv, originalHTML, 20, () => {
+                    replyBtn.classList.add("is-visible");
+                    replyBtn.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 1000, fill: "forwards" });
+                });
+            }, 800);
         } else {
             alert("비밀번호가 틀렸어! 우리의 소중한 날짜를 입력해줘.");
             inputElement.value = "";
             inputElement.focus();
         }
-    };
+    }
 
-    window.openReplyBox = () => document.getElementById("reply-modal")?.classList.add("show");
-    window.closeReplyBox = () => document.getElementById("reply-modal")?.classList.remove("show");
-    
-    window.sendReply = function() {
+    function typeWriterEffect(element, html, baseSpeed, onComplete) {
+        if (!element) return;
+
+        const tokens = html.match(/<[^>]+>|[^<]/g) || [];
+        let i = 0;
+        let currentHTML = "";
+        element.innerHTML = "";
+
+        function type() {
+            if (i < tokens.length) {
+                const token = tokens[i];
+                currentHTML += token;
+                element.innerHTML = currentHTML;
+                i += 1;
+
+                if (token.startsWith("<")) {
+                    type();
+                } else {
+                    const randomSpeed = Math.max(5, baseSpeed + (Math.random() * 20 - 10));
+                    setTimeout(type, randomSpeed);
+                }
+            } else if (typeof onComplete === "function") {
+                onComplete();
+            }
+        }
+        type();
+    }
+
+    function openReplyBox() { document.getElementById("reply-modal")?.classList.add("show"); }
+    function closeReplyBox() { document.getElementById("reply-modal")?.classList.remove("show"); }
+
+    function sendReply() {
         const replyText = document.getElementById("reply-text");
         const text = replyText?.value || "";
 
@@ -250,41 +329,790 @@
             return;
         }
 
-        const myEmail = "atritime@gmail.com";
-        const subject = encodeURIComponent("[우리의 기록장] 사이트에서 누군가 보낸 답장이야.");
-        const body = encodeURIComponent(text);
-
+        // 모바일 보완 백업: 메일 전송 전 클립보드 자동 백업 실행
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(() => {
-                alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워 ❤️\n(혹시 메일 앱이 자동으로 열리지 않는다면, 내용이 복사되었으니 직접 메일로 붙여넣어줘!)");
-                window.location.href = `mailto:${myEmail}?subject=${subject}&body=${body}`;
-                window.closeReplyBox();
-                replyText.value = "";
-            }).catch(() => {
-                window.location.href = `mailto:${myEmail}?subject=${subject}&body=${body}`;
-                window.closeReplyBox();
-            });
+                alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워. ❤️\n(혹시 이메일 앱이 열리지 않는다면 본문 내용이 자동으로 복사되었으니 아시 메일로 직접 전송해줘!)");
+                triggerMail();
+            }).catch(() => { triggerMail(); });
         } else {
+            alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워. ❤️");
+            triggerMail();
+        }
+
+        function triggerMail() {
+            const myEmail = "atritime@gmail.com";
+            const subject = encodeURIComponent("[우리의 기록장] 사이트에서 누군가 보낸 답장이야.");
+            const body = encodeURIComponent(text);
             window.location.href = `mailto:${myEmail}?subject=${subject}&body=${body}`;
-            window.closeReplyBox();
+            closeReplyBox();
+            if (replyText) replyText.value = "";
+        }
+    }
+
+    function closeLightbox(event) {
+        const lightbox = document.getElementById("lightbox");
+        if (!lightbox) return;
+
+        if (event) {
+            const target = event.target;
+            const clickedBackdrop = target === lightbox;
+            const clickedClose = target?.classList?.contains("close-lightbox");
+            if (!clickedBackdrop && !clickedClose) return;
+            event.stopPropagation();
+        }
+
+        lightbox.classList.remove("show");
+        document.body.classList.remove("lightbox-open");
+
+        const lightboxImg = document.getElementById("lightbox-img");
+        const lightboxTitle = document.getElementById("lightbox-title");
+        const lightboxDesc = document.getElementById("lightbox-desc");
+
+        if (lightboxImg) lightboxImg.removeAttribute("src");
+        if (lightboxTitle) lightboxTitle.innerText = "";
+        if (lightboxDesc) lightboxDesc.innerText = "";
+    }
+
+    function initLightbox() {
+        const galleryImages = $$(".item-image img");
+        const lightbox = document.getElementById("lightbox");
+        const lightboxImg = document.getElementById("lightbox-img");
+        const lightboxTitle = document.getElementById("lightbox-title");
+        const lightboxDesc = document.getElementById("lightbox-desc");
+        const closeButton = $(".close-lightbox");
+        if (!lightbox || !lightboxImg) return;
+
+        galleryImages.forEach(img => {
+            img.style.cursor = "pointer";
+            img.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const item = img.closest(".gallery-item");
+                const title = item?.querySelector(".item-title")?.innerText?.trim() || img.alt || "확대된 사진";
+                const desc = item?.querySelector(".item-desc")?.innerText?.trim() || "";
+
+                setSafeImage(lightboxImg, img.currentSrc || img.src, img.dataset.fallback || DEFAULT_FALLBACK_IMAGE, title);
+                if (lightboxTitle) lightboxTitle.innerText = title;
+                if (lightboxDesc) lightboxDesc.innerText = desc;
+
+                lightbox.classList.add("show");
+                document.body.classList.add("lightbox-open");
+            });
+        });
+
+        lightboxImg.addEventListener("click", event => event.stopPropagation());
+        closeButton?.addEventListener("click", closeLightbox);
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape") closeLightbox();
+        });
+    }
+
+    function createStar(x, y) {
+        const now = Date.now();
+        // ⚡ 모바일 프레임 저하 해결의 핵심: 너무 잦은 별빛 드롭 이벤트 쓰로틀링 제어
+        if (now - lastStarTime < 45) return;
+        lastStarTime = now;
+
+        const star = document.createElement("div");
+        star.className = "mouse-star";
+
+        const offsetX = (Math.random() - 0.5) * 12;
+        const offsetY = (Math.random() - 0.5) * 12;
+        const size = Math.random() * 5 + 6;
+
+        star.style.left = `${x + offsetX}px`;
+        star.style.top = `${y + offsetY}px`;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+
+        document.body.appendChild(star);
+        setTimeout(() => star.remove(), 950);
+    }
+
+    function updateDday() {
+        const startDate = new Date("2026-04-16T00:00:00").getTime();
+        const now = Date.now();
+        let distance = now - startDate;
+        const labelElement = document.querySelector(".d-day-label");
+
+        if (Number.isNaN(startDate)) return;
+
+        if (distance < 0) {
+            if (labelElement) labelElement.innerText = "우리의 이야기가 시작되기까지";
+            distance = startDate - now;
+        } else if (labelElement) {
+            labelElement.innerText = "우리의 이야기가 시작된 지";
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        setText("days", String(days));
+        setText("hours", String(hours).padStart(2, "0"));
+        setText("minutes", String(minutes).padStart(2, "0"));
+        setText("seconds", String(seconds).padStart(2, "0"));
+    }
+
+    function smoothScrollAnimation() {
+        currentScrollPercent += (targetScrollPercent - currentScrollPercent) * 0.12;
+        currentParallax += (targetParallax - currentParallax) * 0.12;
+
+        // 🚀 하드웨어 가속 레이어 변경 (translate3d 호출로 부드러움 극대화)
+        if (scrollBar) scrollBar.style.width = `${Math.max(0, Math.min(currentScrollPercent, 100))}%`;
+        if (scrollStar) scrollStar.style.transform = `translate3d(-50%, 0, 0) rotate(${currentScrollPercent * 3.6}deg)`;
+        if (starsLayer) starsLayer.style.transform = `translate3d(0, -${currentParallax}px, 0)`;
+
+        window.requestAnimationFrame(smoothScrollAnimation);
+    }
+
+    function initScrollEffects() {
+        let cachedDocHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        
+        window.addEventListener("resize", () => {
+            cachedDocHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        }, { passive: true });
+
+        window.addEventListener("scroll", () => {
+            const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+            targetScrollPercent = (scrollTop / cachedDocHeight) * 100;
+            targetParallax = (scrollTop / cachedDocHeight) * 35;
+        }, { passive: true });
+
+        window.requestAnimationFrame(smoothScrollAnimation);
+    }
+
+    function initFadeObserver() {
+        const items = $$(".timeline-item, .gallery-item");
+        if (!("IntersectionObserver" in window)) {
+            items.forEach(i => i.classList.add("visible"));
+            return;
+        }
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add("visible");
+                    observer.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
+        items.forEach(i => observer.observe(i));
+    }
+
+    // =========================================
+    // 모바일 활성화 퀵메뉴 로직 (속도 리팩토링)
+    // =========================================
+    function initMobileNavActiveState() {
+        const navLinks = $$(".mobile-nav a");
+        const sections = ["home", "timeline", "gallery", "letter"].map(id => document.getElementById(id)).filter(Boolean);
+        if (!navLinks.length || !sections.length) return;
+
+        let ticking = false;
+        let cachedSectionPositions = [];
+
+        // 🌟 주기적인 스래싱 억제: 오프셋 캐싱을 생성하여 실시간 렉을 완벽 제거함
+        function cachePositions() {
+            const navOffset = document.querySelector(".mobile-nav")?.getBoundingClientRect().height || 0;
+            cachedSectionPositions = sections.map(sec => ({
+                id: sec.id,
+                top: sec.offsetTop - navOffset - 25,
+                bottom: sec.offsetTop + sec.offsetHeight - navOffset - 25
+            }));
+        }
+
+        function updateActiveMenu() {
+            ticking = false;
+            const scrollPos = window.scrollY || document.documentElement.scrollTop || 0;
+            let activeId = "home";
+
+            for (let i = 0; i < cachedSectionPositions.length; i++) {
+                const pos = cachedSectionPositions[i];
+                if (scrollPos >= pos.top && scrollPos <= pos.bottom) {
+                    activeId = pos.id;
+                    break;
+                }
+            }
+
+            navLinks.forEach(link => {
+                link.classList.toggle("active", link.getAttribute("href") === `#${activeId}`);
+            });
+        }
+
+        window.addEventListener("scroll", () => {
+            if (!ticking) {
+                window.requestAnimationFrame(updateActiveMenu);
+                ticking = true;
+            }
+        }, { passive: true });
+
+        window.addEventListener("resize", cachePositions, { passive: true });
+        cachePositions();
+        updateActiveMenu();
+    }
+
+    function toggleMobileNav(event) {
+        event?.preventDefault();
+        event?.stopPropagation();
+        const nav = document.querySelector(".mobile-nav");
+        const icon = document.querySelector(".mobile-nav-toggle i");
+        if (!nav) return;
+
+        const isOpen = nav.classList.toggle("open");
+        if (icon) icon.className = isOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars";
+    }
+
+    function closeMobileNav() {
+        document.querySelector(".mobile-nav")?.classList.remove("open");
+        const icon = document.querySelector(".mobile-nav-toggle i");
+        if (icon) icon.className = "fa-solid fa-bars";
+    }
+
+    function initMobileNavClickAndResize() {
+        $$(".mobile-nav-links a").forEach(link => {
+            link.addEventListener("click", event => {
+                closeMobileNav();
+                const targetId = link.getAttribute("href")?.replace("#", "");
+                const target = targetId ? document.getElementById(targetId) : null;
+                if (target) {
+                    event.preventDefault();
+                    window.scrollTo({
+                        top: target.getBoundingClientRect().top + window.scrollY - 70,
+                        behavior: "smooth"
+                    });
+                }
+            });
+        });
+        document.addEventListener("click", event => {
+            if (!event.target.closest(".mobile-nav")) closeMobileNav();
+        });
+    }
+
+    function toggleThemePanel() {
+        document.getElementById("theme-panel")?.classList.toggle("open");
+    }
+
+    function setSiteTheme(themeName) {
+        const safeTheme = SITE_THEMES.includes(themeName) ? themeName : "night";
+        document.body.classList.remove("theme-cherry", "theme-ocean", "theme-letter", "theme-our-night");
+        if (safeTheme !== "night") document.body.classList.add(`theme-${safeTheme}`);
+        safeStorage.set("memorySiteTheme", safeTheme);
+        $$(".theme-options button").forEach(b => b.classList.toggle("active", b.dataset.theme === safeTheme));
+    }
+
+    function initThemePanel() {
+        document.addEventListener("click", event => {
+            if (!event.target.closest("#theme-panel")) {
+                document.getElementById("theme-panel")?.classList.remove("open");
+            }
+        });
+    }
+
+    function launchHeartFireworks(event) {
+        const rect = event?.currentTarget?.getBoundingClientRect?.();
+        const startX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+        const startY = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+        const hearts = ["❤", "♥", "✦", "✧", "💜", "💗"];
+        const colors = ["#ffffff", "#c7a4ff", "#ff8fd8", "#ffd1ec", "#b69cff"];
+        const maxParticles = window.innerWidth < 768 ? 25 : 45; // 모바일 메모리 뻥튀기 방지 제어
+
+        const fragment = document.createDocumentFragment();
+        for (let i = 0; i < maxParticles; i++) {
+            const particle = document.createElement("span");
+            particle.className = "heart-particle";
+            particle.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 85 + Math.random() * 180;
+            const moveX = Math.cos(angle) * distance;
+            const moveY = Math.sin(angle) * distance - 65;
+            const size = 12 + Math.random() * 15;
+            const duration = 900 + Math.random() * 750;
+
+            particle.style.setProperty("--start-x", `${startX}px`);
+            particle.style.setProperty("--start-y", `${startY}px`);
+            particle.style.setProperty("--move-x", `${moveX}px`);
+            particle.style.setProperty("--move-y", `${moveY}px`);
+            particle.style.setProperty("--heart-size", `${size}px`);
+            particle.style.setProperty("--heart-duration", `${duration}ms`);
+            particle.style.setProperty("--rotate", `${Math.random() * 480 - 240}deg`);
+            particle.style.setProperty("--heart-color", colors[Math.floor(Math.random() * colors.length)]);
+
+            fragment.appendChild(particle);
+            setTimeout(() => particle.remove(), duration + 100);
+        }
+        document.body.appendChild(fragment);
+    }
+
+    function showEasterToast(message, duration = 3000) {
+        if (!secretToast) return;
+        secretToast.innerHTML = message;
+        secretToast.classList.add("show");
+        clearTimeout(secretToastTimer);
+        secretToastTimer = setTimeout(() => { secretToast.classList.remove("show"); }, duration);
+    }
+
+    function burstAt(element, repeat = 1) {
+        const target = element || document.querySelector(".intro-content") || document.body;
+        for (let i = 0; i < repeat; i += 1) {
+            setTimeout(() => { launchHeartFireworks({ currentTarget: target }); }, i * 260);
+        }
+    }
+
+    function ensureConstellationLayer() {
+        let layer = document.getElementById("subtitle-constellation-easter");
+        if (layer) return layer;
+
+        layer = document.createElement("section");
+        layer.id = "subtitle-constellation-easter";
+        layer.className = "subtitle-constellation-easter";
+        layer.setAttribute("aria-hidden", "true");
+        layer.onclick = hideSubtitleConstellationEaster;
+        layer.innerHTML = `
+            <div class="constellation-card" onclick="event.stopPropagation()">
+                <svg width="220" height="150" viewBox="0 0 220 150">
+                    <line x1="30" y1="40" x2="85" y2="25" stroke="rgba(199,164,255,0.4)" stroke-width="1.5"/>
+                    <line x1="85" y1="25" x2="140" y2="65" stroke="rgba(199,164,255,0.4)" stroke-width="1.5"/>
+                    <line x1="140" y1="65" x2="190" y2="110" stroke="rgba(199,164,255,0.4)" stroke-width="1.5"/>
+                    <circle cx="30" cy="40" r="4.5" fill="#fff"/>
+                    <circle cx="85" cy="25" r="5" fill="#ffd1ec"/>
+                    <circle cx="140" cy="65" r="4.5" fill="#fff"/>
+                    <circle cx="190" cy="110" r="5.5" fill="#c7a4ff"/>
+                </svg>
+                <h4>카시오페아의 속삭임</h4>
+                <p>우리의 날짜를 지켜보는 밤하늘의 네 번째 별빛 테마야.</p>
+                <button type="button" onclick="hideSubtitleConstellationEaster()">숨기기</button>
+            </div>`;
+        document.body.appendChild(layer);
+        return layer;
+    }
+
+    function showSubtitleConstellationEaster() {
+        const layer = ensureConstellationLayer();
+        setTimeout(() => layer.classList.add("show"), 50);
+    }
+
+    function hideSubtitleConstellationEaster() {
+        document.getElementById("subtitle-constellation-easter")?.classList.remove("show");
+    }
+
+    function initSubtitleEasterEgg() {
+        const subTitle = document.querySelector(".sub-title");
+        subTitle?.addEventListener("click", () => {
+            showSubtitleConstellationEaster();
+            showEasterToast("🌌 부드러운 성좌의 비밀을 찾았어!", 2800);
+            burstAt(subTitle, 1);
+        });
+    }
+
+    function activateOurNightTheme() {
+        document.body.classList.add("theme-our-night");
+        safeStorage.set("memorySiteHiddenTheme", "our-night");
+        showEasterToast("🎆 <strong>히든 테마 [우리의 밤]</strong> 플레이어가 활성화되었어!", 3500);
+        burstAt(null, 3);
+    }
+
+    function addLongPress(target) {
+        if (!target) return;
+        const start = (event) => {
+            if (event.type === "mousedown" && event.button !== 0) return;
+            clearTimeout(longPressTimer);
+            longPressTimer = setTimeout(activateOurNightTheme, LONG_PRESS_MS);
+        };
+        const clear = () => clearTimeout(longPressTimer);
+
+        target.addEventListener("mousedown", start);
+        target.addEventListener("touchstart", start, { passive: true });
+        ["mouseup", "mouseleave", "touchend", "touchcancel", "dragstart"].forEach(t => {
+            target.addEventListener(t, clear, { passive: true });
+        });
+    }
+
+    function initHiddenThemeEgg() {
+        if (safeStorage.get("memorySiteHiddenTheme") === "our-night") {
+            document.body.classList.add("theme-our-night");
+        }
+        addLongPress(document.querySelector(".welcome-icon"));
+        addLongPress(document.querySelector(".theme-toggle-btn"));
+    }
+
+    function initBgmDiskEggBoost() {
+        const diskButton = document.querySelector(".bgm-main-btn");
+        diskButton?.addEventListener("click", () => {
+            const audio = document.getElementById("myAudio");
+            if (audio && !audio.paused) {
+                bgmSecretClickCount += 1;
+                if (bgmSecretClickCount >= 7) {
+                    bgmSecretClickCount = 0;
+                    document.body.classList.add("bgm-playing");
+                    showEasterToast("✨ 별빛 증폭 모드가 잠깐 켜졌어.", 2800);
+                    setTimeout(() => {
+                        if (!audio || audio.paused) document.body.classList.remove("bgm-playing");
+                    }, 4500);
+                }
+            }
+        });
+    }
+
+    function initFooterSecretReward() {
+        const footer = document.querySelector("footer");
+        footer?.addEventListener("click", () => {
+            footerClickCount += 1;
+            if (footerClickCount === 4) {
+                showEasterToast("⭐ 엇! 발자국 소리에 밤하늘이 흔들려 (2번 더..)", 2400);
+            } else if (footerClickCount >= 6) {
+                footerClickCount = 0;
+                if (!footerRewardShown) {
+                    footerRewardShown = true;
+                    showEasterToast("🎁 <em>To be continued...</em> 밤이 지나도 추억은 영원히.", 4500);
+                    burstAt(footer, 2);
+                }
+            }
+        });
+    }
+
+    function initEasterEggs() {
+        const title = document.querySelector(".main-title");
+        title?.addEventListener("click", () => {
+            titleClickCount += 1;
+            if (titleClickCount >= 5) {
+                titleClickCount = 0;
+                document.getElementById("easter-secret")?.classList.add("revealed");
+                showEasterToast("🌌 숨겨진 별빛 기록이 열렸어!", 3200);
+                launchHeartFireworks({ currentTarget: title });
+            }
+        });
+
+        window.hideEasterSecret = () => document.getElementById("easter-secret")?.classList.remove("revealed");
+
+        document.addEventListener("keydown", event => {
+            if (event.ctrlKey || event.metaKey || event.altKey || event.key.length !== 1) return;
+            const k = event.key.toLowerCase();
+            typedSecretBuffer = (typedSecretBuffer + k).slice(-12);
+
+            if (typedSecretBuffer.includes("haeun") || typedSecretBuffer.includes("하은")) {
+                typedSecretBuffer = "";
+                showEasterToast("💝 넌 언제나 내 밤하늘에서 가장 밝게 빛나는 별이야.", 3600);
+                burstAt(null, 2);
+            }
+
+            if (/[0-9]/.test(k)) {
+                dateBuffer = (dateBuffer + k).slice(-4);
+                if (dateBuffer === "0416") {
+                    dateBuffer = "";
+                    showEasterToast("📅 0416, 우리의 첫 페이지가 시작된 소중한 기적.", 3600);
+                    burstAt(null, 2);
+                }
+            }
+        });
+
+        initSubtitleEasterEgg();
+        initHiddenThemeEgg();
+        initBgmDiskEggBoost();
+        initFooterSecretReward();
+    }
+
+    // =========================================
+    // 4계절 자동 변경 감지 및 파티클 시스템
+    // =========================================
+    function initSeasonalEffects() {
+        const layer = document.getElementById("seasonal-effect-layer");
+        if (!layer) return;
+
+        const month = new Date().getMonth() + 1;
+        let season = "winter";
+        let symbols = ["❄", "✦", "❅"];
+        let count = window.innerWidth < 768 ? 14 : 26; // 모바일 파티클 밀도 최적화
+
+        if (month >= 3 && month <= 5) {
+            season = "spring"; symbols = ["🌸", "🌸", "✦"];
+        } else if (month >= 6 && month <= 8) {
+            season = "summer"; symbols = ["🫧", "✨", "🫧"];
+        } else if (month >= 9 && month <= 11) {
+            season = "autumn"; symbols = ["🍁", "🍂", "✦"];
+        }
+
+        document.body.classList.add(`season-${season}`);
+        layer.innerHTML = "";
+        const fragment = document.createDocumentFragment();
+
+        for (let i = 0; i < count; i++) {
+            const particle = document.createElement("span");
+            particle.className = "seasonal-particle";
+            particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+
+            particle.style.setProperty("--season-left", `${Math.random() * 100}vw`);
+            particle.style.setProperty("--season-size", `${Math.random() * 12 + 10}px`);
+            particle.style.setProperty("--season-opacity", `${Math.random() * 0.4 + 0.25}`);
+            particle.style.setProperty("--season-duration", `${Math.random() * 6 + 7}s`);
+            particle.style.setProperty("--season-delay", `${Math.random() * -12}s`);
+            particle.style.setProperty("--season-drift", `${Math.random() * 140 - 70}px`);
+            particle.style.setProperty("--season-rotate", `${Math.random() * 360}deg`);
+
+            fragment.appendChild(particle);
+        }
+        layer.appendChild(fragment);
+    }
+
+    // =========================================
+    // 엔딩 크레딧 옵저버 로직 부하 완화
+    // =========================================
+    function updateEndingCreditsDistance() {
+        const mask = document.querySelector(".credits-mask");
+        const roll = document.getElementById("credits-roll");
+        if (!mask || !roll) return;
+        const maskHeight = mask.getBoundingClientRect().height;
+        const rollHeight = roll.getBoundingClientRect().height;
+        mask.style.setProperty("--credits-box-height", `${maskHeight}px`);
+        mask.style.setProperty("--credits-roll-start", `${maskHeight + 30}px`);
+        mask.style.setProperty("--credits-roll-end", `${rollHeight + 50}px`);
+    }
+
+    function setEndingFinalVisible(visible) {
+        const msg = document.getElementById("credits-final-message");
+        if (!msg) return;
+        msg.setAttribute("aria-hidden", visible ? "false" : "true");
+        msg.style.opacity = visible ? "1" : "0";
+        msg.style.visibility = visible ? "visible" : "hidden";
+        msg.style.transform = visible ? "scale(1)" : "scale(0.96)";
+    }
+
+    function prepareEndingCredits() {
+        const credits = document.getElementById("ending-credits");
+        const roll = document.getElementById("credits-roll");
+        if (!credits || !roll) return false;
+
+        updateEndingCreditsDistance();
+        clearTimeout(endingFinishTimer);
+        credits.classList.add("resetting");
+        credits.classList.remove("play", "ended");
+        setEndingFinalVisible(false);
+        void roll.offsetHeight;
+        credits.classList.remove("resetting");
+        return true;
+    }
+
+    function finishEndingCredits() {
+        const credits = document.getElementById("ending-credits");
+        if (!credits) return;
+        clearTimeout(endingFinishTimer);
+        credits.classList.remove("play");
+        credits.classList.add("ended");
+        credits.dataset.creditsStarted = "ended";
+        setEndingFinalVisible(true);
+    }
+
+    function getCreditsDurationMs() {
+        const mask = document.querySelector(".credits-mask");
+        if (!mask) return 64000;
+        const durationStr = window.getComputedStyle(mask).getPropertyValue("--credits-duration") || "64s";
+        return (parseFloat(durationStr) || 64) * 1000;
+    }
+
+    function startEndingCreditsRoll() {
+        const credits = document.getElementById("ending-credits");
+        if (!credits || credits.dataset.creditsStarted === "playing" || credits.classList.contains("ended")) return;
+
+        if (prepareEndingCredits()) {
+            credits.classList.add("play");
+            credits.dataset.creditsStarted = "playing";
+            const duration = getCreditsDurationMs();
+
+            endingFinishTimer = setTimeout(() => {
+                finishEndingCredits();
+            }, duration);
+
+            if (!endingFireworkPlayed) {
+                endingFireworkPlayed = true;
+                setTimeout(() => { burstAt(document.getElementById("credits-roll"), 1); }, 800);
+            }
+        }
+    }
+
+    window.restartEndingCredits = function () {
+        const credits = document.getElementById("ending-credits");
+        if (credits) {
+            credits.dataset.creditsStarted = "none";
+            credits.classList.remove("ended");
+            prepareEndingCredits();
+            startEndingCreditsRoll();
+            showEasterToast("🎬 엔딩 크레딧을 처음부터 다시 재생할게.", 2200);
         }
     };
 
-    // =========================================
-    // 5. 슬라이드쇼 및 갤러리 라이트박스
-    // =========================================
-    function setSafeImage(img, src, fallback = DEFAULT_FALLBACK_IMAGE, alt = "") {
-        if (!img) return;
-        img.onerror = function () {
-            if (this.dataset.fallbackApplied === "true") return;
-            this.dataset.fallbackApplied = "true";
-            this.src = fallback;
-        };
-        if (alt) img.alt = alt;
-        img.dataset.fallbackApplied = "false";
-        img.src = src || fallback;
+    function initEndingCreditsObserver() {
+        const credits = document.getElementById("ending-credits");
+        if (!credits || !("IntersectionObserver" in window)) {
+            finishEndingCredits(); return;
+        }
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting && credits.dataset.creditsStarted !== "playing" && !credits.classList.contains("ended")) {
+                    startEndingCreditsRoll();
+                    observer.unobserve(credits); // 일회성 처리로 부하 제거
+                }
+            });
+        }, { threshold: window.innerWidth < 768 ? 0.15 : 0.28 });
+        observer.observe(credits);
     }
 
+    function showMiniToast(message, duration = 2400) {
+        const toast = document.getElementById("secret-toast");
+        if (!toast) return;
+        toast.innerHTML = message;
+        toast.classList.add("show");
+        clearTimeout(toast._extraFeatureTimer);
+        toast._extraFeatureTimer = setTimeout(() => { toast.classList.remove("show"); }, duration);
+    }
+
+    function initBackToTopStar() {
+        const topBtn = document.createElement("button");
+        topBtn.className = "back-to-top-star";
+        topBtn.innerHTML = '<i class="fa-solid fa-star"></i>';
+        document.body.appendChild(topBtn);
+
+        topBtn.onclick = () => { window.scrollTo({ top: 0, behavior: "smooth" }); };
+        window.addEventListener("scroll", () => {
+            topBtn.classList.toggle("show", window.scrollY > 480);
+        }, { passive: true });
+    }
+
+    function initImageSkeletons() {
+        $$(".image-wrapper img, .item-image img, #slide-image").forEach(img => {
+            const container = img.closest(".image-wrapper, .item-image, .slide-image-wrap");
+            if (!container) return;
+            container.classList.add("memory-img-skeleton");
+
+            const loaded = () => container.classList.add("memory-img-loaded");
+            if (img.complete && img.naturalWidth > 0) loaded();
+            else img.addEventListener("load", loaded, { once: true });
+        });
+    }
+
+    function initTimeGreeting() {
+        const hour = new Date().getHours();
+        let iconClass = "fa-moon";
+        let message = "밤하늘이 예쁜 시간이야. 천천히 우리의 기록장을 둘러봐.";
+
+        if (hour >= 5 && hour < 11) {
+            iconClass = "fa-sun"; message = "좋은 아침이야. 오늘도 우리의 이야기가 조용히 빛나고 있어.";
+        } else if (hour >= 11 && hour < 17) {
+            iconClass = "fa-cloud-sun"; message = "햇살이 머무는 시간이야. 오늘의 기록도 따뜻하기를.";
+        } else if (hour >= 17 && hour < 21) {
+            iconClass = "fa-star-half-stroke"; message = "노을이 내려앉는 시간이야. 우리의 순간들도 예쁘게 남아 있어.";
+        }
+
+        const greeting = document.createElement("p");
+        greeting.id = "memory-time-greeting";
+        greeting.className = "memory-time-greeting";
+        greeting.innerHTML = `<i class="fa-solid ${iconClass}"></i>${message}`;
+
+        const randomMessage = document.getElementById("random-message");
+        const visitCount = document.getElementById("visit-count");
+        const introContent = document.querySelector(".intro-content");
+
+        if (randomMessage) randomMessage.insertAdjacentElement("afterend", greeting);
+        else if (visitCount) visitCount.insertAdjacentElement("beforebegin", greeting);
+        else introContent?.appendChild(greeting);
+    }
+
+    function initUpdateNotice() {
+        if (document.getElementById("memory-update-notice")) return;
+
+        const notice = document.createElement("p");
+        notice.id = "memory-update-notice";
+        notice.className = "memory-update-notice";
+        notice.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i>${SITE_UPDATE_TEXT}`;
+
+        const timeGreeting = document.getElementById("memory-time-greeting");
+        const visitCount = document.getElementById("visit-count");
+        const introContent = document.querySelector(".intro-content");
+
+        if (timeGreeting) timeGreeting.insertAdjacentElement("afterend", notice);
+        else if (visitCount) visitCount.insertAdjacentElement("beforebegin", notice);
+        else introContent?.appendChild(notice);
+    }
+
+    function initEndingCompleteBadge() {
+        const credits = document.getElementById("ending-credits");
+        if (!credits) return;
+
+        const handleBadge = () => {
+            if (credits.classList.contains("ended")) {
+                let badge = document.getElementById("ending-complete-badge");
+                if (!badge) {
+                    badge = document.createElement("p");
+                    badge.id = "ending-complete-badge";
+                    badge.className = "ending-complete-badge";
+                    badge.innerHTML = '<i class="fa-solid fa-award"></i>엔딩까지 함께한 사람';
+                    document.querySelector(".intro-content")?.appendChild(badge);
+                }
+                badge.classList.add("show");
+                document.body.classList.add("has-ending-complete-badge");
+                safeStorage.set("memorySiteEndingCompleteBadge", "true");
+            }
+        };
+
+        new MutationObserver(handleBadge).observe(credits, { attributes: true, attributeFilter: ["class"] });
+        if (safeStorage.get("memorySiteEndingCompleteBadge") === "true") {
+            document.body.classList.add("has-ending-complete-badge");
+            setTimeout(() => {
+                let badge = document.getElementById("ending-complete-badge");
+                if (!badge) {
+                    badge = document.createElement("p");
+                    badge.id = "ending-complete-badge";
+                    badge.className = "ending-complete-badge";
+                    badge.innerHTML = '<i class="fa-solid fa-award"></i>엔딩까지 함께한 사람';
+                    document.querySelector(".intro-content")?.appendChild(badge);
+                }
+                badge.classList.add("show");
+            }, 600);
+        }
+    }
+
+    function initBgmVolumeMemory() {
+        const audio = document.getElementById("myAudio");
+        const volumeSlider = document.getElementById("bgm-volume");
+        const muteIcon = document.getElementById("bgm-mute-icon");
+        if (!audio || !volumeSlider) return;
+
+        const savedVolume = safeStorage.get("memorySiteBgmVolume");
+        if (savedVolume !== null) {
+            audio.volume = parseFloat(savedVolume);
+            volumeSlider.value = savedVolume;
+        }
+        const savedMuted = safeStorage.get("memorySiteBgmMuted");
+        if (savedMuted === "true") audio.muted = true;
+
+        function updateMuteIcon() {
+            if (!muteIcon) return;
+            muteIcon.className = audio.muted || audio.volume === 0 ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
+        }
+
+        function saveCurrentVolume() {
+            safeStorage.set("memorySiteBgmVolume", String(audio.volume));
+            safeStorage.set("memorySiteBgmMuted", audio.muted ? "true" : "false");
+            volumeSlider.classList.add("memory-volume-saved");
+            clearTimeout(volumeSlider._savedTimer);
+            volumeSlider._savedTimer = setTimeout(() => { volumeSlider.classList.remove("memory-volume-saved"); }, 650);
+            updateMuteIcon();
+        }
+
+        volumeSlider.addEventListener("input", function () {
+            audio.volume = parseFloat(volumeSlider.value);
+            audio.muted = audio.volume === 0;
+            saveCurrentVolume();
+        });
+        audio.addEventListener("volumechange", function () {
+            volumeSlider.value = String(audio.volume);
+            saveCurrentVolume();
+        });
+        updateMuteIcon();
+    }
+
+    function changeSlide(direction) { showSlide(slideIndex + direction, true); }
     function showSlide(index, resetTimer = false) {
         if (!slides.length) return;
         slideIndex = (index + slides.length) % slides.length;
@@ -298,38 +1126,46 @@
             setTimeout(() => {
                 setSafeImage(slideImage, currentSlide.src, currentSlide.fallback, currentSlide.title);
                 slideImage.classList.add("show");
-            }, 100);
+            }, 120);
         }
         if (slideTitle) slideTitle.innerText = currentSlide.title;
         if (slideDesc) slideDesc.innerText = currentSlide.desc;
 
-        $$(".slide-dot").forEach((dot, dotIndex) => dot.classList.toggle("active", dotIndex === slideIndex));
+        $$(".slide-dot").forEach((dot, dotIndex) => {
+            dot.classList.toggle("active", dotIndex === slideIndex);
+        });
         if (resetTimer) startSlideTimer();
     }
 
-    window.changeSlide = function(direction) { showSlide(slideIndex + direction, true); };
-    
     function startSlideTimer() {
         if (slidePaused || slidePauseLocked) return;
-        if (slideTimer) clearInterval(slideTimer);
-        slideTimer = setInterval(() => showSlide(slideIndex + 1), 3500);
+        clearInterval(slideTimer);
+        slideTimer = setInterval(() => { showSlide(slideIndex + 1); }, 3500);
     }
 
-    function setSlidePaused(paused, lock = false) {
-        if (lock) slidePauseLocked = paused;
-        slidePaused = paused;
-        if (paused) clearInterval(slideTimer); else if (!slidePauseLocked) startSlideTimer();
-
+    function toggleSlidePause() {
         const btn = document.getElementById("slide-pause-btn");
-        if (btn) {
-            const isPaused = slidePaused || slidePauseLocked;
-            btn.classList.toggle("paused", isPaused);
-            btn.querySelector("i").className = isPaused ? "fa-solid fa-play" : "fa-solid fa-pause";
-            btn.querySelector("span").innerText = isPaused ? "슬라이드 다시 재생" : "슬라이드 일시정지";
+        slidePauseLocked = !slidePauseLocked;
+        slidePaused = slidePauseLocked;
+
+        if (slidePauseLocked) {
+            clearInterval(slideTimer);
+            if (btn) {
+                btn.setAttribute("aria-pressed", "true");
+                btn.classList.add("paused");
+                btn.querySelector("span").innerText = "슬라이드 다시 재생";
+                btn.querySelector("i").className = "fa-solid fa-play";
+            }
+        } else {
+            startSlideTimer();
+            if (btn) {
+                btn.setAttribute("aria-pressed", "false");
+                btn.classList.remove("paused");
+                btn.querySelector("span").innerText = "슬라이드 일시정지";
+                btn.querySelector("i").className = "fa-solid fa-pause";
+            }
         }
     }
-
-    window.toggleSlidePause = () => setSlidePaused(!slidePauseLocked, true);
 
     function initSlideshow() {
         const galleryItems = $$(".gallery-item");
@@ -338,9 +1174,17 @@
 
         slides = galleryItems.map(item => {
             const img = item.querySelector("img");
+            const fallback = img?.dataset.fallback || extractFallbackFromOnError(img?.getAttribute("onerror"));
+            if (img) {
+                img.dataset.fallback = fallback;
+                img.onerror = function () {
+                    if (this.dataset.fallbackApplied === "true") return;
+                    this.dataset.fallbackApplied = "true"; this.src = fallback;
+                };
+            }
             return {
-                src: img?.getAttribute("src") || DEFAULT_FALLBACK_IMAGE,
-                fallback: img?.dataset.fallback || DEFAULT_FALLBACK_IMAGE,
+                src: img?.getAttribute("src") || fallback,
+                fallback,
                 title: item.querySelector(".item-title")?.innerText || "우리의 순간",
                 desc: item.querySelector(".item-desc")?.innerText || "소중한 기억"
             };
@@ -348,371 +1192,80 @@
 
         dotsContainer.innerHTML = "";
         const fragment = document.createDocumentFragment();
-        slides.forEach((_, index) => {
+        slides.forEach((_, idx) => {
             const dot = document.createElement("button");
-            dot.className = "slide-dot";
-            dot.addEventListener("click", () => showSlide(index, true));
+            dot.type = "button"; dot.className = "slide-dot";
+            dot.setAttribute("aria-label", `${idx + 1}번째 사진 보기`);
+            dot.addEventListener("click", () => showSlide(idx, true));
             fragment.appendChild(dot);
         });
         dotsContainer.appendChild(fragment);
 
         showSlide(0); startSlideTimer();
-
-        const slideshow = document.getElementById("slideshow");
-        slideshow?.addEventListener("mouseenter", () => { if (!slidePauseLocked) setSlidePaused(true, false); });
-        slideshow?.addEventListener("mouseleave", () => { if (!slidePauseLocked) setSlidePaused(false, false); });
+        const frame = document.querySelector(".slideshow-frame");
+        frame?.addEventListener("mouseenter", () => { if (!slidePauseLocked) { slidePaused = true; clearInterval(slideTimer); } });
+        frame?.addEventListener("mouseleave", () => { if (!slidePauseLocked) { slidePaused = false; startSlideTimer(); } });
     }
 
-    window.closeLightbox = function(event) {
-        if (event && event.target.id !== "lightbox" && !event.target.classList.contains("close-lightbox")) return;
-        document.getElementById("lightbox")?.classList.remove("show");
-        document.body.classList.remove("lightbox-open");
-    };
-
-    function initLightbox() {
-        $$(".item-image img").forEach(img => {
-            img.style.cursor = "pointer";
-            img.addEventListener("click", (e) => {
-                e.preventDefault(); e.stopPropagation();
-                const item = img.closest(".gallery-item");
-                const title = item?.querySelector(".item-title")?.innerText || "";
-                const desc = item?.querySelector(".item-desc")?.innerText || "";
-                
-                const lbImg = document.getElementById("lightbox-img");
-                setSafeImage(lbImg, img.src, DEFAULT_FALLBACK_IMAGE, title);
-                setText("lightbox-title", title);
-                setText("lightbox-desc", desc);
-                
-                document.getElementById("lightbox")?.classList.add("show");
-                document.body.classList.add("lightbox-open");
-            });
-        });
-        document.addEventListener("keydown", e => { if (e.key === "Escape") window.closeLightbox(); });
-    }
-
-    // =========================================
-    // 6. 스크롤 인터랙션 및 디데이 (GPU 최적화)
-    // =========================================
-    function updateDday() {
-        const startDate = new Date("2026-04-16T00:00:00").getTime();
-        const now = Date.now();
-        let distance = now - startDate;
-        const labelElement = document.querySelector(".d-day-label");
-
-        if (distance < 0) {
-            if (labelElement) labelElement.innerText = "우리의 이야기가 시작되기까지";
-            distance = startDate - now;
-        } else if (labelElement) {
-            labelElement.innerText = "우리의 이야기가 시작된 지";
-        }
-
-        setText("days", String(Math.floor(distance / (1000 * 60 * 60 * 24))));
-        setText("hours", String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, "0"));
-        setText("minutes", String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, "0"));
-        setText("seconds", String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, "0"));
-    }
-
-    function smoothScrollAnimation() {
-        currentScrollPercent += (targetScrollPercent - currentScrollPercent) * 0.12;
-        currentParallax += (targetParallax - currentParallax) * 0.12;
-        
-        // GPU 레이어 가속을 유도하는 3D 변형 적용으로 부드러움 극대화
-        if (scrollBar) scrollBar.style.width = `${Math.max(0, Math.min(currentScrollPercent, 100))}%`;
-        if (scrollStar) scrollStar.style.transform = `translate3d(-50%, 0, 0) rotate(${currentScrollPercent * 3.6}deg)`;
-        if (starsLayer) starsLayer.style.transform = `translate3d(0, -${currentParallax}px, 0)`;
-        
-        window.requestAnimationFrame(smoothScrollAnimation);
-    }
-
-    function initScrollEffects() {
-        let docHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-        
-        window.addEventListener("resize", () => {
-            docHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-        }, { passive: true });
-
-        window.addEventListener("scroll", () => {
-            const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
-            targetScrollPercent = (scrollTop / docHeight) * 100;
-            targetParallax = (scrollTop / docHeight) * 35;
-        }, { passive: true });
-
-        window.requestAnimationFrame(smoothScrollAnimation);
-    }
-
-    function initFadeObserver() {
-        const items = $$(".timeline-item, .gallery-item");
-        if (!("IntersectionObserver" in window)) { items.forEach(i => i.classList.add("visible")); return; }
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add("visible"); observer.unobserve(e.target); } });
-        }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
-        items.forEach(i => observer.observe(i));
-    }
-
-    // =========================================
-    // 7. 모바일 메뉴 및 전역 테마 제어
-    // =========================================
-    window.toggleMobileNav = (e) => {
-        e?.preventDefault(); e?.stopPropagation();
-        const nav = document.querySelector(".mobile-nav");
-        const icon = document.querySelector(".mobile-nav-toggle i");
-        if (!nav) return;
-        const isOpen = nav.classList.toggle("open");
-        if (icon) icon.className = isOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars";
-    };
-
-    function closeMobileNav() {
-        document.querySelector(".mobile-nav")?.classList.remove("open");
-        const icon = document.querySelector(".mobile-nav-toggle i");
-        if (icon) icon.className = "fa-solid fa-bars";
-    }
-
-    function initMobileNav() {
-        $$(".mobile-nav a").forEach(link => {
-            link.addEventListener("click", e => {
-                closeMobileNav();
-                const targetId = link.getAttribute("href")?.replace("#", "");
-                const target = targetId ? document.getElementById(targetId) : null;
-                if (!target) return;
-                e.preventDefault();
-                window.scrollTo({ top: target.getBoundingClientRect().top + window.scrollY - 70, behavior: "smooth" });
-            });
-        });
-        document.addEventListener("click", e => { if (!e.target.closest(".mobile-nav")) closeMobileNav(); });
-    }
-
-    window.toggleThemePanel = () => document.getElementById("theme-panel")?.classList.toggle("open");
-    
-    window.setSiteTheme = function(themeName) {
-        const safeTheme = SITE_THEMES.includes(themeName) ? themeName : "night";
-        document.body.classList.remove("theme-cherry", "theme-ocean", "theme-letter", "theme-our-night");
-        if (safeTheme !== "night") document.body.classList.add(`theme-${safeTheme}`);
-        safeStorage.set("memorySiteTheme", safeTheme);
-        $$(".theme-options button").forEach(b => b.classList.toggle("active", b.dataset.theme === safeTheme));
-    };
-
-    // =========================================
-    // 8. 특수 파티클 및 스켈레톤, 방문자 기능
-    // =========================================
-    let lastStarTime = 0;
-    function createStar(x, y) {
-        const now = Date.now();
-        if (now - lastStarTime < 45) return; // 모바일 터치 피로도 완화를 위한 쓰로틀링
-        lastStarTime = now;
-
-        const star = document.createElement("div");
-        star.className = "mouse-star";
-        star.style.left = `${x + (Math.random() - 0.5) * 12}px`;
-        star.style.top = `${y + (Math.random() - 0.5) * 12}px`;
-        const size = Math.random() * 5 + 6;
-        star.style.width = `${size}px`; star.style.height = `${size}px`;
-        document.body.appendChild(star);
-        setTimeout(() => star.remove(), 950);
-    }
-
-    window.launchHeartFireworks = function(event) {
-        const rect = event?.currentTarget?.getBoundingClientRect?.();
-        const startX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
-        const startY = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
-        const hearts = ["❤", "♥", "✦", "✧", "💜", "💗"];
-        const colors = ["#ffffff", "#c7a4ff", "#ff8fd8", "#ffd1ec", "#b69cff"];
-        const maxParticles = window.innerWidth < 768 ? 26 : 45; // 모바일 과부하 방지 개수 조절
-
-        const fragment = document.createDocumentFragment();
-        for (let i = 0; i < maxParticles; i++) {
-            const p = document.createElement("span");
-            p.className = "heart-particle"; p.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-            const angle = Math.random() * Math.PI * 2, dist = 80 + Math.random() * 180;
-            const dur = 900 + Math.random() * 700;
-            p.style.setProperty("--start-x", `${startX}px`);
-            p.style.setProperty("--start-y", `${startY}px`);
-            p.style.setProperty("--move-x", `${Math.cos(angle) * dist}px`);
-            p.style.setProperty("--move-y", `${Math.sin(angle) * dist - 60}px`);
-            p.style.setProperty("--heart-size", `${12 + Math.random() * 15}px`);
-            p.style.setProperty("--heart-duration", `${dur}ms`);
-            p.style.setProperty("--rotate", `${Math.random() * 480 - 240}deg`);
-            p.style.setProperty("--heart-color", colors[Math.floor(Math.random() * colors.length)]);
-            fragment.appendChild(p);
-            setTimeout(() => p.remove(), dur + 100);
-        }
-        document.body.appendChild(fragment);
-    };
-
-    function showSecretToast(msg, dur = 2800) {
-        if (!secretToast) return;
-        secretToast.innerHTML = msg; secretToast.classList.add("show");
-        clearTimeout(secretToastTimer);
-        secretToastTimer = setTimeout(() => secretToast.classList.remove("show"), dur);
-    }
-
-    function initExtraFeatures() {
-        $$(".image-wrapper img, .item-image img, #slide-image").forEach(img => {
-            const wrap = img.closest(".image-wrapper, .item-image, .slide-image-wrap");
-            if (!wrap) return;
-            wrap.classList.add("memory-img-skeleton");
-            const markLoaded = () => wrap.classList.add("memory-img-loaded");
-            if (img.complete && img.naturalWidth > 0) markLoaded(); else img.addEventListener("load", markLoaded, { once: true });
-        });
-
-        const topBtn = document.createElement("button");
-        topBtn.className = "back-to-top-star"; topBtn.innerHTML = '<i class="fa-solid fa-star"></i>';
-        document.body.appendChild(topBtn);
-        topBtn.onclick = () => window.scrollTo({ top: 0, behavior: "smooth" });
-        window.addEventListener("scroll", () => topBtn.classList.toggle("show", window.scrollY > 500), { passive: true });
-
-        const visitCount = Number(safeStorage.get("memorySiteVisitCount") || 0) + 1;
-        safeStorage.set("memorySiteVisitCount", String(visitCount));
-        const visitEl = document.getElementById("visit-count");
-        if (visitEl) visitEl.innerHTML = `<i class="fa-solid fa-star"></i> 네가 이 기록장에 찾아온 건 <strong>${visitCount}</strong>번째야.`;
-
-        const introContent = document.querySelector(".intro-content");
-        if (introContent) {
-            const hour = new Date().getHours();
-            let icon = "fa-moon", msg = "밤하늘이 예쁜 시간이야. 천천히 우리의 기록장을 둘러봐.";
-            if (hour >= 5 && hour < 11) { icon = "fa-sun"; msg = "좋은 아침이야. 오늘도 우리의 이야기가 조용히 빛나고 있어."; }
-            else if (hour >= 11 && hour < 17) { icon = "fa-cloud-sun"; msg = "햇살이 머무는 시간이야. 오늘의 기록도 따뜻하기를."; }
-            else if (hour >= 17 && hour < 21) { icon = "fa-star-half-stroke"; msg = "노을이 내려앉는 시간이야. 우리의 순간들도 예쁘게 남아 있어."; }
-            
-            const greet = document.createElement("p"); greet.className = "memory-time-greeting"; greet.innerHTML = `<i class="fa-solid ${icon}"></i>${msg}`;
-            const notice = document.createElement("p"); notice.className = "memory-update-notice"; notice.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i>${SITE_UPDATE_TEXT}`;
-            
-            if (document.getElementById("random-message")) document.getElementById("random-message").insertAdjacentElement("afterend", greet);
-            if (visitEl) visitEl.insertAdjacentElement("beforebegin", notice);
-        }
-
-        document.body.classList.add("protect-selection");
-        document.addEventListener("contextmenu", e => { if (!e.target.closest("input, textarea")) e.preventDefault(); });
-        document.addEventListener("keydown", e => {
-            if (e.key === "F12" || (e.ctrlKey && e.shiftKey && ["i", "j", "c"].includes(e.key.toLowerCase())) || (e.ctrlKey && ["u", "s"].includes(e.key.toLowerCase()))) e.preventDefault();
-        });
-    }
-
-    // =========================================
-    // 9. 이스터에그 결합 로직
-    // =========================================
-    function initEasterEggs() {
-        const title = document.querySelector(".main-title");
-        title?.addEventListener("click", () => {
-            titleClickCount++;
-            if (titleClickCount >= 5) {
-                titleClickCount = 0; document.getElementById("easter-secret")?.classList.add("revealed");
-                showSecretToast("숨겨진 별빛 기록이 열렸어!", 3200); window.launchHeartFireworks({ currentTarget: title });
-            }
-        });
-
-        window.hideEasterSecret = () => document.getElementById("easter-secret")?.classList.remove("revealed");
-
-        document.addEventListener("keydown", e => {
-            if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1) return;
-            const k = e.key.toLowerCase();
-            
-            typedSecretBuffer = (typedSecretBuffer + k).slice(-12);
-            if (typedSecretBuffer.includes("haeun") || typedSecretBuffer.includes("하은")) {
-                typedSecretBuffer = ""; showSecretToast("넌 언제나 밤하늘에서 빛나고 있는 별이야.", 3600); window.launchHeartFireworks();
-            }
-
-            if (/[0-9]/.test(k)) {
-                dateBuffer = (dateBuffer + k).slice(-4);
-                if (dateBuffer === "0416") {
-                    dateBuffer = ""; showSecretToast("0416, 그날의 별빛을 기억하고 있어.", 3600); window.launchHeartFireworks();
-                }
-            }
-        });
-
-        const heartBtn = document.querySelector(".heart-burst-btn");
-        heartBtn?.addEventListener("click", () => {
-            heartClickCount++;
-            if (heartClickCount >= 10) {
-                heartClickCount = 0; showSecretToast("마음이 가득 차서 별이 되었어!", 3600);
-                document.body.classList.add("heart-reward-active"); setTimeout(() => document.body.classList.remove("heart-reward-active"), 5000);
-            }
-        });
-
-        const startLongPress = () => { longPressTimer = setTimeout(() => { document.body.classList.add("theme-our-night", "our-night-unlocked"); showSecretToast("우리의 밤 테마가 열렸어.", 3200); window.launchHeartFireworks(); }, 850); };
-        const cancelLongPress = () => clearTimeout(longPressTimer);
-        const icon = document.querySelector(".welcome-icon");
-        icon?.addEventListener("mousedown", startLongPress); icon?.addEventListener("mouseup", cancelLongPress); icon?.addEventListener("mouseleave", cancelLongPress);
-        icon?.addEventListener("touchstart", startLongPress, { passive: true }); icon?.addEventListener("touchend", cancelLongPress, { passive: true });
-    }
-
-    // =========================================
-    // 10. 엔딩 크레딧 옵저버
-    // =========================================
-    function initEndingCredits() {
-        const credits = document.getElementById("ending-credits");
-        const roll = document.getElementById("credits-roll");
-        if (!credits || !roll) return;
-
-        function startEnding() {
-            if (credits.classList.contains("play") || credits.classList.contains("ended")) return;
-            credits.classList.add("play");
-            setTimeout(() => { credits.classList.remove("play"); credits.classList.add("ended"); }, 64000);
-            if (!endingFireworkPlayed) { endingFireworkPlayed = true; setTimeout(window.launchHeartFireworks, 900); }
-        }
-
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(e => { if (e.isIntersecting) { startEnding(); observer.unobserve(credits); } });
-        }, { threshold: 0.2 });
-        observer.observe(credits);
-
-        window.restartEndingCredits = function() {
-            credits.classList.remove("play", "ended");
-            void credits.offsetWidth;
-            startEnding(); showSecretToast("엔딩 크레딧을 다시 재생할게.", 2200);
-        };
-
-        new MutationObserver(() => {
-            if (credits.classList.contains("ended")) {
-                let badge = document.getElementById("ending-complete-badge");
-                if (!badge) {
-                    badge = document.createElement("p"); badge.id = "ending-complete-badge"; badge.className = "ending-complete-badge";
-                    badge.innerHTML = '<i class="fa-solid fa-award"></i>엔딩까지 함께한 사람';
-                    document.querySelector(".intro-content")?.appendChild(badge);
-                }
-                badge.classList.add("show"); document.body.classList.add("has-ending-complete-badge");
-                safeStorage.set(STORAGE_KEYS.endingBadge, "true");
-            }
-        }).observe(credits, { attributes: true, attributeFilter: ["class"] });
-
-        if (safeStorage.get(STORAGE_KEYS.endingBadge) === "true") document.body.classList.add("has-ending-complete-badge");
-    }
-
-    // =========================================
-    // 메인 시스템 초기화 및 실행
-    // =========================================
-    function init() {
-        initWelcomeModal();
+    function initExtraSafeFeatures() {
+        initBackToTopStar();
+        initImageSkeletons();
+        initTimeGreeting();
+        initUpdateNotice();
+        initEndingCompleteBadge();
         initBgmVolumeMemory();
-        initSlideshow();
+    }
+
+    function init() {
+        const savedVisit = safeStorage.get("memorySiteVisitCount") || "0";
+        const newVisit = parseInt(savedVisit, 10) + 1;
+        safeStorage.set("memorySiteVisitCount", String(newVisit));
+        setText("visit-count", `★ 네가 이 기록장에 찾아온 건 ${newVisit}번째야.`);
+
+        if (safeStorage.get("memorySiteWelcomeSeen") !== "true") {
+            document.getElementById("welcome-modal")?.classList.add("show");
+        }
+
         initLightbox();
+        updateDday(); setInterval(updateDday, 1000);
         initScrollEffects();
         initFadeObserver();
-        initMobileNav();
-        initExtraFeatures();
+        initSlideshow();
+        initMobileNavActiveState();
+        initMobileNavClickAndResize();
+        initThemePanel();
         initEasterEggs();
-        initEndingCredits();
-        
-        window.setSiteTheme(safeStorage.get("memorySiteTheme") || "night");
-        if (document.getElementById("random-message")) document.getElementById("random-message").innerText = loveMessages[Math.floor(Math.random() * loveMessages.length)];
-        
-        updateDday();
-        setInterval(updateDday, 1000);
-        
-        // 터치 기기(모바일)는 별빛 트레일 오버헤드를 완화하기 위해 touchmove 대신 포인터 기반 핸들러 적용
+        initSeasonalEffects();
+        initEndingCreditsObserver();
+        initExtraSafeFeatures();
+        setSiteTheme(safeStorage.get("memorySiteTheme") || "night");
+
+        if (document.getElementById("random-message")) {
+            document.getElementById("random-message").innerText = loveMessages[Math.floor(Math.random() * loveMessages.length)];
+        }
+
+        // 마우스 및 모바일 터치 별빛 생성 결합 핸들러
         const handleMove = (e) => createStar(e.clientX || e.touches?.[0]?.clientX, e.clientY || e.touches?.[0]?.clientY);
         document.addEventListener("mousemove", handleMove, { passive: true });
         document.addEventListener("touchmove", (e) => { if (e.touches.length === 1) handleMove(e); }, { passive: true });
-        
-        const pwInput = document.getElementById("letter-password");
-        pwInput?.addEventListener("keydown", e => { if (e.key === "Enter") window.checkPassword(); });
     }
+
+    // 전역 인터페이스 바인딩 복원 (HTML 매핑용)
+    window.toggleBGM = toggleBGM;
+    window.toggleMute = toggleMute;
+    window.checkPassword = checkPassword;
+    window.openReplyBox = openReplyBox;
+    window.closeReplyBox = closeReplyBox;
+    window.sendReply = sendReply;
+    window.closeLightbox = closeLightbox;
+    window.closeWelcomeModal = closeWelcomeModal;
+    window.launchHeartFireworks = launchHeartFireworks;
+    window.setSiteTheme = setSiteTheme;
+    window.toggleThemePanel = toggleThemePanel;
+    window.changeSlide = changeSlide;
+    window.toggleSlidePause = toggleSlidePause;
 
     window.addEventListener("load", hideLoadingScreen, { once: true });
     setTimeout(hideLoadingScreen, LOADING_MAX_VISIBLE_MS);
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", init);
-    } else {
-        init();
-    }
+    onReady(init);
 })();
