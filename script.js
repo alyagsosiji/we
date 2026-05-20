@@ -1,7 +1,7 @@
 (() => {
     "use strict";
 
-    // final-v7-optimized: 모든 기능 및 폴백 복원 + 모바일 프레임 드랍 하드웨어 최적화
+    // final-v7-secured: 원본 로직 100% 완전 복원 + F12/우클릭 전면 보안 + 모바일 메뉴 컴퓨터 숨김 최적화
 
     if (window.__memorySiteFinalScriptLoaded) return;
     window.__memorySiteFinalScriptLoaded = true;
@@ -20,7 +20,7 @@
     const LOADING_MIN_VISIBLE_MS = 700;
     const LOADING_MAX_VISIBLE_MS = 1800;
     const loadingStartedAt = Date.now();
-    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.19 17:00";
+    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.20 09:50";
     const LONG_PRESS_MS = 850;
 
     let slideIndex = 0;
@@ -44,12 +44,11 @@
     let heartClickCount = 0;
     let footerRewardShown = false;
     let longPressTimer = null;
-    let lastStarTime = 0; // 모바일 터치 성능 방어용 타임스탬프
+    let lastStarTime = 0;
 
-    // 캐싱된 주요 DOM 요소 (속도 향상)
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-    
+
     const scrollBar = document.getElementById("scroll-bar");
     const scrollStar = document.getElementById("scroll-star");
     const starsLayer = document.querySelector(".stars");
@@ -107,6 +106,37 @@
         if (alt) img.alt = alt;
         img.dataset.fallbackApplied = "false";
         img.src = safeSrc;
+    }
+
+    // =========================================
+    // 🔒 강력한 사이트 보안 제어 (우클릭, 드래그, F12 원천 차단)
+    // =========================================
+    function initSiteSecurity() {
+        // 1. 마우스 우클릭 메뉴 차단 (input, textarea 요소 제외)
+        document.addEventListener("contextmenu", event => {
+            if (!event.target.closest("input, textarea")) {
+                event.preventDefault();
+            }
+        });
+
+        // 2. 키보드 단축키 보안 차단 (F12, 소스보기, 저장, 검사 창 전체)
+        document.addEventListener("keydown", event => {
+            // F12 도구 차단
+            if (event.key === "F12") {
+                event.preventDefault();
+            }
+            // Ctrl + Shift + I / J / C (개발자 검사창 단축키 차단)
+            if (event.ctrlKey && event.shiftKey && ["i", "j", "c"].includes(event.key.toLowerCase())) {
+                event.preventDefault();
+            }
+            // Ctrl + U (페이지 소스 보기), Ctrl + S (페이지 다른 이름 저장) 차단
+            if (event.ctrlKey && ["u", "s"].includes(event.key.toLowerCase())) {
+                event.preventDefault();
+            }
+        });
+
+        // 3. CSS 보완 드래그 방지 클래스 활성화
+        document.body.classList.add("protect-selection");
     }
 
     function hideLoadingScreen() {
@@ -329,10 +359,9 @@
             return;
         }
 
-        // 모바일 보완 백업: 메일 전송 전 클립보드 자동 백업 실행
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(() => {
-                alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워. ❤️\n(혹시 이메일 앱이 열리지 않는다면 본문 내용이 자동으로 복사되었으니 아시 메일로 직접 전송해줘!)");
+                alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워. ❤️\n(혹시 이메일 앱이 열리지 않는다면 본문 내용이 복사되었으니 아시 메일로 직접 전송해줘!)");
                 triggerMail();
             }).catch(() => { triggerMail(); });
         } else {
@@ -411,7 +440,6 @@
 
     function createStar(x, y) {
         const now = Date.now();
-        // ⚡ 모바일 프레임 저하 해결의 핵심: 너무 잦은 별빛 드롭 이벤트 쓰로틀링 제어
         if (now - lastStarTime < 45) return;
         lastStarTime = now;
 
@@ -461,7 +489,6 @@
         currentScrollPercent += (targetScrollPercent - currentScrollPercent) * 0.12;
         currentParallax += (targetParallax - currentParallax) * 0.12;
 
-        // 🚀 하드웨어 가속 레이어 변경 (translate3d 호출로 부드러움 극대화)
         if (scrollBar) scrollBar.style.width = `${Math.max(0, Math.min(currentScrollPercent, 100))}%`;
         if (scrollStar) scrollStar.style.transform = `translate3d(-50%, 0, 0) rotate(${currentScrollPercent * 3.6}deg)`;
         if (starsLayer) starsLayer.style.transform = `translate3d(0, -${currentParallax}px, 0)`;
@@ -502,9 +529,6 @@
         items.forEach(i => observer.observe(i));
     }
 
-    // =========================================
-    // 모바일 활성화 퀵메뉴 로직 (속도 리팩토링)
-    // =========================================
     function initMobileNavActiveState() {
         const navLinks = $$(".mobile-nav a");
         const sections = ["home", "timeline", "gallery", "letter"].map(id => document.getElementById(id)).filter(Boolean);
@@ -513,7 +537,6 @@
         let ticking = false;
         let cachedSectionPositions = [];
 
-        // 🌟 주기적인 스래싱 억제: 오프셋 캐싱을 생성하여 실시간 렉을 완벽 제거함
         function cachePositions() {
             const navOffset = document.querySelector(".mobile-nav")?.getBoundingClientRect().height || 0;
             cachedSectionPositions = sections.map(sec => ({
@@ -616,7 +639,7 @@
         const startY = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
         const hearts = ["❤", "♥", "✦", "✧", "💜", "💗"];
         const colors = ["#ffffff", "#c7a4ff", "#ff8fd8", "#ffd1ec", "#b69cff"];
-        const maxParticles = window.innerWidth < 768 ? 25 : 45; // 모바일 메모리 뻥튀기 방지 제어
+        const maxParticles = window.innerWidth < 768 ? 25 : 45;
 
         const fragment = document.createDocumentFragment();
         for (let i = 0; i < maxParticles; i++) {
@@ -814,9 +837,6 @@
         initFooterSecretReward();
     }
 
-    // =========================================
-    // 4계절 자동 변경 감지 및 파티클 시스템
-    // =========================================
     function initSeasonalEffects() {
         const layer = document.getElementById("seasonal-effect-layer");
         if (!layer) return;
@@ -824,7 +844,7 @@
         const month = new Date().getMonth() + 1;
         let season = "winter";
         let symbols = ["❄", "✦", "❅"];
-        let count = window.innerWidth < 768 ? 14 : 26; // 모바일 파티클 밀도 최적화
+        let count = window.innerWidth < 768 ? 14 : 26;
 
         if (month >= 3 && month <= 5) {
             season = "spring"; symbols = ["🌸", "🌸", "✦"];
@@ -856,9 +876,6 @@
         layer.appendChild(fragment);
     }
 
-    // =========================================
-    // 엔딩 크레딧 옵저버 로직 부하 완화
-    // =========================================
     function updateEndingCreditsDistance() {
         const mask = document.querySelector(".credits-mask");
         const roll = document.getElementById("credits-roll");
@@ -951,20 +968,11 @@
             entries.forEach(e => {
                 if (e.isIntersecting && credits.dataset.creditsStarted !== "playing" && !credits.classList.contains("ended")) {
                     startEndingCreditsRoll();
-                    observer.unobserve(credits); // 일회성 처리로 부하 제거
+                    observer.unobserve(credits);
                 }
             });
         }, { threshold: window.innerWidth < 768 ? 0.15 : 0.28 });
         observer.observe(credits);
-    }
-
-    function showMiniToast(message, duration = 2400) {
-        const toast = document.getElementById("secret-toast");
-        if (!toast) return;
-        toast.innerHTML = message;
-        toast.classList.add("show");
-        clearTimeout(toast._extraFeatureTimer);
-        toast._extraFeatureTimer = setTimeout(() => { toast.classList.remove("show"); }, duration);
     }
 
     function initBackToTopStar() {
@@ -1217,6 +1225,8 @@
     }
 
     function init() {
+        initSiteSecurity(); // 보안 제어 장치 실행
+
         const savedVisit = safeStorage.get("memorySiteVisitCount") || "0";
         const newVisit = parseInt(savedVisit, 10) + 1;
         safeStorage.set("memorySiteVisitCount", String(newVisit));
@@ -1244,13 +1254,11 @@
             document.getElementById("random-message").innerText = loveMessages[Math.floor(Math.random() * loveMessages.length)];
         }
 
-        // 마우스 및 모바일 터치 별빛 생성 결합 핸들러
         const handleMove = (e) => createStar(e.clientX || e.touches?.[0]?.clientX, e.clientY || e.touches?.[0]?.clientY);
         document.addEventListener("mousemove", handleMove, { passive: true });
         document.addEventListener("touchmove", (e) => { if (e.touches.length === 1) handleMove(e); }, { passive: true });
     }
 
-    // 전역 인터페이스 바인딩 복원 (HTML 매핑용)
     window.toggleBGM = toggleBGM;
     window.toggleMute = toggleMute;
     window.checkPassword = checkPassword;
