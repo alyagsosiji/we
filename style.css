@@ -1,6 +1,6 @@
 @charset "UTF-8";
 
-/* final-v6-secured: 보안 클래스 보강 및 데스크탑 모바일 메뉴 노출 버그 패치본 */
+/* final-v7-secured: 레이아웃 고정 및 PC 환경 모바일 퀵메뉴 노출 방지 패치 완료본 */
 
 /* =========================================
    1. 기본 리셋 및 폰트 설정
@@ -36,7 +36,7 @@ img {
     display: block;
 }
 
-/* 🔒 보안: 사이트 텍스트 복사 및 드래그 전면 방지 */
+/* 🔒 보안 패치: 드래그 선택 차단 레이어 */
 body.protect-selection {
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -115,7 +115,7 @@ body.protect-selection textarea {
     100% { transform: translate3d(-1000px, 0, 0); opacity: 0; }
 }
 
-/* 계절 파티클 */
+/* 계절별 입체 파티클 제어부 */
 .seasonal-effect-layer {
     position: fixed;
     inset: 0;
@@ -334,7 +334,7 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
 .image-wrapper img, .item-image img, #slide-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
 .timeline-card:hover .image-wrapper img, .gallery-item:hover .item-image img { transform: scale(1.04); }
 
-/* 이미지 로딩 보완 스켈레톤 단락 */
+/* 이미지 스켈레톤 홀더 */
 .memory-img-skeleton { position: relative; overflow: hidden; background: rgba(25, 20, 45, 0.55); }
 .memory-img-skeleton::before {
     content: ''; position: absolute; inset: 0; z-index: 3;
@@ -418,7 +418,7 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
 .letter-signature { font-size: 1.2rem; font-weight: bold; text-align: right; }
 @keyframes openPaper { from { opacity: 0; transform: scale(0.9) rotate(0deg); } to { opacity: 1; transform: scale(1) rotate(-1deg); } }
 
-/* 답장 쓰기 창 */
+/* 답장 박스 */
 .reply-btn { display: none; margin-top: 40px; align-items: center; justify-content: center; gap: 8px; padding: 12px 30px; background: linear-gradient(45deg, #c7a4ff, #8263cf); border-radius: 30px; color: #1a1a2e; font-weight: bold; cursor: pointer; transition: 0.3s; border: none; }
 .reply-btn.is-visible { display: inline-flex; }
 .reply-modal { display: none; position: fixed; inset: 0; z-index: 10001; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); justify-content: center; align-items: center; padding: 24px; opacity: 0; transition: opacity 0.4s ease; }
@@ -512,7 +512,7 @@ body.lightbox-open { overflow: hidden; }
 .heart-burst-btn { display: block; margin: 18px auto 0; padding: 12px 26px; border-radius: 999px; background: linear-gradient(45deg, #c7a4ff, #ff8fd8); font-weight: bold; cursor: pointer; border: none; color: #100b26; }
 
 /* =========================================
-   9. 오버레이 로딩 및 시스템 스크린 (글자 깨짐 방지 장치 완비)
+   9. 오버레이 로딩 및 시스템 스크린 (글자 깨짐 방지 단락)
 ========================================= */
 .loading-screen { 
     position: fixed; 
@@ -526,7 +526,7 @@ body.lightbox-open { overflow: hidden; }
     transition: opacity 0.58s ease, visibility 0.58s ease; 
     gap: 22px; 
     text-align: center; 
-    /* ✨ 외부 구글 웹폰트 연동 전 출렁거림(FOUT) 방지를 위해 시스템 탑재 폰트 고정 선언 */
+    /* 폰트 미로드 시 크기 튕김 현상을 없애기 위해 기본 시스템 안심 글꼴 선언 */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", dotum, sans-serif;
 }
 .loading-screen.hide { opacity: 0; visibility: hidden; }
@@ -621,7 +621,7 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
     position: relative; z-index: 2; padding: 110px 20px 160px; text-align: center; overflow: visible;
 }
 
-/* 🖥️ [해결책] 컴퓨터 데스크톱 기본 화면에서는 모바일 빠른이동 메뉴바를 완벽 차단(숨김) */
+/* 🖥️ [해결책] 컴퓨터 모니터(데스크톱 해상도)에서는 하단 플로팅 모바일 네비게이션을 기본적으로 완전히 숨김 */
 .mobile-nav {
     display: none;
 }
@@ -664,7 +664,7 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
     100% { transform: scale(1.04); text-shadow: 0 0 25px rgba(199, 164, 255, 0.9), 0 0 10px #fff; }
 }
 
-/* 📱 768px 이하 모바일 디바이스 가독 레이아웃 반응형 */
+/* 📱 768px 이하 반응형 해상도 분기 구역 */
 @media screen and (max-width: 768px) {
     body { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
     .intro-section { min-height: 100svh; padding: 80px 18px 145px; }
@@ -686,7 +686,7 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
     .credits-roll { padding: 44px 18px 130px; }
     .credits-final-message h3 { font-size: clamp(1.55rem, 8vw, 2.4rem); letter-spacing: 2px; }
     
-    /* 📱 모바일 브라우저 한정으로 플로팅 단 단락 활성화 정렬 */
+    /* 📱 스마트폰 모바일 뷰포트 상태에서만 퀵 이동 메뉴바 복원 및 가시화 */
     .mobile-nav {
         display: flex;
         position: fixed; left: 16px; bottom: calc(142px + env(safe-area-inset-bottom));
@@ -711,13 +711,14 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
     .theme-options { flex-direction: column; }
 }
 
-body.has-ending-complete-badge .intro-section { padding-bottom: 210px; }
-body.has-ending-complete-badge .intro-content { transform: translate3d(0, -18px, 0); }
+/* 감상 배지 연동 영역 간격 보완 */
+body.has-ending-complete-badge .intro-section { padding-bottom: 210px !important; }
+body.has-ending-complete-badge .intro-content { transform: translateY(-18px); }
 @media screen and (max-width: 768px) {
-    body.has-ending-complete-badge .intro-section { padding-bottom: 230px; }
-    body.has-ending-complete-badge .intro-content { transform: translate3d(0, -24px, 0); }
+    body.has-ending-complete-badge .intro-section { padding-bottom: 230px !important; }
+    body.has-ending-complete-badge .intro-content { transform: translateY(-24px); }
+    body.has-ending-complete-badge .scroll-down { bottom: max(34px, env(safe-area-inset-bottom)) !important; }
 }
-
 @media screen and (max-height: 760px) {
-    body.has-ending-complete-badge .intro-section { min-height: auto; padding-top: 80px; padding-bottom: 240px; }
+    body.has-ending-complete-badge .intro-section { min-height: auto !important; padding-top: 80px !important; padding-bottom: 240px !important; }
 }
