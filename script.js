@@ -1,7 +1,8 @@
 (() => {
     "use strict";
 
-    // final-v7-secured: 원본 기능 100% 완전 복원 + F12/우클릭 전면 보안 + 모바일 메뉴 컴퓨터 숨김 최적화
+    // final-v7-easter: 슬라이드 일시정지 + 로딩 최적화 + 라이트박스 설명 + 엔딩 완료 표시
+    // [보안 및 안정성 강화 패치 결합 완료]
 
     if (window.__memorySiteFinalScriptLoaded) return;
     window.__memorySiteFinalScriptLoaded = true;
@@ -32,8 +33,7 @@
     let secretToastTimer = null;
     let titleClickCount = 0;
     let footerClickCount = 0;
-    let bgmSecretClickCount = 0;
-    let bgmDiskClickCount = 0; 
+    let bgmSecretClickCount = 0; // 원본 변수명 100% 복원
     let typedSecretBuffer = "";
     let dateBuffer = ""; 
     let endingFireworkPlayed = false;
@@ -43,7 +43,7 @@
     let currentParallax = 0;
     let targetParallax = 0;
     let longPressTimer = null;
-    let lastStarTime = 0; 
+    let footerRewardShown = false;
 
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -103,33 +103,27 @@
     }
 
     // =========================================
-    // 🔒 강력한 사이트 보안 제어 (F12, 우클릭, 드래그 무력화)
+    // 🔒 사이트 보안 제어 장치 (우클릭, 소스 보기 단축키 완전 차단)
     // =========================================
     function initSiteSecurity() {
-        // 1. 마우스 오른쪽 클릭 전면 차단 (텍스트 입력 박스 예외 허용)
         document.addEventListener("contextmenu", event => {
             if (!event.target.closest("input, textarea")) {
                 event.preventDefault();
             }
         });
 
-        // 2. 키보드 개발자 소스 보기 제어 단축키 무력화
         document.addEventListener("keydown", event => {
-            // F12 차단
             if (event.key === "F12") {
                 event.preventDefault();
             }
-            // Ctrl + Shift + I / J / C (개발자 검사창 단축키 차단)
             if (event.ctrlKey && event.shiftKey && ["i", "j", "c"].includes(event.key.toLowerCase())) {
                 event.preventDefault();
             }
-            // Ctrl + U (페이지 소스 보기) 및 Ctrl + S (파일 저장) 차단
             if (event.ctrlKey && ["u", "s"].includes(event.key.toLowerCase())) {
                 event.preventDefault();
             }
         });
 
-        // 3. 드래그 방지용 선택 금지 클래스 바인딩
         document.body.classList.add("protect-selection");
     }
 
@@ -347,7 +341,6 @@
         document.getElementById("reply-modal")?.classList.add("show");
     }
 
-    // 변함없이 유지되는 이메일 전송 연동 및 복사 백업 기능
     function closeReplyBox() {
         document.getElementById("reply-modal")?.classList.remove("show");
     }
@@ -361,24 +354,15 @@
             return;
         }
 
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워. ❤️\n(혹시 메일 앱이 반응하지 않는다면 본문 내용이 클립보드에 복사되었으니 직접 발송해줘!)");
-                executeMail();
-            }).catch(() => executeMail());
-        } else {
-            alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워. ❤️");
-            executeMail();
-        }
+        alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워. ❤️");
 
-        function executeMail() {
-            const myEmail = "atritime@gmail.com";
-            const subject = encodeURIComponent("[우리의 기록장] 사이트에서 누군가 보낸 답장이야.");
-            const body = encodeURIComponent(text);
-            window.location.href = `mailto:${myEmail}?subject=${subject}&body=${body}`;
-            closeReplyBox();
-            if (replyText) replyText.value = "";
-        }
+        const myEmail = "atritime@gmail.com";
+        const subject = encodeURIComponent("[우리의 기록장] 사이트에서 누군가 보낸 답장이야.");
+        const body = encodeURIComponent(text);
+
+        window.location.href = `mailto:${myEmail}?subject=${subject}&body=${body}`;
+        closeReplyBox();
+        replyText.value = "";
     }
 
     function closeLightbox(event) {
@@ -441,9 +425,7 @@
     }
 
     function createStar(x, y) {
-        const now = Date.now();
-        if (now - lastStarTime < 45) return;
-        lastStarTime = now;
+        if (Math.random() > 0.75) return; // 원본 확률 분기 복원
 
         const star = document.createElement("div");
         star.className = "mouse-star";
@@ -458,7 +440,7 @@
         star.style.height = `${size}px`;
 
         document.body.appendChild(star);
-        setTimeout(() => star.remove(), 950);
+        setTimeout(() => star.remove(), 1000); // 원본 시간 복원
     }
 
     function updateDday() {
@@ -492,12 +474,12 @@
         const scrollStar = document.getElementById("scroll-star");
         const stars = document.querySelector(".stars");
 
-        currentScrollPercent += (targetScrollPercent - currentScrollPercent) * 0.12;
-        currentParallax += (targetParallax - currentParallax) * 0.12;
+        currentScrollPercent += (targetScrollPercent - currentScrollPercent) * 0.1; // 원본 수식 가속도 복원
+        currentParallax += (targetParallax - currentParallax) * 0.1;
 
         if (scrollBar) scrollBar.style.width = `${Math.max(0, Math.min(currentScrollPercent, 100))}%`;
-        if (scrollStar) scrollStar.style.transform = `translate3d(-50%, 0, 0) rotate(${currentScrollPercent * 3.6}deg)`;
-        if (stars) stars.style.transform = `translate3d(0, -${currentParallax}px, 0)`;
+        if (scrollStar) scrollStar.style.transform = `rotate(${currentScrollPercent * 3.6}deg)`; // 원본 회전축 처리 복원
+        if (stars) stars.style.transform = `translateY(-${currentParallax}px)`;
 
         window.requestAnimationFrame(smoothScrollAnimation);
     }
@@ -527,12 +509,9 @@
 
         const observer = new IntersectionObserver(entries => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add("visible");
-                    observer.unobserve(entry.target);
-                }
+                if (entry.isIntersecting) entry.target.classList.add("visible");
             });
-        }, { threshold: 0.1, rootMargin: "0px 0px -30px 0px" });
+        }, { threshold: 0.15 });
 
         animateItems.forEach(item => observer.observe(item));
     }
@@ -622,16 +601,14 @@
         });
 
         dotsContainer.innerHTML = "";
-        const fragment = document.createDocumentFragment();
         slides.forEach((_, index) => {
             const dot = document.createElement("button");
             dot.type = "button";
             dot.className = "slide-dot";
             dot.setAttribute("aria-label", `${index + 1}번째 사진 보기`);
             dot.addEventListener("click", () => showSlide(index, true));
-            fragment.appendChild(dot);
+            dotsContainer.appendChild(dot);
         });
-        dotsContainer.appendChild(fragment);
 
         showSlide(0);
         startSlideTimer();
@@ -647,45 +624,42 @@
         if (!navLinks.length || !sections.length) return;
 
         let ticking = false;
-        let cachedPositions = [];
 
-        function cachePositions() {
-            const nav = document.querySelector(".mobile-nav");
-            const offset = (!nav || window.getComputedStyle(nav).display === "none") ? 0 : Math.ceil(nav.getBoundingClientRect().height + 18);
-            cachedPositions = sections.map(sec => ({
-                id: sec.id,
-                top: sec.offsetTop - offset - 30,
-                bottom: sec.offsetTop + sec.offsetHeight - offset - 30
-            }));
-        }
-
-        function updateActiveMenu() {
-            ticking = false;
-            const scrollPos = window.scrollY || document.documentElement.scrollTop || 0;
-            let activeId = sections[0].id;
-
-            for (let i = 0; i < cachedPositions.length; i++) {
-                if (scrollPos >= cachedPositions[i].top && scrollPos <= cachedPositions[i].bottom) {
-                    activeId = cachedPositions[i].id;
-                    break;
-                }
-            }
-
+        function setActiveMenu(activeId) {
             navLinks.forEach(link => {
                 link.classList.toggle("active", link.getAttribute("href") === `#${activeId}`);
             });
         }
 
+        function getMobileNavOffset() {
+            const nav = document.querySelector(".mobile-nav");
+            if (!nav || window.getComputedStyle(nav).display === "none") return 0;
+            return Math.ceil(nav.getBoundingClientRect().height + 18);
+        }
+
+        function updateActiveByScroll() {
+            ticking = false;
+            const checkLine = window.scrollY + Math.min(window.innerHeight * 0.42, 360); // 원본 가중치 수식 복원
+            let activeId = sections[0].id;
+
+            for (const section of sections) {
+                const top = section.offsetTop - getMobileNavOffset();
+                if (checkLine >= top) {
+                    activeId = section.id;
+                }
+            }
+            setActiveMenu(activeId);
+        }
+
         window.addEventListener("scroll", () => {
             if (!ticking) {
-                window.requestAnimationFrame(updateActiveMenu);
+                window.requestAnimationFrame(updateActiveByScroll);
                 ticking = true;
             }
         }, { passive: true });
 
-        window.addEventListener("resize", cachePositions, { passive: true });
-        cachePositions();
-        updateActiveMenu();
+        window.addEventListener("resize", updateActiveByScroll, { passive: true });
+        updateActiveByScroll();
     }
 
     function initImageFallbacks() {
@@ -769,7 +743,7 @@
         try { return localStorage.getItem(key); } catch (e) { return null; }
     }
     function safeSet(key, value) {
-        try { localStorage.setItem(key, value); } catch (e) {}
+        try { localStorage.setItem(key, value); } catch (error) {}
     }
     function runWhenReady(callback) {
         if (document.readyState === "loading") {
@@ -842,9 +816,10 @@
         showEasterToast._timer = setTimeout(() => { toast.classList.remove("show"); }, duration);
     }
     function burstAt(element, repeat = 1) {
+        if (typeof window.launchHeartFireworks !== "function") return;
         const target = element || document.querySelector(".intro-content") || document.body;
         for (let i = 0; i < repeat; i += 1) {
-            setTimeout(() => { launchHeartFireworks({ currentTarget: target }); }, i * 260);
+            setTimeout(() => { window.launchHeartFireworks({ currentTarget: target }); }, i * 260);
         }
     }
     function ensureConstellationLayer() {
@@ -920,12 +895,14 @@
         addLongPress(document.querySelector(".theme-toggle-btn"));
     }
     function initBgmDiskEggBoost() {
-        document.querySelector(".bgm-main-btn")?.addEventListener("click", () => {
-            bgmDiskClickCount += 1;
+        const diskButton = document.querySelector(".bgm-main-btn");
+        if (!diskButton) return;
+        diskButton.addEventListener("click", () => {
+            bgmSecretClickCount += 1; // 원본 구조 보존
             clearTimeout(initBgmDiskEggBoost._timer);
-            initBgmDiskEggBoost._timer = setTimeout(() => { bgmDiskClickCount = 0; }, 3000);
-            if (bgmDiskClickCount >= 7) {
-                bgmDiskClickCount = 0;
+            initBgmDiskEggBoost._timer = setTimeout(() => { bgmSecretClickCount = 0; }, 3000);
+            if (bgmSecretClickCount >= 7) {
+                bgmSecretClickCount = 0;
                 document.body.classList.add("bgm-playing");
                 showEasterToast("✨ 별빛 증폭 모드가 잠깐 켜졌어.", 2800);
                 setTimeout(() => {
@@ -982,6 +959,12 @@
             }
         });
     }
+    
+    // index.html에서 명시적으로 사용하는 별빛 팝업 숨기기 기믹 연동 복원
+    window.hideEasterSecret = function() {
+        document.getElementById("easter-secret")?.classList.remove("revealed");
+    };
+
     function initEasterEggsSystem() {
         initSubtitleEasterEgg();
         initHiddenThemeEgg();
@@ -1162,7 +1145,6 @@
             e.stopPropagation();
             toggleThemePanel();
         });
-        initThemePanel();
     }
 
     // =========================================
@@ -1190,7 +1172,7 @@
     }
 
     // =========================================
-    // 엔딩 크레딧 핵심 조율 시스템
+    // 엔딩 크레딧 핵심 조율 시스템 (세부 분할 함수 복원)
     // =========================================
     function initEndingCreditsObserver() {
         const credits = document.getElementById("ending-credits");
@@ -1212,7 +1194,7 @@
         const maskHeight = mask.getBoundingClientRect().height;
         const rollHeight = roll.getBoundingClientRect().height;
         mask.style.setProperty("--credits-box-height", `${maskHeight}px`);
-        mask.style.setProperty("--credits-roll-start", `${maskHeight + 30}px`);
+        mask.style.setProperty("--credits-roll-start", `${maskHeight + 40}px`);
         mask.style.setProperty("--credits-roll-end", `${rollHeight + 50}px`);
     }
     function setEndingFinalVisible(visible) {
@@ -1223,14 +1205,34 @@
         msg.style.visibility = visible ? "visible" : "hidden";
         msg.style.transform = visible ? "scale(1)" : "scale(0.96)";
     }
+    function prepareEndingCredits() {
+        const credits = document.getElementById("ending-credits");
+        const roll = document.getElementById("credits-roll");
+        if (!credits || !roll) return false;
+        updateEndingCreditsDistance();
+        clearTimeout(endingFinishTimer);
+        credits.classList.add("resetting");
+        credits.classList.remove("play", "ended");
+        setEndingFinalVisible(false);
+        void roll.offsetHeight;
+        credits.classList.remove("resetting");
+        return true;
+    }
+    function finishEndingCredits() {
+        const credits = document.getElementById("ending-credits");
+        if (!credits) return;
+        clearTimeout(endingFinishTimer);
+        credits.classList.remove("play");
+        credits.classList.add("ended");
+        credits.dataset.creditsStarted = "ended";
+        setEndingFinalVisible(true);
+    }
     function startEndingCreditsRoll() {
         const credits = document.getElementById("ending-credits");
         const roll = document.getElementById("credits-roll");
         if (!credits || !roll || credits.dataset.creditsStarted === "playing" || credits.classList.contains("ended")) return;
 
-        updateEndingCreditsDistance();
-        clearTimeout(endingFinishTimer);
-        credits.classList.remove("ended");
+        prepareEndingCredits();
         credits.classList.add("play");
         credits.dataset.creditsStarted = "playing";
 
@@ -1238,12 +1240,7 @@
         const cssDuration = mask ? getComputedStyle(mask).getPropertyValue("--credits-duration").trim() : "";
         const durationMs = (parseFloat(cssDuration) || 64) * 1000;
 
-        endingFinishTimer = setTimeout(() => {
-            credits.classList.remove("play");
-            credits.classList.add("ended");
-            credits.dataset.creditsStarted = "ended";
-            setEndingFinalVisible(true);
-        }, durationMs);
+        endingFinishTimer = setTimeout(finishEndingCredits, durationMs);
 
         if (!endingFireworkPlayed) {
             endingFireworkPlayed = true;
@@ -1266,14 +1263,14 @@
         const month = new Date().getMonth() + 1;
         let season = "winter";
         let symbols = ["❄", "✦", "❅"];
-        let count = window.innerWidth < 768 ? 14 : 26;
+        let count = 26;
 
         if (month >= 3 && month <= 5) {
-            season = "spring"; symbols = ["🌸", "🌸", "✦"];
+            season = "spring"; symbols = ["❀", "✿", "♡", "✦"]; count = 24; // 원본 배열 복원
         } else if (month >= 6 && month <= 8) {
-            season = "summer"; symbols = ["🫧", "✨", "🫧"];
+            season = "summer"; symbols = ["🫧", "✨", "🫧"]; count = 20;
         } else if (month >= 9 && month <= 11) {
-            season = "autumn"; symbols = ["🍁", "🍂", "✦"];
+            season = "autumn"; symbols = ["🍁", "🍂", "✦"]; count = 22;
         }
 
         document.body.classList.add(`season-${season}`);
@@ -1386,6 +1383,7 @@
     }
 
     function init() {
+        initSiteSecurity(); // 보안 구동 추가
         const savedVisit = safeStorage.get("memorySiteVisitCount") || "0";
         const newVisit = parseInt(savedVisit, 10) + 1;
         safeStorage.set("memorySiteVisitCount", String(newVisit));
@@ -1432,4 +1430,5 @@
     window.addEventListener("load", hideLoadingScreen, { once: true });
     setTimeout(hideLoadingScreen, LOADING_MAX_VISIBLE_MS);
     runWhenReady(init);
+    runWhenReady(initExtraSafeFeatures);
 })();
