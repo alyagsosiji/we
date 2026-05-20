@@ -3623,3 +3623,161 @@ body.has-ending-complete-badge .intro-content {
         margin-top: 42px !important;
     }
 }
+/* ==========================================================================
+   📱 모바일 완벽 최적화 레이아웃 (기존 기능 및 내용 100% 보존)
+   ========================================================================== */
+
+/* 스마트폰 및 태블릿 환경 (화면 폭 768px 이하) 대응 */
+@media screen and (max-width: 768px) {
+    body {
+        /* 가로 스크롤 및 모바일 좌우 흔들림 방지 */
+        overflow-x: hidden;
+        width: 100%;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    /* 한글 단어 단위 줄바꿈 설정: 로맨틱한 문구들이 글자 단위로 어색하게 잘리는 현상 방지 */
+    h1, h2, h3, p, span, a, 
+    .intro-content, .memory-update-notice, .love-message-box {
+        word-break: keep-all !important;
+        overflow-wrap: break-word !important;
+    }
+
+    /* 1. 인트로 및 상단 타이틀 스케일링 */
+    .intro-section {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+
+    .intro-content h1 {
+        font-size: calc(1.6rem + 2vw) !important; /* 화면 크기에 비례해 제목 크기 유연화 */
+        line-height: 1.4 !important;
+        letter-spacing: -0.5px;
+    }
+
+    /* 2. 모바일 하단 네비게이션 바 (노치 및 기기별 세이프 에리어 완벽 대응) */
+    .mobile-nav {
+        /* 아이폰 홈바 등 하단 여백이 필요한 최신 기기 대응 */
+        padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
+        background: rgba(7, 7, 20, 0.94) !important; /* 배경 투명도 최적화 */
+        backdrop-filter: blur(12px); /* 오로라 배경과 자연스럽게 겹치도록 블러 처리 */
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        z-index: 9999;
+    }
+
+    .mobile-nav-links {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        width: 100%;
+    }
+
+    .mobile-nav-links a {
+        min-height: 48px; /* 모바일 터치 오류 방지를 위한 최소 영역 확보 */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem !important;
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+    }
+
+    .mobile-nav-links a i {
+        font-size: 1.25rem !important;
+        margin-bottom: 3px;
+    }
+
+    /* 3. 기록(타임라인) 및 사진(갤러리) 그리드 일렬 정렬 */
+    .timeline-container, 
+    .gallery-grid, 
+    .grid-layout,
+    .content-wrapper {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 24px !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .timeline-item, 
+    .gallery-item, 
+    .card {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* 4. 이미지 슬라이더 및 사진 반응형 비율 유지 */
+    .slide-container, 
+    .slider-wrapper,
+    .main-slider {
+        width: 100% !important;
+        height: auto !important;
+        aspect-ratio: 4 / 3 !important; /* 모바일 화면에 가장 예쁜 4:3 황금비율 고정 */
+    }
+
+    .slide-container img,
+    .gallery-item img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: cover;
+    }
+
+    /* 5. 라이트박스(사진 확대) 터치 및 레이아웃 최적화 */
+    .lightbox-content {
+        max-width: 92% !important;
+        max-height: 70vh !important;
+        object-fit: contain;
+        border-radius: 8px;
+    }
+
+    .close-lightbox {
+        /* 상단 노치 영역 디자인 잘림 방지 */
+        top: max(16px, env(safe-area-inset-top)) !important;
+        right: 20px !important;
+        font-size: 2.8rem !important;
+        padding: 10px; /* 터치 영역 확장 */
+        cursor: pointer;
+    }
+    
+    .lightbox-caption {
+        font-size: 0.9rem !important;
+        padding: 12px 20px !important;
+        width: 92%;
+    }
+
+    /* 6. 편지지 영역 및 하단 카피라이트 정돈 */
+    .letter-section {
+        padding: 40px 20px !important;
+        margin: 20px 16px !important;
+    }
+
+    .footer-section {
+        padding: 40px 16px calc(70px + env(safe-area-inset-bottom)) !important; /* 하단바 두께만큼 여백 확보 */
+    }
+
+    .copyright {
+        font-size: 0.75rem !important;
+        line-height: 1.6;
+        opacity: 0.65;
+    }
+}
+
+/* 초소형 스마트폰 (화면 폭 360px 이하) 추가 보정 */
+@media screen and (max-width: 360px) {
+    .intro-content h1 {
+        font-size: 1.6rem !important;
+    }
+
+    .mobile-nav-links span {
+        font-size: 0.7rem !important; /* 좁은 화면에서 하단 글씨 겹침 방지 */
+    }
+}
