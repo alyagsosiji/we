@@ -3624,144 +3624,145 @@ body.has-ending-complete-badge .intro-content {
     }
 }
 /* ==========================================================================
-   📱 [최종본] 모바일 하단 가려짐 해결 및 120Hz 실크 스크롤 최적화 (내용/기능 100% 보존)
+   📱 [최종 통합본] 모바일 우측 상단 최적화 버튼 기능 및 부드러운 스크롤 구현
    ========================================================================== */
 
-/* 1. 모바일 순정 관성 스크롤 강제 활성화 및 끊김 물리 효과 완벽 박멸 */
+/* 1. 모바일 브라우저 자체의 부드러운 관성 스크롤 복원 및 터치감 최적화 */
 html, body {
     overflow-x: hidden !important;
     overflow-y: auto !important;
     width: 100% !important;
     max-width: 100% !important;
-    /* 브라우저 자체의 부드러운 스크롤 스레드를 방해하는 요소를 초기화 */
     overscroll-behavior-y: auto !important;
     touch-action: auto !important;
     -webkit-overflow-scrolling: touch !important;
 }
 
-/* 2. 터치 시 발생하는 모든 불필요한 투박한 사각형 테두리/잔상 제거 */
+/* 터치 시 발생하는 브라우저 기본 투박한 사각형 음영/잔상 제거 */
 * {
     -webkit-tap-highlight-color: transparent !important;
     outline: none !important;
 }
 
-/* 3. 모바일 렉의 주범인 그래픽 연산(Blur) 제거 후, 고급스러운 다크톤 배경으로 대체 */
-.timeline-card,
-.gallery-item,
-.d-day-counter,
-.welcome-box,
-.letter-lock-container,
-.maintenance-card,
-#bgm-container.bgm-player {
-    /* 모바일 칩셋을 마비시키는 실시간 블러 연산을 꺼서 끊김 현상을 100% 해결합니다. */
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    /* 블러가 없어도 감성적이고 또렷하게 글씨가 보이도록 투명도가 가미된 짙은 배경 적용 */
-    background: rgba(15, 12, 33, 0.97) !important;
-}
-
-/* 4. 아래가 가려지는 현상 원천 차단 (바닥 스크롤 공간을 강제로 대폭 확장) */
-body {
-    /* 하단바 뒤로 콘텐츠가 절대 파묻히지 않도록 전체 마진을 넉넉하게 확보 */
-    padding-bottom: calc(180px + env(safe-area-inset-bottom)) !important;
-}
-
-main {
-    overflow: visible !important;
+/* 2. 🔥 [하단 가려짐 절대 방지] 물리적인 공백 레이아웃을 맨 밑바닥에 강제 주입 */
+body::after {
+    content: "" !important;
+    display: block !important;
+    clear: both !important;
+    height: calc(150px + env(safe-area-inset-bottom)) !important; /* 하단바 두께만큼 강제 스크롤 공간을 연장하여 가려짐을 원천 차단 */
+    width: 100% !important;
 }
 
 footer, .footer-section {
-    display: block !important;
     position: relative !important;
-    /* 푸터 내용물이 하단 고정 메뉴 위로 명확하게 밀려 올라오도록 유연한 패딩 부여 */
-    padding-bottom: calc(40px + env(safe-area-inset-bottom)) !important;
-    margin-bottom: 0 !important;
     z-index: 10 !important;
+    display: block !important;
 }
 
-/* 스마트폰 및 태블릿 환경 (화면 폭 768px 이하) 레이아웃 정돈 */
+/* 3. 타 기능(하단 메뉴 등)과 절대 겹치지 않는 우측 상단 고정 "렉 줄이기" 버튼 디자인 */
+.perf-mobile-btn {
+    position: fixed !important;
+    top: max(16px, env(safe-area-inset-top)) !important; /* 아이폰 노치 등 상단 세이프존 자동 회피 */
+    right: 16px !important;
+    z-index: 999999 !important; /* 화면 최상단 레이어 배치로 클릭 간섭 차단 */
+    background: rgba(13, 11, 30, 0.85) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    padding: 7px 14px !important;
+    border-radius: 30px !important;
+    color: #ffffff !important;
+    font-size: 11px !important;
+    font-family: sans-serif !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
+    display: none !important; /* PC 환경에서는 깔끔하게 숨김 */
+    align-items: center !important;
+    gap: 5px !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+/* 모바일 환경(화면 폭 768px 이하) 대응 반응형 레이아웃 정돈 */
 @media screen and (max-width: 768px) {
-
-    /* 5. 밤하늘 별빛 무한 루프 연산 부하 모바일 전면 차단 */
-    .stars {
-        animation: none !important; 
-        background-attachment: scroll !important;
-        background-position: center top !important;
-        transform: translate3d(0, 0, 0) !important;
-        will-change: auto;
+    .perf-mobile-btn {
+        display: flex !important; /* 모바일에서만 버튼 활성화 */
     }
-    .aurora {
-        transform: translate3d(0, 0, 0) !important;
-    }
-
-    /* 6. 모바일 기본 사각형 버튼 박스 제거 */
-    .mobile-nav-toggle {
-        background: transparent !important;
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-        -webkit-appearance: none !important;
-        appearance: none !important;
-        padding: 12px !important;
-        cursor: pointer;
-        display: flex !important;
-        align-items: center;
-        justify-content: center;
-    }
-
-    /* 7. 줄바꿈 단어 단위 교정 (문구들이 한 글자씩 쪼개져 깨지는 현상 방지) */
-    h1, h2, h3, p, span, a, .intro-content, .timeline-card p, .item-desc, .credit-message {
+    
+    /* 타임라인 및 갤러리 모바일 1열 최적화 정렬 */
+    .timeline-container { padding: 30px 16px 40px !important; }
+    .timeline-container::after { left: 20px !important; transform: none !important; }
+    .timeline-item { width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; padding-left: 42px !important; padding-bottom: 30px !important; }
+    .timeline-item:nth-child(even) { padding-left: 42px !important; }
+    .timeline-item:nth-child(odd) .timeline-dot, .timeline-item:nth-child(even) .timeline-dot { left: 2px !important; right: auto !important; top: 20px !important; }
+    .gallery-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+    
+    /* 모바일 글자 줄바꿈 찌그러짐 현상 방지 */
+    h1, h2, h3, p, span, a, .intro-content, .timeline-card p {
         word-break: keep-all !important;
         overflow-wrap: break-word !important;
     }
 
-    /* 8. 모바일 가로폭에 맞춤형 1열 자동 정렬 */
-    .timeline-container {
-        padding: 30px 16px 40px !important;
-    }
-    .timeline-container::after {
-        left: 20px !important;
-        transform: none !important;
-    }
-    .timeline-item {
-        width: 100% !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-        padding-left: 42px !important;
-        padding-right: 0 !important;
-        margin-bottom: 35px !important;
-    }
-    .timeline-item:nth-child(even) {
-        margin-left: 0 !important;
-        padding-left: 42px !important;
-    }
-    .timeline-item:nth-child(odd) .timeline-dot,
-    .timeline-item:nth-child(even) .timeline-dot {
-        left: 2px !important;
-        right: auto !important;
-        top: 25px !important;
-    }
-
-    .gallery-grid {
-        grid-template-columns: 1fr !important;
-        gap: 20px !important;
-    }
-
-    /* 9. 모바일 하단 고정바 크기 고정 및 아이폰/갤럭시 제스처 바 완벽 대응 */
+    /* 하단 메뉴 바 모바일 고정 규격 */
     .mobile-nav {
         position: fixed !important;
         bottom: 0 !important;
         left: 0 !important;
         width: 100% !important;
-        height: calc(64px + env(safe-area-inset-bottom)) !important;
+        height: calc(60px + env(safe-area-inset-bottom)) !important;
         box-sizing: border-box !important;
         padding-bottom: max(12px, env(safe-area-inset-bottom)) !important;
         z-index: 99999 !important;
     }
+    .mobile-nav-toggle {
+        background: transparent !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+}
+
+/* 4. 최적화 버튼 ON / OFF 인터랙션 상태 정의 */
+.perf-toggle-checkbox:not(:checked) + .perf-mobile-btn .perf-btn-text::after {
+    content: " OFF" !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.perf-toggle-checkbox:checked + .perf-mobile-btn {
+    background: #ffc107 !important; /* ON 상태가 되면 직관적인 노란색 번개 테마로 변경 */
+    color: #0c0a1e !important;
+    border-color: #ffc107 !important;
+}
+.perf-toggle-checkbox:checked + .perf-mobile-btn .perf-btn-text::after {
+    content: " ON" !important;
+    font-weight: 900 !important;
+}
+
+/* 5. ⚡ [핵심 최적화 로직] 버튼이 ON(체크) 되었을 때 렉 주범 요소를 완전히 정지/비활성화 ⚡ */
+.perf-toggle-checkbox:checked ~ * .stars,
+.perf-toggle-checkbox:checked ~ .stars {
+    animation: none !important;
+    display: none !important; /* 끊임없이 연산하며 프레임 드랍을 일으키는 무거운 별빛 입자들을 통째로 소멸시킴 */
+}
+
+.perf-toggle-checkbox:checked ~ * .aurora,
+.perf-toggle-checkbox:checked ~ .aurora {
+    background: #070714 !important; /* 움직이는 오로라 그라데이션 연산을 정지하고 부드러운 단색 배경으로 치환 */
+    animation: none !important;
+}
+
+.perf-toggle-checkbox:checked ~ * .timeline-card,
+.perf-toggle-checkbox:checked ~ * .gallery-item,
+.perf-toggle-checkbox:checked ~ * .d-day-counter,
+.perf-toggle-checkbox:checked ~ * .welcome-box,
+.perf-toggle-checkbox:checked ~ * .letter-lock-container {
+    backdrop-filter: none !important; /* 모바일 GPU 발열과 끊김 현상의 핵심 주범인 실시간 투명 블러 필터 작동을 중단 */
+    -webkit-backdrop-filter: none !important;
+    background: rgba(22, 18, 43, 0.98) !important; /* 필터가 꺼져도 하은님이 글귀를 읽는데 불편함이 없도록 명도 보정 */
 }
 
 /* ==========================================================================
-   🎨 테마 체인지 시 무드 링크 (오로라 및 하단 고정바 배경 완벽 일치)
+   🎨 순정 테마 변경 시 하단 고정바 컬러 감성 동기화
    ========================================================================== */
 body.theme-cherry .aurora, body.cherry .aurora, [data-theme="cherry"] .aurora { background: radial-gradient(circle at 20% 30%, rgba(255, 192, 203, 0.5) 0%, transparent 60%), radial-gradient(circle at 80% 70%, rgba(255, 140, 170, 0.3) 0%, transparent 60%) !important; }
 body.theme-ocean .aurora, body.ocean .aurora, [data-theme="ocean"] .aurora { background: radial-gradient(circle at 20% 30%, rgba(0, 230, 240, 0.2) 0%, transparent 60%), radial-gradient(circle at 80% 70%, rgba(0, 100, 255, 0.3) 0%, transparent 60%) !important; }
