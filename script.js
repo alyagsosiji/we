@@ -2071,29 +2071,39 @@
     runWhenReady(initExtraSafeFeatures);
 })();
 // ==========================================================================
-// 📱 모바일 전용 최적화 버튼 제어 (중복 생성 오류 해결 및 왼쪽 위 탑재)
+// 💻 & 📱 데스크탑/모바일 통합 최적화 버튼 제어 (PC: 디폴트 OFF / 모바일: 디폴트 ON)
 // ==========================================================================
-function initMobilePerformanceMode() {
-    // 768px 초과 데스크탑(PC) 환경에서는 완전히 실행을 차단하여 순정 상태 유지
-    if (window.innerWidth > 768) return;
-
-    // [버튼 두 개 뜨는 오류 해결 1] 기존에 잔존하거나 중복 노출된 버튼 요소를 완벽 탐색 후 사전 제거
+function initHybridPerformanceMode() {
+    // 중복 생성 및 구버전 잔해 파괴
     const existingButtons = document.querySelectorAll("#mobile-perf-toggle, .mobile-perf-btn, .perf-mobile-btn");
     existingButtons.forEach(btn => btn.remove());
 
-    // 최적화 버튼 새롭게 단 한 개만 클린 동적 생성
     const perfBtn = document.createElement("button");
     perfBtn.id = "mobile-perf-toggle";
     perfBtn.className = "mobile-perf-btn";
     perfBtn.type = "button";
-    perfBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> <span class="opt-text">최적화 ON</span>';
+
+    // 현재 기기가 모바일 환경(768px 이하)인지 판별
+    const isMobile = window.innerWidth <= 768;
+    let isOptimized = false;
+
+    if (isMobile) {
+        // [요구사항] 모바일은 진입 즉시 최적화 자동 활성화 (Default ON)
+        document.body.classList.add("perf-mode-active");
+        perfBtn.classList.remove("opt-off");
+        perfBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> <span class="opt-text">최적화 ON</span>';
+        isOptimized = true;
+    } else {
+        // [요구사항] 컴퓨터(PC)는 진입 즉시 특수 효과 유지 (Default OFF)
+        document.body.classList.remove("perf-mode-active");
+        perfBtn.classList.add("opt-off");
+        perfBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> <span class="opt-text">최적화 OFF</span>';
+        isOptimized = false;
+    }
 
     document.body.appendChild(perfBtn);
 
-    // 모바일 기본값: 최적화 자동 활성화 (디폴트 ON)
-    document.body.classList.add("perf-mode-active");
-    let isOptimized = true;
-
+    // 원클릭 부스트 활성화/비활성화 스위칭 로직
     perfBtn.addEventListener("click", function () {
         isOptimized = !isOptimized;
         if (isOptimized) {
@@ -2108,8 +2118,9 @@ function initMobilePerformanceMode() {
     });
 }
 
+// 브라우저 로딩 완료 시 안전 탑재
 if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initMobilePerformanceMode);
+    document.addEventListener("DOMContentLoaded", initHybridPerformanceMode);
 } else {
-    initMobilePerformanceMode();
+    initHybridPerformanceMode();
 }
