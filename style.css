@@ -3624,18 +3624,86 @@ body.has-ending-complete-badge .intro-content {
     }
 }
 /* ==========================================================================
-   📱 [최종 완전판] 맨 왼쪽 위 배치 및 버튼 중복 오류 차단 (데스크탑 100% 복구)
+   💻 & 📱 [최종 완전판] 맨 왼쪽 위 고정형 통합 최적화 시스템 스타일 가이드
    ========================================================================== */
 
-/* [버튼 두 개 뜨는 오류 해결 2] 이전 가이드 진행 중 혹시 HTML에 직접 추가되었을 수 있는 태그를 원천 가림 처리 */
+/* HTML에 직접 추가되었을 수 있는 과거 체크박스 흔적 제거 */
 .perf-mobile-btn, #perf-mode-toggle {
     display: none !important;
 }
 
-/* 모든 모바일 전용 로직을 미디어 쿼리 내부에 명확히 가두어 데스크탑 배경 날아감 현상을 원천 차단합니다. */
-@media screen and (max-width: 768px) {
+/* 1. [공통 디자인] 데스크탑 및 모바일 화면 공통 '맨 왼쪽 위' 정밀 정착 */
+.mobile-perf-btn {
+    display: flex !important;
+    position: fixed !important;
+    /* 상단 상태바/노치 세이프 아웃 구역 자동 계산 및 왼쪽 위 마진 배치 */
+    top: max(16px, env(safe-area-inset-top)) !important;
+    left: 16px !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 999999 !important; /* 상단 배너나 텍스트에 클릭이 씹히지 않도록 조치 */
     
-    /* 모바일 순정 가속도 관성 스크롤 동기화 */
+    background: #ffc107 !important; /* 최적화가 켜져서 활성화된 상태의 골드 앰버 테마 */
+    color: #0c0a1e !important;
+    border: 1px solid #ffc107 !important;
+    padding: 7px 12px !important;
+    border-radius: 999px !important;
+    font-size: 11px !important;
+    font-weight: bold !important;
+    align-items: center !important;
+    gap: 5px !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+    transition: all 0.25s ease-in-out !important;
+    cursor: pointer !important;
+}
+
+/* 최적화 버튼이 꺼져 있을 때 (PC 디폴트 / 모바일 수동 정지 상태) */
+.mobile-perf-btn.opt-off {
+    background: rgba(30, 25, 55, 0.85) !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+/* 🎨 밝은 테마 변경 시 꺼진 버튼 글씨가 흐릿하게 동화되는 버그 보정 */
+body.theme-cherry .mobile-perf-btn.opt-off, body.cherry .mobile-perf-btn.opt-off, [data-theme="cherry"] .mobile-perf-btn.opt-off {
+    background: rgba(255, 220, 230, 0.95) !important;
+    color: #a53755 !important;
+    border: 1px solid rgba(165, 55, 85, 0.3) !important;
+}
+body.theme-letter .mobile-perf-btn.opt-off, body.letter .mobile-perf-btn.opt-off, [data-theme="letter"] .mobile-perf-btn.opt-off {
+    background: rgba(240, 230, 210, 0.95) !important;
+    color: #5c4033 !important;
+    border: 1px solid rgba(92, 64, 51, 0.3) !important;
+}
+
+/* 2. ⚡ [핵심 렉 줄이기 필터] 최적화 ON 모드가 가동되면 시스템 연산 일시 해제 */
+body.perf-mode-active .stars {
+    animation: none !important;
+    display: none !important; /* 끊임없이 움직여 연산 과부하를 초래하는 별빛 입자 즉시 소멸 */
+}
+body.perf-mode-active .aurora {
+    background: #070714 !important; /* 움직이는 오로라 그라데이션 연산을 멈추고 쾌적한 고정 배경화 */
+    animation: none !important;
+}
+body.perf-mode-active .timeline-card,
+body.perf-mode-active .gallery-item,
+body.perf-mode-active .d-day-counter,
+body.perf-mode-active .welcome-box,
+body.perf-mode-active .letter-lock-container {
+    backdrop-filter: none !important; /* 그래픽 리소스를 점유하는 카드 뒷면 실시간 흐림(Blur) 필터링 제어 */
+    -webkit-backdrop-filter: none !important;
+    background: rgba(18, 14, 35, 0.96) !important; /* 필터 가 꺼져도 글귀 시인성에 문제 없도록 명도 보정 */
+}
+
+/* 최적화 가동 중 밝은 테마 카드들의 가독성 최적화 매칭 */
+body.perf-mode-active.theme-letter .timeline-card, body.perf-mode-active.letter .timeline-card,
+body.perf-mode-active.theme-letter .gallery-item, body.perf-mode-active.letter .gallery-item { background: rgba(250, 245, 232, 0.98) !important; }
+body.perf-mode-active.theme-cherry .timeline-card, body.perf-mode-active.cherry .timeline-card,
+body.perf-mode-active.theme-cherry .gallery-item, body.perf-mode-active.cherry .gallery-item { background: rgba(255, 245, 247, 0.98) !important; }
+
+
+/* 3. 📱 모바일 환경 전용 (화면 가로폭 768px 이하) 완전 격리 최적화 규격 */
+@media screen and (max-width: 768px) {
     html, body {
         overflow-x: hidden !important;
         overflow-y: auto !important;
@@ -3651,7 +3719,7 @@ body.has-ending-complete-badge .intro-content {
         outline: none !important;
     }
 
-    /* 하단 가려짐 방지 안전 가이드 공백 유지 */
+    /* 하단 고정바 뒤로 문구가 숨는 문제 완벽 차단 공백 형성 */
     footer, .footer-section {
         position: relative !important;
         z-index: 10 !important;
@@ -3659,75 +3727,7 @@ body.has-ending-complete-badge .intro-content {
         padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
     }
 
-    /* 📌 [위치 수정] 최적화 버튼을 모바일 화면의 '맨 왼쪽 위'로 고정 배치 */
-    .mobile-perf-btn {
-        display: flex !important;
-        position: fixed !important;
-        /* 맨 왼쪽 위 좌표 설정 및 최신 스마트폰 상단 노치/세이프 영역 완벽 회피 */
-        top: max(16px, env(safe-area-inset-top)) !important;
-        left: 16px !important;
-        right: auto !important;   /* 이전 우측 정렬 속성 완전 초기화 */
-        bottom: auto !important;  /* 이전 하단 대각선 속성 완전 초기화 */
-        z-index: 999999 !important; /* 상단 타이틀이나 카드에 씹히지 않도록 최상위 선점 */
-        
-        background: #ffc107 !important; /* 디폴트 최적화 ON 활성화 상태의 노란 번개 빛깔 */
-        color: #0c0a1e !important;
-        border: 1px solid #ffc107 !important;
-        padding: 7px 12px !important;
-        border-radius: 999px !important;
-        font-size: 11px !important;
-        font-weight: bold !important;
-        align-items: center !important;
-        gap: 5px !important;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
-        transition: all 0.25s ease-in-out !important;
-    }
-
-    /* 수동 최적화 비활성화 시 (OFF) */
-    .mobile-perf-btn.opt-off {
-        background: rgba(30, 25, 55, 0.85) !important;
-        color: rgba(255, 255, 255, 0.7) !important;
-        border: 1px solid rgba(255, 255, 255, 0.25) !important;
-    }
-
-    /* 🎨 밝은 테마별 최적화 OFF 상태 가독성 시인성 보정 */
-    body.theme-cherry .mobile-perf-btn.opt-off, body.cherry .mobile-perf-btn.opt-off, [data-theme="cherry"] .mobile-perf-btn.opt-off {
-        background: rgba(255, 220, 230, 0.95) !important;
-        color: #a53755 !important;
-        border: 1px solid rgba(165, 55, 85, 0.3) !important;
-    }
-    body.theme-letter .mobile-perf-btn.opt-off, body.letter .mobile-perf-btn.opt-off, [data-theme="letter"] .mobile-perf-btn.opt-off {
-        background: rgba(240, 230, 210, 0.95) !important;
-        color: #5c4033 !important;
-        border: 1px solid rgba(92, 64, 51, 0.3) !important;
-    }
-
-    /* ⚡ 최적화 모드 가동 시 렉 유발 요인(무한 애니메이션/블러 연산) 전면 차단 */
-    body.perf-mode-active .stars {
-        animation: none !important;
-        display: none !important;
-    }
-    body.perf-mode-active .aurora {
-        background: #070714 !important;
-        animation: none !important;
-    }
-    body.perf-mode-active .timeline-card,
-    body.perf-mode-active .gallery-item,
-    body.perf-mode-active .d-day-counter,
-    body.perf-mode-active .welcome-box,
-    body.perf-mode-active .letter-lock-container {
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        background: rgba(18, 14, 35, 0.96) !important;
-    }
-
-    /* 밝은 테마 최적화 가동 시 가독성 밸런스 패치 */
-    body.perf-mode-active.theme-letter .timeline-card, body.perf-mode-active.letter .timeline-card,
-    body.perf-mode-active.theme-letter .gallery-item, body.perf-mode-active.letter .gallery-item { background: rgba(250, 245, 232, 0.98) !important; }
-    body.perf-mode-active.theme-cherry .timeline-card, body.perf-mode-active.cherry .timeline-card,
-    body.perf-mode-active.theme-cherry .gallery-item, body.perf-mode-active.cherry .gallery-item { background: rgba(255, 245, 247, 0.98) !important; }
-
-    /* 모바일 1열 반응형 레이아웃 정돈 */
+    /* 모바일 반응형 1열 구조 정돈 */
     .timeline-container { padding: 30px 16px 40px !important; }
     .timeline-container::after { left: 20px !important; transform: none !important; }
     .timeline-item { width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; padding-left: 42px !important; padding-bottom: 30px !important; }
@@ -3738,13 +3738,13 @@ body.has-ending-complete-badge .intro-content {
     .mobile-nav-toggle { background: transparent !important; border: none !important; box-shadow: none !important; }
     .mobile-nav { position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100% !important; z-index: 99999 !important; }
 
-    /* 문장 흐름 단위 정돈 */
+    /* 문장 흐름 단위 정돈 (줄바꿈이 이상하게 끊어지는 버그 방지) */
     h1, h2, h3, p, span, a, .intro-content, .timeline-card p {
         word-break: keep-all !important;
         overflow-wrap: break-word !important;
     }
 
-    /* 테마 변경 시 모바일 네비게이션 무드 일체화 */
+    /* 테마 변경 시 모바일 하단바 무드 일체화 */
     body.theme-cherry .mobile-nav, body.cherry .mobile-nav, [data-theme="cherry"] .mobile-nav { background: rgba(255, 242, 245, 0.98) !important; border-top: 1px solid rgba(255, 105, 180, 0.18) !important; }
     body.theme-cherry .mobile-nav-links a, body.cherry .mobile-nav-links a, [data-theme="cherry"] .mobile-nav-links a { color: rgba(165, 55, 85, 0.6) !important; }
     body.theme-cherry .mobile-nav-toggle { color: rgba(165, 55, 85, 1) !important; }
