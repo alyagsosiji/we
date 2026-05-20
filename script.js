@@ -2070,3 +2070,47 @@
 
     runWhenReady(initExtraSafeFeatures);
 })();
+// ==========================================================================
+// 📱 모바일 환경 한정 최적화 버튼 동적 제어 기능 (디폴트 ON 설정)
+// ==========================================================================
+function initMobilePerformanceMode() {
+    // 모바일 환경(화면 가로 폭 768px 이하)에서만 작동하도록 제한
+    if (window.innerWidth > 768) return;
+
+    // 1. 최적화 버튼 엘리먼트 동적 생성 (음악 플레이어와 동일한 JS 구현 방식)
+    const perfBtn = document.createElement("button");
+    perfBtn.id = "mobile-perf-toggle";
+    perfBtn.className = "mobile-perf-btn";
+    perfBtn.type = "button";
+    perfBtn.setAttribute("aria-label", "모바일 렉 줄이기 최적화 스위치");
+    perfBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> <span class="opt-text">최적화 ON</span>';
+
+    // 2. 다른 요소와 격리되어 안전하게 배치되도록 body에 노출
+    document.body.appendChild(perfBtn);
+
+    // 3. [요구사항] 모바일 환경 한정 디폴트 값으로 최적화 자동 활성화 (ON)
+    document.body.classList.add("perf-mode-active");
+    let isOptimized = true;
+
+    // 4. 클릭 이벤트 인터랙션 제어 (음악 플레이어 토글과 완벽히 대치되는 구조)
+    perfBtn.addEventListener("click", function () {
+        isOptimized = !isOptimized;
+        
+        if (isOptimized) {
+            document.body.classList.add("perf-mode-active");
+            perfBtn.classList.remove("opt-off");
+            perfBtn.querySelector(".opt-text").innerText = "최적화 ON";
+        } else {
+            document.body.classList.remove("perf-mode-active");
+            perfBtn.classList.add("opt-off");
+            perfBtn.querySelector(".opt-text").innerText = "최적화 OFF";
+        }
+    });
+}
+
+// 브라우저 DOM 준비 완료 시 안전하게 탑재
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initMobilePerformanceMode);
+} else {
+    initMobilePerformanceMode();
+}
