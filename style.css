@@ -1,10 +1,8 @@
 @charset "UTF-8";
 
-/* final-v7-complete: 원본 스타일 및 애니메이션 기믹 100% 복원 + PC 메뉴바 가림 + 로딩 튕김 교정 완료 */
+/* final-v6: 슬라이드 일시정지 + 로딩 최적화 + 라이트박스 설명 + 엔딩 완료 표시 */
+/* [기능 누락 전면 복원 및 컴퓨터 모바일 네비게이션 가림 통합 패키지] */
 
-/* =========================================
-   1. 기본 리셋 및 폰트 설정
-========================================= */
 * {
     margin: 0;
     padding: 0;
@@ -13,7 +11,6 @@
 
 html {
     scroll-behavior: smooth;
-    height: 100%;
 }
 
 body {
@@ -38,7 +35,7 @@ img {
     display: block;
 }
 
-/* 🔒 보안 단락: 무단 드래그 및 텍스트 선택 방지 */
+/* 🔒 보안 레이어: 사이트 내 무단 불법 텍스트 복사 완전 금지 */
 body.protect-selection {
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -53,9 +50,7 @@ body.protect-selection textarea {
     user-select: text;
 }
 
-/* =========================================
-   2. 깊은 우주의 시각 배경 오버레이 (GPU 레이어 가속)
-========================================= */
+/* 깊은 우주의 오로라 빛 배경 */
 .aurora {
     position: fixed;
     inset: 0;
@@ -68,19 +63,20 @@ body.protect-selection textarea {
     pointer-events: none;
 }
 
+/* 별빛 배경 */
 .stars {
     position: fixed;
-    top: -40px; left: -40px;
-    width: calc(100% + 80px);
-    height: calc(100% + 80px);
+    top: -30px;
+    left: -30px;
+    width: calc(100% + 60px);
+    height: calc(100% + 60px);
     background: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=1600') repeat top center;
     background-size: cover;
     opacity: 0.35;
     z-index: -2;
-    will-change: transform, background-position;
+    will-change: transform;
     pointer-events: none;
     animation: slowDrift 150s linear infinite;
-    transform: translate3d(0, 0, 0);
 }
 
 @keyframes slowDrift {
@@ -88,6 +84,7 @@ body.protect-selection textarea {
     100% { background-position: 0 -2000px; }
 }
 
+/* 유성우 효과 */
 .shooting-stars {
     position: fixed;
     inset: 0;
@@ -95,10 +92,8 @@ body.protect-selection textarea {
     transform: rotate(-45deg);
     pointer-events: none;
 }
-
 .shooting-stars span {
     position: absolute;
-    top: 50%; left: 50%;
     width: 100px; height: 2px;
     background: linear-gradient(90deg, #ffffff, transparent);
     box-shadow: 0 0 10px #ffffff;
@@ -106,7 +101,6 @@ body.protect-selection textarea {
     opacity: 0;
     will-change: transform, opacity;
 }
-
 .shooting-stars span:nth-child(1) { top: 10%; left: 80%; animation-delay: 0s; animation-duration: 3s; }
 .shooting-stars span:nth-child(2) { top: 30%; left: 60%; animation-delay: 1.5s; animation-duration: 4s; }
 .shooting-stars span:nth-child(3) { top: -10%; left: 40%; animation-delay: 2.5s; animation-duration: 3.5s; }
@@ -117,43 +111,7 @@ body.protect-selection textarea {
     100% { transform: translate3d(-1000px, 0, 0); opacity: 0; }
 }
 
-/* 계절별 파티클 */
-.seasonal-effect-layer {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
-}
-.seasonal-particle {
-    position: absolute;
-    top: -8vh;
-    left: var(--season-left);
-    font-size: var(--season-size);
-    opacity: var(--season-opacity);
-    animation: seasonFall var(--season-duration) linear var(--season-delay) infinite;
-    will-change: transform, opacity;
-    text-shadow: 0 0 12px rgba(255,255,255,0.28);
-}
-body.season-spring .seasonal-particle { color: #ffc8df; }
-body.season-summer .seasonal-particle { color: #b7f7ff; animation-name: summerBubbleFloat; top: auto; bottom: -8vh; }
-body.season-autumn .seasonal-particle { color: #ffc078; }
-body.season-winter .seasonal-particle { color: #f4fbff; }
-
-@keyframes seasonFall {
-    0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
-    10% { opacity: var(--season-opacity); }
-    100% { transform: translate3d(var(--season-drift), 112vh, 0) rotate(var(--season-rotate)); opacity: 0; }
-}
-@keyframes summerBubbleFloat {
-    0% { transform: translate3d(0, 8vh, 0) scale(0.75); opacity: 0; }
-    12% { opacity: var(--season-opacity); }
-    100% { transform: translate3d(var(--season-drift), -112vh, 0) scale(1.25); opacity: 0; }
-}
-
-/* =========================================
-   3. 인트로 대문 섹션 및 실시간 디데이
-========================================= */
+/* 인트로 섹션 */
 .intro-section {
     min-height: 100svh;
     padding: 90px 20px 150px;
@@ -226,53 +184,13 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
     60% { transform: translateY(-4px); }
 }
 
-.d-day-counter {
-    margin: 40px auto 20px;
-    min-width: min(92vw, 430px);
-    background: rgba(25, 20, 45, 0.45);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(199, 164, 255, 0.3);
-    border-radius: 20px;
-    padding: 20px 30px;
-    display: inline-block;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(199, 164, 255, 0.1);
+/* 타임라인 인프라 */
+.timeline-container {
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 50px 20px 100px;
 }
-.d-day-label { font-size: 1rem; color: #e5d9f2; margin-bottom: 15px; letter-spacing: 2px; }
-.time-blocks { display: flex; justify-content: center; gap: 20px; flex-wrap: nowrap; }
-.time-box { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
-.time-box span { font-size: 2.2rem; font-weight: 700; color: #ffffff; text-shadow: 0 0 15px rgba(199, 164, 255, 0.9); font-family: 'Courier New', Courier, monospace; }
-.time-box p { font-size: 0.9rem; color: #bcafd0; margin-top: 5px; }
-
-.random-message {
-    min-height: 32px; margin-top: 25px; font-size: 1.1rem; line-height: 1.7; color: #e5d9f2; font-style: italic; letter-spacing: 1px;
-    text-shadow: 0 0 10px rgba(199, 164, 255, 0.6); animation: fadeIn 1.5s ease-in-out;
-}
-.visit-count {
-    display: inline-block; min-height: 28px; margin-top: 14px; padding: 8px 16px;
-    border: 1px solid rgba(199, 164, 255, 0.28); border-radius: 999px; background: rgba(25, 20, 45, 0.45);
-    color: #e5d9f2; font-size: 0.98rem; text-shadow: 0 0 10px rgba(199, 164, 255, 0.45);
-}
-.memory-time-greeting, .memory-update-notice, .ending-complete-badge {
-    width: fit-content; max-width: min(92vw, 520px); margin: 14px auto 0; padding: 9px 16px;
-    border: 1px solid rgba(199, 164, 255, 0.28); border-radius: 999px; background: rgba(25, 20, 45, 0.46);
-    color: #e5d9f2; font-size: 0.95rem; line-height: 1.6; text-align: center;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.26), inset 0 0 14px rgba(199, 164, 255, 0.06);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-}
-.memory-time-greeting i, .memory-update-notice i, .ending-complete-badge i { color: #c7a4ff; margin-right: 6px; }
-.ending-complete-badge { display: none; border-color: rgba(255, 217, 142, 0.38); color: #fff3c7; background: rgba(40, 31, 54, 0.58); }
-.ending-complete-badge.show { display: block; animation: endingBadgePop 0.65s cubic-bezier(0.16, 1, 0.3, 1) both; }
-
-@keyframes endingBadgePop {
-    from { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.96); }
-    to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
-}
-
-/* =========================================
-   4. 타임라인 및 갤러리 컴포넌트
-========================================= */
-.timeline-container { position: relative; max-width: 900px; margin: 0 auto; padding: 50px 20px 100px; }
 .timeline-container::after {
     content: ''; position: absolute; width: 2px; top: 0; bottom: 0; left: 50%; transform: translateX(-50%);
     background: linear-gradient(to bottom, transparent, #c7a4ff, #8263cf, transparent);
@@ -280,11 +198,11 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
 }
 
 .timeline-item {
-    width: 50%; position: relative; margin-bottom: 80px; opacity: 0; transform: translate3d(0, 40px, 0);
+    width: 50%; position: relative; margin-bottom: 80px; opacity: 0; transform: translateY(40px);
     transition: opacity 0.9s cubic-bezier(0.25, 1, 0.5, 1), transform 0.9s cubic-bezier(0.25, 1, 0.5, 1); z-index: 2;
     will-change: transform, opacity;
 }
-.timeline-item.visible { opacity: 1; transform: translate3d(0, 0, 0); }
+.timeline-item.visible { opacity: 1; transform: translateY(0); }
 .timeline-item:nth-child(odd) { margin-left: 0; padding-right: 45px; }
 .timeline-item:nth-child(even) { margin-left: 50%; padding-left: 45px; }
 
@@ -296,7 +214,7 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
 }
 .timeline-card { border-radius: 20px; }
 .timeline-card:hover, .gallery-item:hover {
-    transform: translate3d(0, -5px, 0); border-color: rgba(199, 164, 255, 0.6);
+    transform: translateY(-5px); border-color: rgba(199, 164, 255, 0.6);
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(199, 164, 255, 0.15);
 }
 
@@ -319,7 +237,7 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
 .image-wrapper img, .item-image img { transition: transform 0.6s ease; }
 .timeline-card:hover .image-wrapper img, .gallery-item:hover .item-image img { transform: scale(1.05); }
 
-/* 이미지 스켈레톤 홀더 UI */
+/* 이미지 로딩 전 스켈레톤 홀더 */
 .memory-img-skeleton { position: relative; overflow: hidden; background: rgba(25, 20, 45, 0.55); }
 .memory-img-skeleton::before {
     content: ''; position: absolute; inset: 0; z-index: 3;
@@ -333,25 +251,40 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
 .memory-img-skeleton.memory-img-loaded::before, .memory-img-skeleton.memory-img-loaded::after { opacity: 0; visibility: hidden; animation: none; }
 @keyframes memorySkeletonShine { to { transform: translate3d(120%, 0, 0); } }
 
-/* 갤러리 영역 */
+/* 갤러리 레이아웃 */
 .gallery-section { max-width: 1000px; margin: 0 auto; padding: 20px 20px 100px; position: relative; z-index: 2; }
 .gallery-header { text-align: center; margin-bottom: 50px; }
 .gallery-title { font-size: 1.8rem; color: #ffffff; margin-bottom: 10px; text-shadow: 0 0 15px rgba(199, 164, 255, 0.4); }
 .gallery-sub { color: #bcafd0; font-size: 1rem; letter-spacing: 1px; }
 .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-.gallery-item { border-radius: 15px; padding: 25px; text-align: center; opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease, transform 0.8s ease; }
+.gallery-item { border-radius: 15px; padding: 25px; text-align: center; opacity: 0; transform: translateY(40px); }
 .gallery-item.visible { opacity: 1; transform: translateY(0); }
 .item-title { font-size: 1.25rem; color: #e5d9f2; margin-bottom: 15px; font-weight: bold; }
 .item-image { aspect-ratio: 1 / 1.08; border-radius: 10px; margin-bottom: 15px; }
 .item-desc { color: #ccc5da; font-size: 0.95rem; line-height: 1.6; }
 
-/* =========================================
-   5. 슬라이드쇼
-========================================= */
+/* 디데이 카운터 */
+.d-day-counter {
+    margin: 40px auto 20px;
+    min-width: min(92vw, 430px);
+    background: rgba(25, 20, 45, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(199, 164, 255, 0.3);
+    border-radius: 20px;
+    padding: 20px 30px;
+    display: inline-block;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(199, 164, 255, 0.1);
+}
+.d-day-label { font-size: 1rem; color: #e5d9f2; margin-bottom: 15px; letter-spacing: 2px; }
+.time-blocks { display: flex; justify-content: center; gap: 20px; flex-wrap: nowrap; }
+.time-box { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
+.time-box span { font-size: 2.2rem; font-weight: 700; color: #ffffff; text-shadow: 0 0 15px rgba(199, 164, 255, 0.9); font-family: 'Courier New', Courier, monospace; }
+.time-box p { font-size: 0.9rem; color: #bcafd0; margin-top: 5px; }
+
+/* 슬라이드쇼 부품 */
 .slideshow-section { max-width: 1000px; margin: 0 auto 90px; padding: 30px 20px 10px; position: relative; z-index: 2; text-align: center; }
 .slideshow-header { margin-bottom: 32px; }
-.slideshow-header h2 { font-size: 1.8rem; color: #ffffff; margin-bottom: 10px; text-shadow: 0 0 15px rgba(199, 164, 255, 0.45); }
-.slideshow-header p { color: #bcafd0; }
 .slideshow-frame {
     position: relative; border-radius: 28px; overflow: hidden; border: 1px solid rgba(199, 164, 255, 0.28);
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), inset 0 0 25px rgba(199, 164, 255, 0.08); background: rgba(25, 20, 45, 0.45);
@@ -381,9 +314,7 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
 }
 .slide-pause-btn:hover, .slide-pause-btn.paused { background: rgba(199, 164, 255, 0.24); color: #ffffff; }
 
-/* =========================================
-   6. 비밀 편지 및 개봉 우편함 효과
-========================================= */
+/* 비밀 편지함 스테이지 */
 .secret-letter-section { max-width: 700px; margin: 100px auto; padding: 20px; text-align: center; position: relative; z-index: 2; }
 .letter-lock-container { background: rgba(25, 20, 45, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid rgba(199, 164, 255, 0.3); padding: 50px 30px; border-radius: 30px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
 .letter-lock-container i { font-size: 3rem; color: #c7a4ff; margin-bottom: 20px; }
@@ -417,9 +348,8 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
 .letter-paper h2 { font-family: 'Gowun Batang', serif; margin-bottom: 30px; color: #1a1a2e; }
 .letter-text { font-size: 1.1rem; line-height: 1.8; text-align: left; margin-bottom: 40px; }
 .letter-signature { font-size: 1.2rem; font-weight: bold; text-align: right; }
-@keyframes openPaper { from { opacity: 0; transform: scale(0.9) rotate(0deg); } to { opacity: 1; transform: scale(1) rotate(-1deg); } }
 
-/* 답장창 모달 */
+/* 답장 모달 팝업 */
 .reply-btn { display: none; margin-top: 40px; align-items: center; justify-content: center; gap: 8px; padding: 12px 30px; background: linear-gradient(45deg, #c7a4ff, #8263cf); border-radius: 30px; color: #1a1a2e; font-weight: bold; cursor: pointer; transition: 0.3s; border: none; }
 .reply-btn.is-visible { display: inline-flex; }
 .reply-modal { display: none; position: fixed; inset: 0; z-index: 10001; background: rgba(0,0,0,0.7); backdrop-filter: blur(10px); justify-content: center; align-items: center; padding: 24px; opacity: 0; transition: opacity 0.4s ease; }
@@ -428,18 +358,12 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
 .reply-modal.show .reply-box { transform: translateY(0); }
 .close-reply { position: absolute; top: 15px; right: 25px; font-size: 2rem; color: #6a617e; cursor: pointer; }
 #reply-text { width: 100%; height: 200px; background: transparent; border: none; border-bottom: 2px solid #bcafd0; font-family: inherit; font-size: 1.1rem; resize: none; outline: none; margin-bottom: 30px; color: #1a1a2e; }
-.send-letter-btn { background: linear-gradient(45deg, #c7a4ff, #8263cf); color: white; border: none; padding: 12px 35px; border-radius: 30px; font-size: 1.1rem; font-weight: bold; cursor: pointer; box-shadow: 0 5px 15px rgba(199, 164, 255, 0.5); transition: 0.3s; }
-.send-letter-btn:hover { background: #8263cf; transform: translateY(-3px); }
 
-/* =========================================
-   7. 오디오 및 테마 컨트롤셋
-========================================= */
+/* 오디오 제어 인터페이스 */
 #bgm-container { position: fixed; right: 30px; bottom: 30px; z-index: 1000; cursor: pointer; display: flex; align-items: center; border: 1px solid rgba(199, 164, 255, 0.4); box-shadow: 0 0 15px rgba(199, 164, 255, 0.3); }
 #bgm-container.bgm-player { gap: 12px; border-radius: 999px; padding: 10px 14px 10px 10px; background: rgba(25, 20, 45, 0.72); max-width: min(92vw, 360px); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 .bgm-main-btn, #bgm-mute-btn { border: none; background: transparent; color: inherit; cursor: pointer; padding: 0; }
 .bgm-disk { font-size: 2rem; color: #c7a4ff; display: flex; align-items: center; justify-content: center; }
-.rotating { animation: rotateDisk 3s linear infinite; }
-@keyframes rotateDisk { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 #bgm-container.playing { box-shadow: 0 0 22px rgba(199, 164, 255, 0.55); }
 .music-info { min-width: 0; text-align: left; }
 .music-info p { font-size: 0.7rem; color: #bcafd0; margin-bottom: 2px; letter-spacing: 1px; }
@@ -452,7 +376,7 @@ body.bgm-playing .aurora { animation: bgmAuroraPulse 4.5s ease-in-out infinite; 
 body.bgm-playing .stars { opacity: 0.48; filter: saturate(1.2) brightness(1.1); }
 @keyframes bgmAuroraPulse { 0%, 100% { filter: brightness(1) saturate(1); } 50% { filter: brightness(1.35) saturate(1.35); } }
 
-/* 테마 선택 패널 관련 */
+/* 테마 분기 엔진 */
 .theme-panel { position: fixed; top: 90px; right: 30px; z-index: 10002; display: flex; align-items: center; gap: 10px; }
 .theme-toggle-btn { width: 48px; height: 48px; border-radius: 50%; border: 1px solid rgba(199, 164, 255, 0.45); background: rgba(25, 20, 45, 0.65); color: #ffffff; cursor: pointer; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 0 18px rgba(199, 164, 255, 0.35); transition: transform 0.3s ease, box-shadow 0.3s ease; }
 .theme-toggle-btn:hover { transform: translateY(-3px) rotate(12deg); box-shadow: 0 5px 15px rgba(199, 164, 255, 0.55); }
@@ -481,9 +405,7 @@ body.theme-letter .timeline-container::after { background: linear-gradient(to bo
 
 body.theme-our-night { background-color: #05020f; }
 
-/* =========================================
-   8. 이미지 라이트박스 및 트레일 이펙트
-========================================= */
+/* 라이트박스 극장 모드 */
 .lightbox { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); justify-content: center; align-items: center; opacity: 0; transition: opacity 0.4s ease; padding: 28px; }
 .lightbox.show { display: flex; opacity: 1; }
 .lightbox-content { display: flex; flex-direction: column; align-items: center; gap: 16px; }
@@ -493,6 +415,7 @@ body.theme-our-night { background-color: #05020f; }
 .close-lightbox { position: absolute; top: 30px; right: 40px; font-size: 3rem; color: #ffffff; cursor: pointer; z-index: 2; }
 body.lightbox-open { overflow: hidden; }
 
+/* 마우스 트레일 및 특수 파티클 */
 .mouse-star { position: fixed; background: #ffffff; border-radius: 50%; box-shadow: 0 0 15px #ffffff, 0 0 30px #c7a4ff; pointer-events: none; z-index: 9998; will-change: transform, opacity; transform: translate(-50%, -50%); animation: sparkleTrail 1s ease-out forwards; }
 @keyframes sparkleTrail {
     0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
@@ -510,26 +433,70 @@ body.lightbox-open { overflow: hidden; }
     100% { transform: translate3d(calc(var(--start-x) + var(--move-x)), calc(var(--start-y) + var(--move-y)), 0) rotate(var(--rotate)); opacity: 0; }
 }
 
+/* 스크롤 탑바 인디케이터 */
 .scroll-progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 3px; z-index: 10000; }
 .scroll-progress-bar { height: 100%; width: 0%; background: #c7a4ff; position: relative; }
 #scroll-star { position: absolute; top: 50%; right: -10px; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; color: #ffffff; font-size: 0.9rem; text-shadow: 0 0 8px #c7a4ff; transform: translateY(-50%); will-change: transform; }
-
 .back-to-top-star { position: fixed; right: 24px; bottom: 150px; z-index: 12050; width: 52px; height: 52px; border-radius: 50%; background: rgba(25, 20, 45, 0.82); color: #ffffff; border: 1px solid rgba(199, 164, 255, 0.45); cursor: pointer; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
 .back-to-top-star.show { opacity: 1; visibility: visible; }
 .heart-burst-btn { display: block; margin: 18px auto 0; padding: 12px 26px; border-radius: 999px; background: linear-gradient(45deg, #c7a4ff, #ff8fd8); font-weight: bold; cursor: pointer; border: none; color: #100b26; }
 .easter-hint { font-size: 0.88rem; color: #6a617e; margin-top: 15px; letter-spacing: 0.5px; }
 
-/* =========================================
-   9. 오버레이 로딩 및 안내 화면 (글자 깨짐 방어 최적화)
-========================================= */
+/* 계절별 입체 분기 레이어 */
+.seasonal-effect-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.seasonal-particle { position: absolute; top: -8vh; left: var(--season-left); font-size: var(--season-size); opacity: var(--season-opacity); animation: seasonFall var(--season-duration) linear var(--season-delay) infinite; will-change: transform, opacity; text-shadow: 0 0 12px rgba(255,255,255,0.28); }
+body.season-spring .seasonal-particle { color: #ffc8df; }
+body.season-summer .seasonal-particle { color: #b7f7ff; animation-name: summerBubbleFloat; top: auto; bottom: -8vh; }
+body.season-autumn .seasonal-particle { color: #ffc078; }
+body.season-winter .seasonal-particle { color: #f4fbff; }
+
+@keyframes seasonFall {
+    0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
+    10% { opacity: var(--season-opacity); }
+    100% { transform: translate3d(var(--season-drift), 112vh, 0) rotate(var(--season-rotate)); opacity: 0; }
+}
+@keyframes summerBubbleFloat {
+    0% { transform: translate3d(0, 8vh, 0) scale(0.75); opacity: 0; }
+    12% { opacity: var(--season-opacity); }
+    100% { transform: translate3d(var(--season-drift), -112vh, 0) scale(1.25); opacity: 0; }
+}
+
+/* 시스템 이스터에그 및 토스트 */
+.secret-toast { position: fixed; bottom: 105px; left: 50%; transform: translate3d(-50%, 20px, 0); z-index: 10004; background: rgba(20, 15, 42, 0.86); padding: 14px 20px; border-radius: 999px; color: #ffffff; opacity: 0; transition: transform 0.3s, opacity 0.3s; border: 1px solid rgba(199,164,255,0.42); pointer-events: none; }
+.secret-toast.show { opacity: 1; transform: translate3d(-50%, 0, 0); }
+.easter-secret-section { display: none; position: fixed; inset: 0; z-index: 10005; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); justify-content: center; align-items: center; padding: 24px; }
+.easter-secret-section.revealed { display: flex; }
+.easter-secret-card { background: rgba(25, 20, 45, 0.85); padding: 45px 30px; border-radius: 25px; border: 1px solid rgba(199,164,255,0.35); text-align: center; max-width: 480px; box-shadow: 0 15px 40px rgba(0,0,0,0.5); }
+.easter-secret-card i { font-size: 2.5rem; color: #ffd98e; margin-bottom: 18px; }
+.easter-secret-card h2 { font-size: 1.6rem; margin-bottom: 15px; }
+.easter-secret-card p { color: #ccc5da; line-height: 1.7; margin-bottom: 25px; font-size: 0.98rem; }
+.easter-secret-card button { padding: 10px 24px; border: none; background: #c7a4ff; color: #1a1a2e; font-weight: bold; border-radius: 20px; cursor: pointer; }
+
+.subtitle-constellation-easter { position: fixed; inset: 0; z-index: 16000; display: flex; justify-content: center; padding-top: 170px; opacity: 0; visibility: hidden; pointer-events: none; transition: 0.4s; background: rgba(5,2,15,0.4); backdrop-filter: blur(3px); }
+.subtitle-constellation-easter.show { opacity: 1; visibility: visible; pointer-events: auto; }
+.constellation-card { background: rgba(25, 20, 45, 0.9); padding: 30px; border-radius: 28px; border: 1px solid rgba(199, 164, 255, 0.35); text-align: center; width: min(90vw, 380px); box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
+.constellation-card svg { margin-bottom: 15px; }
+.constellation-card h4 { font-size: 1.2rem; color: #ffffff; margin-bottom: 10px; }
+.constellation-card p { color: #bcafd0; font-size: 0.9rem; line-height: 1.6; margin-bottom: 18px; }
+.constellation-card button { padding: 8px 20px; background: transparent; border: 1px solid #c7a4ff; color: #c7a4ff; border-radius: 999px; cursor: pointer; }
+
+.constellation-card svg line { stroke-dasharray: 400; stroke-dashoffset: 400; animation: constellationLineDraw 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.constellation-card svg circle { opacity: 0; transform-origin: center; animation: constellationStarPop 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+.constellation-card circle:nth-of-type(1) { animation-delay: 0.15s; }
+.constellation-card circle:nth-of-type(2) { animation-delay: 0.32s; }
+.constellation-card circle:nth-of-type(3) { animation-delay: 0.58s; }
+.constellation-card circle:nth-of-type(4) { animation-delay: 0.82s; }
+
+@keyframes constellationLineDraw { to { stroke-dashoffset: 0; } }
+@keyframes constellationStarPop { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
+
+/* 로딩 화면 (글꼴 미로드 시 레이아웃 흔들림 방어 처리 완료) */
 .loading-screen {
     position: fixed; inset: 0; z-index: 20000; display: flex; flex-direction: column; justify-content: center; align-items: center;
     background: radial-gradient(circle at center, rgba(30, 18, 60, 1), rgba(7, 7, 20, 1)); transition: opacity 0.58s ease, visibility 0.58s ease; gap: 22px; text-align: center;
-    /* 폰트 로드 시 생기는 크기 뒤틀림 방지를 위해 브라우저 단독 가속용 고정 폰트 지정 */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", dotum, sans-serif !important;
 }
 .loading-screen.hide { opacity: 0; visibility: hidden; }
-
 .loading-star { flex: 0 0 72px; width: 72px; height: 72px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(199, 164, 255, 0.45); animation: loadingTwinkle 1.4s infinite; box-sizing: border-box; }
 .loading-star i { display: none !important; }
 .loading-star::before { content: "★"; display: block; color: #ffffff; font-size: 2rem; line-height: 1; font-family: sans-serif; text-shadow: 0 0 12px rgba(255,255,255,0.9), 0 0 22px rgba(199,164,255,0.9); }
@@ -548,9 +515,7 @@ body.lightbox-open { overflow: hidden; }
 
 @keyframes welcomePop { from { opacity: 0; transform: translateY(25px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
-/* =========================================
-   10. 🛠️ 원본 누락 점검중 화면 완전 레이아웃 기믹
-========================================= */
+/* 시스템 메인터넌스 랙 오버레이 */
 html.maintenance-mode-active, body.maintenance-mode-active { overflow: hidden !important; }
 #maintenance-screen { position: fixed; inset: 0; z-index: 999999; display: none; align-items: center; justify-content: center; padding: 28px; background: radial-gradient(circle at center, rgba(32, 20, 62, 1), rgba(7, 7, 20, 1)); }
 #maintenance-screen.show { display: flex; }
@@ -570,30 +535,7 @@ html.maintenance-mode-active, body.maintenance-mode-active { overflow: hidden !i
 @keyframes maintenanceTwinkle { 0%, 100% { transform: scale(1); opacity: 0.82; } 50% { transform: scale(1.18); opacity: 1; } }
 @keyframes maintenanceLoading { 0% { left: -45%; } 100% { left: 100%; } }
 
-/* =========================================
-   11. 🛠 Certified 원본 성좌 이스터에그 파트
-========================================= */
-.constellation-card svg line { stroke-dasharray: 400; stroke-dashoffset: 400; animation: constellationLineDraw 2.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-.constellation-card svg circle { opacity: 0; transform-origin: center; animation: constellationStarPop 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-.constellation-card circle:nth-of-type(1) { animation-delay: 0.15s; }
-.constellation-card circle:nth-of-type(2) { animation-delay: 0.32s; }
-.constellation-card circle:nth-of-type(3) { animation-delay: 0.58s; }
-.constellation-card circle:nth-of-type(4) { animation-delay: 0.82s; }
-
-@keyframes constellationLineDraw { to { stroke-dashoffset: 0; } }
-@keyframes constellationStarPop { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: scale(1); } }
-
-/* =========================================
-   12. 푸터 및 팝업 이스터에그 디자인
-========================================= */
-.secret-toast { position: fixed; bottom: 105px; left: 50%; transform: translate3d(-50%, 20px, 0); z-index: 10004; background: rgba(20, 15, 42, 0.86); padding: 14px 20px; border-radius: 999px; color: #ffffff; opacity: 0; transition: transform 0.3s, opacity 0.3s; border: 1px solid rgba(199,164,255,0.42); pointer-events: none; }
-.secret-toast.show { opacity: 1; transform: translate3d(-50%, 0, 0); }
-.easter-secret-section { display: none; position: fixed; inset: 0; z-index: 10005; background: rgba(0,0,0,0.75); backdrop-filter: blur(8px); justify-content: center; align-items: center; padding: 24px; }
-.easter-secret-section.revealed { display: flex; }
-
-/* =========================================
-   13. 엔딩 크레딧 극장 효과
-========================================= */
+/* 엔딩 크레딧 극장 연출 */
 .ending-credits-section { position: relative; z-index: 2; padding: 110px 20px 160px; text-align: center; overflow: visible !important; }
 .credits-mask { --credits-box-height: clamp(560px, 72vh, 700px); --credits-roll-start: calc(var(--credits-box-height) + 40px); --credits-roll-end: 1900px; --credits-duration: 64s; position: relative; width: min(92vw, 760px); height: var(--credits-box-height); margin: 0 auto; border-radius: 24px; border: 1px solid rgba(199, 164, 255, 0.3); background: rgba(25, 20, 45, 0.45); backdrop-filter: blur(12px); box-shadow: 0 10px 30px rgba(0,0,0,0.4); overflow: hidden !important; }
 .credits-mask::before, .credits-mask::after { content: ''; position: absolute; left: 0; right: 0; height: 60px; z-index: 3; pointer-events: none; }
@@ -611,17 +553,17 @@ html.maintenance-mode-active, body.maintenance-mode-active { overflow: hidden !i
 @keyframes finalMessageReward { 0%, 100% { transform: scale(1); text-shadow: 0 0 18px rgba(199, 164, 255, 0.75), 0 0 35px rgba(255, 255, 255, 0.18); } 50% { transform: scale(1.08); text-shadow: 0 0 26px rgba(199, 164, 255, 0.95), 0 0 12px #ffffff; } }
 
 /* =========================================
-   🖥️ 데스크톱 및 대형 화면 전용 차단 오버라이딩 구역
+   🖥️ [버그 패치] 데스크톱 모니터 가로 스크린 제어
 ========================================= */
 @media screen and (min-width: 769px) {
-    /* [패치완료] 데스크톱 컴 모니터 해상도에서는 모바일 이동바가 원천 차단 및 완전 가림 처리됩니다. */
+    /* 컴퓨터 모니터 크기일 때는 모바일 하단 플로팅 이동바를 화면에서 전면 가림 처리 */
     .mobile-nav {
         display: none !important;
     }
 }
 
 /* =========================================
-   📱 768px 이하 스마트폰/모바일 반응형 최적화 구역
+   📱 768px 이하 모바일 디바이스 레이아웃 (v6 수식 완전 동화)
 ========================================= */
 @media screen and (max-width: 768px) {
     body { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
@@ -643,7 +585,7 @@ html.maintenance-mode-active, body.maintenance-mode-active { overflow: hidden !i
     .credits-mask { --credits-box-height: min(62vh, 540px); width: min(92vw, 430px); border-radius: 22px; }
     .credits-roll { padding: 44px 18px 130px; }
     
-    /* 스마트폰 브라우저 픽셀에서만 모바일바 퀵 탐색기 런타임 활성화 */
+    /* 실제 스마트폰 화면에서만 하단 퀵 링크 바 메뉴를 노출시킴 */
     .mobile-nav {
         display: flex;
         position: fixed; left: 16px; bottom: calc(142px + env(safe-area-inset-bottom));
@@ -668,16 +610,35 @@ html.maintenance-mode-active, body.maintenance-mode-active { overflow: hidden !i
     .theme-options { flex-direction: column; }
 }
 
-/* 완료 배지 공간 확보 (원본 수식 완전 수호) */
-body.has-ending-complete-badge .intro-section { padding-bottom: 210px !important; }
-body.has-ending-complete-badge .scroll-down { z-index: 5; }
-body.has-ending-complete-badge .intro-content { transform: translateY(-18px); }
+/* =========================================
+   엔딩 배지 조건부 레이아웃 보존 단락
+========================================= */
+body.has-ending-complete-badge .intro-section {
+    padding-bottom: 210px !important;
+}
+body.has-ending-complete-badge .scroll-down {
+    z-index: 5;
+}
+body.has-ending-complete-badge .intro-content {
+    transform: translateY(-18px);
+}
 
 @media screen and (max-width: 768px) {
-    body.has-ending-complete-badge .intro-section { padding-bottom: 230px !important; }
-    body.has-ending-complete-badge .intro-content { transform: translateY(-24px); }
-    body.has-ending-complete-badge .scroll-down { bottom: max(34px, env(safe-area-inset-bottom)) !important; }
+    body.has-ending-complete-badge .intro-section {
+        padding-bottom: 230px !important;
+    }
+    body.has-ending-complete-badge .intro-content {
+        transform: translateY(-24px);
+    }
+    body.has-ending-complete-badge .scroll-down {
+        bottom: max(34px, env(safe-area-inset-bottom)) !important;
+    }
 }
+
 @media screen and (max-height: 760px) {
-    body.has-ending-complete-badge .intro-section { min-height: auto !important; padding-top: 80px !important; padding-bottom: 240px !important; }
+    body.has-ending-complete-badge .intro-section {
+        min-height: auto !important;
+        padding-top: 80px !important;
+        padding-bottom: 240px !important;
+    }
 }
