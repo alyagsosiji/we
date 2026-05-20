@@ -1,7 +1,7 @@
 (() => {
     "use strict";
 
-    // final-v7-secured: 원본 기능 100% 전면 복원 + 사이트 보안 강화 + 레이아웃 디버깅 완료
+    // final-v7-secured: 원본 기능 100% 완전 복원 + F12/우클릭 전면 보안 + 모바일 메뉴 컴퓨터 숨김 최적화
 
     if (window.__memorySiteFinalScriptLoaded) return;
     window.__memorySiteFinalScriptLoaded = true;
@@ -33,9 +33,9 @@
     let titleClickCount = 0;
     let footerClickCount = 0;
     let bgmSecretClickCount = 0;
-    let bgmDiskClickCount = 0; // 원본 변수 복원
+    let bgmDiskClickCount = 0; 
     let typedSecretBuffer = "";
-    let dateBuffer = ""; // 원본 변수 복원
+    let dateBuffer = ""; 
     let endingFireworkPlayed = false;
     let endingFinishTimer = null;
     let currentScrollPercent = 0;
@@ -43,7 +43,7 @@
     let currentParallax = 0;
     let targetParallax = 0;
     let longPressTimer = null;
-    let lastStarTime = 0; // 모바일 성능 트레일 소모 제어용
+    let lastStarTime = 0; 
 
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -103,29 +103,33 @@
     }
 
     // =========================================
-    // 🔒 사이트 보안 시스템 (우클릭, F12 개발자 도구 원천 차단)
+    // 🔒 강력한 사이트 보안 제어 (F12, 우클릭, 드래그 무력화)
     // =========================================
     function initSiteSecurity() {
-        // 우클릭 차단 (텍스트 입력창 제외)
+        // 1. 마우스 오른쪽 클릭 전면 차단 (텍스트 입력 박스 예외 허용)
         document.addEventListener("contextmenu", event => {
             if (!event.target.closest("input, textarea")) {
                 event.preventDefault();
             }
         });
 
-        // 개발자 도구 단축키 완벽 제한
+        // 2. 키보드 개발자 소스 보기 제어 단축키 무력화
         document.addEventListener("keydown", event => {
+            // F12 차단
             if (event.key === "F12") {
                 event.preventDefault();
             }
+            // Ctrl + Shift + I / J / C (개발자 검사창 단축키 차단)
             if (event.ctrlKey && event.shiftKey && ["i", "j", "c"].includes(event.key.toLowerCase())) {
                 event.preventDefault();
             }
+            // Ctrl + U (페이지 소스 보기) 및 Ctrl + S (파일 저장) 차단
             if (event.ctrlKey && ["u", "s"].includes(event.key.toLowerCase())) {
                 event.preventDefault();
             }
         });
 
+        // 3. 드래그 방지용 선택 금지 클래스 바인딩
         document.body.classList.add("protect-selection");
     }
 
@@ -343,6 +347,7 @@
         document.getElementById("reply-modal")?.classList.add("show");
     }
 
+    // 변함없이 유지되는 이메일 전송 연동 및 복사 백업 기능
     function closeReplyBox() {
         document.getElementById("reply-modal")?.classList.remove("show");
     }
@@ -356,7 +361,6 @@
             return;
         }
 
-        // 모바일 보완용 자동 복사 백업
         if (navigator.clipboard && navigator.clipboard.writeText) {
             navigator.clipboard.writeText(text).then(() => {
                 alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워. ❤️\n(혹시 메일 앱이 반응하지 않는다면 본문 내용이 클립보드에 복사되었으니 직접 발송해줘!)");
@@ -438,7 +442,6 @@
 
     function createStar(x, y) {
         const now = Date.now();
-        // ⚡ 모바일 프레임 드랍 방어용 스로틀링
         if (now - lastStarTime < 45) return;
         lastStarTime = now;
 
@@ -492,7 +495,6 @@
         currentScrollPercent += (targetScrollPercent - currentScrollPercent) * 0.12;
         currentParallax += (targetParallax - currentParallax) * 0.12;
 
-        // GPU 단독 가속을 유도하기 위해 3D 트랜스폼으로 우회 바인딩
         if (scrollBar) scrollBar.style.width = `${Math.max(0, Math.min(currentScrollPercent, 100))}%`;
         if (scrollStar) scrollStar.style.transform = `translate3d(-50%, 0, 0) rotate(${currentScrollPercent * 3.6}deg)`;
         if (stars) stars.style.transform = `translate3d(0, -${currentParallax}px, 0)`;
@@ -579,11 +581,6 @@
             icon?.classList.add("rotating");
         });
         audio.addEventListener("pause", () => {
-            document.body.classList.remove("bgm-playing");
-            player?.classList.remove("playing");
-            icon?.classList.remove("rotating");
-        });
-        audio.addEventListener("ended", () => {
             document.body.classList.remove("bgm-playing");
             player?.classList.remove("playing");
             icon?.classList.remove("rotating");
@@ -766,7 +763,7 @@
     }
 
     // =========================================
-    // 1. 점검 모드 제어 장치 (Maintenance Mode System)
+    // 1. 점검 모드 제어 시스템
     // =========================================
     function readStorage(key) {
         try { return localStorage.getItem(key); } catch (e) { return null; }
@@ -834,7 +831,7 @@
     }
 
     // =========================================
-    // 2. 이스터에그 제어부 (Easter Egg System)
+    // 2. 이스터에그 제어 시스템
     // =========================================
     function showEasterToast(message, duration = 3000) {
         const toast = document.getElementById("secret-toast");
@@ -896,17 +893,23 @@
         showEasterToast("🎆 <strong>히든 테마 [우리의 밤]</strong> 플레이어가 활성화되었어!", 3500);
         burstAt(null, 3);
     }
+    function clearLongPressTimer() {
+        if (longPressTimer) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+    }
     function addLongPress(target) {
         if (!target) return;
         const start = (event) => {
             if (event.type === "mousedown" && event.button !== 0) return;
-            clearTimeout(longPressTimer);
+            clearLongPressTimer();
             longPressTimer = setTimeout(activateOurNightTheme, LONG_PRESS_MS);
         };
         target.addEventListener("mousedown", start);
         target.addEventListener("touchstart", start, { passive: true });
         ["mouseup", "mouseleave", "touchend", "touchcancel", "dragstart"].forEach(type => {
-            target.addEventListener(type, () => clearTimeout(longPressTimer));
+            target.addEventListener(type, clearLongPressTimer);
         });
     }
     function initHiddenThemeEgg() {
@@ -1202,6 +1205,24 @@
         }, { threshold: window.innerWidth < 768 ? 0.15 : 0.28 });
         observer.observe(credits);
     }
+    function updateEndingCreditsDistance() {
+        const mask = document.querySelector(".credits-mask");
+        const roll = document.getElementById("credits-roll");
+        if (!mask || !roll) return;
+        const maskHeight = mask.getBoundingClientRect().height;
+        const rollHeight = roll.getBoundingClientRect().height;
+        mask.style.setProperty("--credits-box-height", `${maskHeight}px`);
+        mask.style.setProperty("--credits-roll-start", `${maskHeight + 30}px`);
+        mask.style.setProperty("--credits-roll-end", `${rollHeight + 50}px`);
+    }
+    function setEndingFinalVisible(visible) {
+        const msg = document.getElementById("credits-final-message");
+        if (!msg) return;
+        msg.setAttribute("aria-hidden", visible ? "false" : "true");
+        msg.style.opacity = visible ? "1" : "0";
+        msg.style.visibility = visible ? "visible" : "hidden";
+        msg.style.transform = visible ? "scale(1)" : "scale(0.96)";
+    }
     function startEndingCreditsRoll() {
         const credits = document.getElementById("ending-credits");
         const roll = document.getElementById("credits-roll");
@@ -1275,6 +1296,86 @@
         layer.appendChild(fragment);
     }
 
+    function changeSlide(direction) { showSlide(slideIndex + direction, true); }
+    function showSlide(index, resetTimer = false) {
+        if (!slides.length) return;
+        slideIndex = (index + slides.length) % slides.length;
+        const currentSlide = slides[slideIndex];
+        const slideImage = document.getElementById("slide-image");
+        const slideTitle = document.getElementById("slide-title");
+        const slideDesc = document.getElementById("slide-desc");
+
+        if (slideImage) {
+            slideImage.classList.remove("show");
+            setTimeout(() => {
+                setSafeImage(slideImage, currentSlide.src, currentSlide.fallback, currentSlide.title);
+                slideImage.classList.add("show");
+            }, 120);
+        }
+        if (slideTitle) slideTitle.innerText = currentSlide.title;
+        if (slideDesc) slideDesc.innerText = currentSlide.desc;
+
+        $$(".slide-dot").forEach((dot, dotIndex) => {
+            dot.classList.toggle("active", dotIndex === slideIndex);
+        });
+        if (resetTimer) startSlideTimer();
+    }
+    function startSlideTimer() {
+        if (slidePaused || slidePauseLocked) return;
+        clearInterval(slideTimer);
+        slideTimer = setInterval(() => { showSlide(slideIndex + 1); }, 3500);
+    }
+    function toggleSlidePause() {
+        const btn = document.getElementById("slide-pause-btn");
+        slidePauseLocked = !slidePauseLocked;
+        slidePaused = slidePauseLocked;
+
+        if (slidePauseLocked) {
+            clearInterval(slideTimer);
+            if (btn) {
+                btn.setAttribute("aria-pressed", "true");
+                btn.classList.add("paused");
+                btn.querySelector("span").innerText = "슬라이드 다시 재생";
+                btn.querySelector("i").className = "fa-solid fa-play";
+            }
+        } else {
+            startSlideTimer();
+            if (btn) {
+                btn.setAttribute("aria-pressed", "false");
+                btn.classList.remove("paused");
+                btn.querySelector("span").innerText = "슬라이드 일시정지";
+                btn.querySelector("i").className = "fa-solid fa-pause";
+            }
+        }
+    }
+
+    function initMobileNavClickAndResize() {
+        $$(".mobile-nav-links a").forEach(link => {
+            link.addEventListener("click", event => {
+                document.querySelector(".mobile-nav")?.classList.remove("open");
+                const toggleIcon = document.querySelector(".mobile-nav-toggle i");
+                if (toggleIcon) toggleIcon.className = "fa-solid fa-bars";
+                
+                const targetId = link.getAttribute("href")?.replace("#", "");
+                const target = targetId ? document.getElementById(targetId) : null;
+                if (target) {
+                    event.preventDefault();
+                    window.scrollTo({
+                        top: target.getBoundingClientRect().top + window.scrollY - 70,
+                        behavior: "smooth"
+                    });
+                }
+            });
+        });
+        document.addEventListener("click", event => {
+            if (!event.target.closest(".mobile-nav")) {
+                document.querySelector(".mobile-nav")?.classList.remove("open");
+                const toggleIcon = document.querySelector(".mobile-nav-toggle i");
+                if (toggleIcon) toggleIcon.className = "fa-solid fa-bars";
+            }
+        });
+    }
+
     function initExtraSafeFeatures() {
         initBackToTopStar();
         initImageSkeletons();
@@ -1285,8 +1386,6 @@
     }
 
     function init() {
-        initSiteSecurity(); // 보안 가동
-
         const savedVisit = safeStorage.get("memorySiteVisitCount") || "0";
         const newVisit = parseInt(savedVisit, 10) + 1;
         safeStorage.set("memorySiteVisitCount", String(newVisit));
@@ -1303,22 +1402,19 @@
         initEasterEggsSystem();
         initSeasonalEffects();
         initEndingCreditsObserver();
-        initExtraSafeFeatures();
-        initMaintenanceModeCheck();
-        setSiteTheme(safeStorage.get("memorySiteTheme") || "night");
         initRandomMessage();
         initWelcomeModal();
         initBgmControls();
         initPasswordEnterKey();
         initImageFallbacks();
         initMouseStars();
+        initMaintenanceModeCheck();
 
         $$(".mobile-nav-toggle").forEach(btn => {
             btn.addEventListener("click", toggleMobileNav);
         });
     }
 
-    // 외부 바인딩 모듈 복원
     window.toggleBGM = toggleBGM;
     window.toggleMute = toggleMute;
     window.checkPassword = checkPassword;
