@@ -1745,7 +1745,7 @@
         endingBadge: "memorySiteEndingCompleteBadge"
     };
 
-    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.20 11:20";
+    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.20 17:00";
 
     function safeGet(key) {
         try {
