@@ -17,10 +17,6 @@
         "나에게 넌 언제나 밝게 빛나는 밤하늘의 별이야."
     ];
 
-    const LOADING_MIN_VISIBLE_MS = 700;
-    const LOADING_MAX_VISIBLE_MS = 1800;
-    const loadingStartedAt = Date.now();
-
     let slideIndex = 0;
     let slideTimer = null;
     let slides = [];
@@ -96,25 +92,26 @@
         img.src = safeSrc;
     }
 
+    // [수정 완료] 인위적인 시간 제한을 제거하고, 완전히 로딩이 끝난 후 페이드아웃 후 최적화 버튼 생성 트리거 연동
     function hideLoadingScreen() {
         const loadingScreen = document.getElementById("loading-screen");
-        if (!loadingScreen || loadingScreen.dataset.hidden === "true") return;
-
-        const elapsed = Date.now() - loadingStartedAt;
-        const remaining = Math.max(0, LOADING_MIN_VISIBLE_MS - elapsed);
-
-        if (remaining > 0 && loadingScreen.dataset.hideScheduled !== "true") {
-            loadingScreen.dataset.hideScheduled = "true";
-            setTimeout(hideLoadingScreen, remaining);
+        if (!loadingScreen || loadingScreen.dataset.hidden === "true") {
+            // 로딩 화면이 이미 처리되었거나 없다면 최적화 버튼 즉시 조립
+            if (typeof window.initHybridPerformanceMode === "function") {
+                window.initHybridPerformanceMode();
+            }
             return;
         }
 
-        if (remaining > 0) return;
-
         loadingScreen.dataset.hidden = "true";
         loadingScreen.classList.add("hide");
+        
+        // 로딩 화면의 페이드아웃 트랜지션(580ms)이 완벽히 끝난 시점에 display를 끄고 버튼 실행
         setTimeout(() => {
             loadingScreen.style.display = "none";
+            if (typeof window.initHybridPerformanceMode === "function") {
+                window.initHybridPerformanceMode();
+            }
         }, 580);
     }
 
@@ -427,7 +424,7 @@
             labelElement.innerText = "우리의 이야기가 시작된 지";
         }
 
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24)); + 1
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
@@ -981,49 +978,34 @@
     }
 
     function updateEndingCreditsDistance() {
-    const mask = document.querySelector(".credits-mask");
-    const roll = document.getElementById("credits-roll");
-    if (!mask || !roll) return;
+        const mask = document.querySelector(".credits-mask");
+        const roll = document.getElementById("credits-roll");
+        if (!mask || !roll) return;
 
-    const maskHeight = Math.max(mask.clientHeight, 1);
+        const maskHeight = Math.max(mask.clientHeight, 1);
 
-    /*
-        기존에는 roll.scrollHeight 전체를 기준으로 계산해서
-        아래 padding 때문에 크레딧이 다 사라진 뒤에도 빈 공간이 오래 올라갔음.
-        이제는 실제 마지막 크레딧 요소의 bottom 위치까지만 계산함.
-    */
-    const children = Array.from(roll.children).filter(child => {
-        return child.offsetParent !== null;
-    });
+        const children = Array.from(roll.children).filter(child => {
+            return child.offsetParent !== null;
+        });
 
-    const lastChild = children[children.length - 1];
-    let lastContentBottom = roll.scrollHeight;
+        const lastChild = children[children.length - 1];
+        let lastContentBottom = roll.scrollHeight;
 
-    if (lastChild) {
-        const rollRect = roll.getBoundingClientRect();
-        const lastRect = lastChild.getBoundingClientRect();
-        lastContentBottom = lastRect.bottom - rollRect.top;
+        if (lastChild) {
+            const rollRect = roll.getBoundingClientRect();
+            const lastRect = lastChild.getBoundingClientRect();
+            lastContentBottom = lastRect.bottom - rollRect.top;
+        }
+
+        const startY = Math.round(maskHeight + 36);
+        const endY = Math.round(lastContentBottom + 8);
+        const travelDistance = startY + endY;
+        const duration = Math.min(76, Math.max(42, Math.round(travelDistance / 34)));
+
+        mask.style.setProperty("--credits-roll-start", `${startY}px`);
+        mask.style.setProperty("--credits-roll-end", `${endY}px`);
+        mask.style.setProperty("--credits-duration", `${duration}s`);
     }
-
-    const startY = Math.round(maskHeight + 36);
-
-    /*
-        마지막 글자가 박스 위로 완전히 사라지는 순간에 애니메이션 종료.
-        +8은 잘림 방지용 최소 여유.
-    */
-    const endY = Math.round(lastContentBottom + 8);
-
-    /*
-        이동 거리에 맞춰 속도 계산.
-        숫자를 줄이면 더 빠르고, 늘리면 더 천천히 올라감.
-    */
-    const travelDistance = startY + endY;
-    const duration = Math.min(76, Math.max(42, Math.round(travelDistance / 34)));
-
-    mask.style.setProperty("--credits-roll-start", `${startY}px`);
-    mask.style.setProperty("--credits-roll-end", `${endY}px`);
-    mask.style.setProperty("--credits-duration", `${duration}s`);
-}
 
     function setEndingFinalVisible(isVisible) {
         const finalMessage = document.getElementById("credits-final-message");
@@ -1100,7 +1082,6 @@
         const rect = credits.getBoundingClientRect();
         const viewHeight = window.innerHeight || document.documentElement.clientHeight || 1;
 
-        // 엔딩 크레딧 섹션에 실제로 도달했을 때 재생되도록 화면 중간 근처 진입 기준 사용
         if (rect.top <= viewHeight * 0.72 && rect.bottom >= viewHeight * 0.22) {
             startEndingCredits();
         }
@@ -1265,20 +1246,18 @@
     window.hideEasterSecret = hideEasterSecret;
     window.restartEndingCredits = restartEndingCredits;
 
+    // [수정 완료] 시간제한을 없애고 사이트 에셋의 완벽한 수집 완료 이벤트 때만 로딩 제어구문 호출
     window.addEventListener("load", hideLoadingScreen);
-    setTimeout(hideLoadingScreen, LOADING_MAX_VISIBLE_MS);
     onReady(init);
 })();
+
 // =========================================
 // 사이트 점검중 화면 제어 - 검은 화면 방지 안정본
 // =========================================
-
 (function () {
     "use strict";
 
-    // 모든 방문자에게 점검중 화면을 보여주려면 true
     const FORCE_MAINTENANCE_FOR_ALL = false;
-
     const STORAGE_KEY = "memorySiteMaintenanceModeFixed";
 
     function setSavedMode(isOn) {
@@ -1303,7 +1282,6 @@
             if (cookieValue === "on") return true;
             if (cookieValue === "off") return false;
         }
-
         return false;
     }
 
@@ -1323,18 +1301,15 @@
                     <span></span>
                     <i class="fa-solid fa-star"></i>
                 </div>
-
                 <p class="maintenance-label">SITE MAINTENANCE</p>
                 <h1>우리의 기록장을 잠시 정리하는 중이야.</h1>
                 <p class="maintenance-message">
                     더 예쁜 추억을 담기 위해 별빛을 다시 고르고 있어.<br>
                     잠시 후 다시 찾아와줘.
                 </p>
-
                 <div class="maintenance-progress">
                     <span></span>
                 </div>
-
                 <p class="maintenance-small">
                     To be continued under the same night sky.
                 </p>
@@ -1384,13 +1359,8 @@
         const params = new URLSearchParams(window.location.search);
         const mode = params.get("maintenance");
 
-        if (mode === "on") {
-            setSavedMode(true);
-        }
-
-        if (mode === "off") {
-            setSavedMode(false);
-        }
+        if (mode === "on") setSavedMode(true);
+        if (mode === "off") setSavedMode(false);
 
         const shouldShow = FORCE_MAINTENANCE_FOR_ALL || getSavedMode();
 
@@ -1456,7 +1426,7 @@
         try {
             if (window.localStorage) window.localStorage.setItem(key, value);
         } catch (error) {
-            // 저장이 막혀도 기능 실행 자체는 유지
+            // 안심 차단
         }
     }
 
@@ -1472,7 +1442,7 @@
         try {
             if (window.sessionStorage) window.sessionStorage.setItem(key, value);
         } catch (error) {
-            // 세션 저장이 막혀도 무시
+            // 안심 차단
         }
     }
 
@@ -1728,11 +1698,11 @@
         init();
     }
 })();
+
 // =========================================
 // 추가 기능 3, 5, 6, 7, 8, 10
 // 기존 기능 영향 최소화용 독립 코드
 // =========================================
-
 (function () {
     "use strict";
 
@@ -1759,7 +1729,7 @@
         try {
             localStorage.setItem(key, value);
         } catch (error) {
-            // 저장 불가 환경에서는 무시
+            // 안심 가이드
         }
     }
 
@@ -1788,9 +1758,6 @@
         }, duration);
     }
 
-    // =========================================
-    // 3. 위로 가기 별 버튼
-    // =========================================
     function initBackToTopStar() {
         if (document.getElementById("back-to-top-star")) return;
 
@@ -1820,9 +1787,6 @@
         updateButtonVisible();
     }
 
-    // =========================================
-    // 5. 사진 로딩 스켈레톤
-    // =========================================
     function initImageSkeletons() {
         const images = document.querySelectorAll(".image-wrapper img, .item-image img, #slide-image");
 
@@ -1866,9 +1830,6 @@
         });
     }
 
-    // =========================================
-    // 6. 방문 시간대별 인사
-    // =========================================
     function initTimeGreeting() {
         if (document.getElementById("memory-time-greeting")) return;
 
@@ -1907,9 +1868,6 @@
         }
     }
 
-    // =========================================
-    // 7. 엔딩 크레딧 감상 완료 배지
-    // =========================================
     function createEndingCompleteBadge() {
         let badge = document.getElementById("ending-complete-badge");
         if (badge) return badge;
@@ -1929,7 +1887,6 @@
         } else {
             document.body.appendChild(badge);
         }
-
         return badge;
     }
 
@@ -1973,9 +1930,6 @@
         }
     }
 
-    // =========================================
-    // 8. BGM 볼륨 기억
-    // =========================================
     function initBgmVolumeMemory() {
         const audio = document.getElementById("myAudio");
         const volumeSlider = document.getElementById("bgm-volume");
@@ -2035,9 +1989,6 @@
         updateMuteIcon();
     }
 
-    // =========================================
-    // 10. 기록장 업데이트 알림
-    // =========================================
     function initUpdateNotice() {
         if (document.getElementById("memory-update-notice")) return;
 
@@ -2070,31 +2021,36 @@
 
     runWhenReady(initExtraSafeFeatures);
 })();
+
 // ==========================================================================
 // 💻 & 📱 데스크탑/모바일 통합 최적화 버튼 제어 (PC: 디폴트 OFF / 모바일: 디폴트 ON)
 // ==========================================================================
 function initHybridPerformanceMode() {
-    // 중복 생성 및 구버전 잔해 파괴
+    // 중복 생성 및 구버전 잔해 파괴 (버튼 두 개 뜨는 오류 원천 해결)
     const existingButtons = document.querySelectorAll("#mobile-perf-toggle, .mobile-perf-btn, .perf-mobile-btn");
     existingButtons.forEach(btn => btn.remove());
+
+    // 만약 사이트 점검모드가 활성화된 상태라면 인터랙션 버튼을 생성하지 않고 즉시 차단
+    if (document.body.classList.contains("maintenance-mode-active") || document.getElementById("maintenance-screen")?.classList.contains("show")) {
+        return;
+    }
 
     const perfBtn = document.createElement("button");
     perfBtn.id = "mobile-perf-toggle";
     perfBtn.className = "mobile-perf-btn";
     perfBtn.type = "button";
 
-    // 현재 기기가 모바일 환경(768px 이하)인지 판별
     const isMobile = window.innerWidth <= 768;
     let isOptimized = false;
 
     if (isMobile) {
-        // [요구사항] 모바일은 진입 즉시 최적화 자동 활성화 (Default ON)
+        // 모바일 접속 시 : 성능 버스트 최적화 자동 활성화 (Default ON)
         document.body.classList.add("perf-mode-active");
         perfBtn.classList.remove("opt-off");
         perfBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> <span class="opt-text">최적화 ON</span>';
         isOptimized = true;
     } else {
-        // [요구사항] 컴퓨터(PC)는 진입 즉시 특수 효과 유지 (Default OFF)
+        // 컴퓨터 접속 시 : 화려한 은하수/오로라 효과 디폴트 유지 (Default OFF)
         document.body.classList.remove("perf-mode-active");
         perfBtn.classList.add("opt-off");
         perfBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> <span class="opt-text">최적화 OFF</span>';
@@ -2103,7 +2059,7 @@ function initHybridPerformanceMode() {
 
     document.body.appendChild(perfBtn);
 
-    // 원클릭 부스트 활성화/비활성화 스위칭 로직
+    // 원클릭 부스트 ON / OFF 실시간 전환 인터랙션
     perfBtn.addEventListener("click", function () {
         isOptimized = !isOptimized;
         if (isOptimized) {
@@ -2118,9 +2074,5 @@ function initHybridPerformanceMode() {
     });
 }
 
-// 브라우저 로딩 완료 시 안전 탑재
-if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initHybridPerformanceMode);
-} else {
-    initHybridPerformanceMode();
-}
+// 로딩 화면 모듈 내부에서 완벽한 페이드아웃 종료 후 동적으로 버튼을 불러오도록 외부에 전역 바인딩 처리
+window.initHybridPerformanceMode = initHybridPerformanceMode;
