@@ -1,6 +1,6 @@
 @charset "UTF-8";
 
-/* final-v7-secured: 중복 오버라이딩 제거 및 데스크탑 환경 모바일 메뉴 가림 처리 완료 */
+/* final-v6-secured: 보안 클래스 보강 및 데스크탑 모바일 메뉴 노출 버그 패치본 */
 
 /* =========================================
    1. 기본 리셋 및 폰트 설정
@@ -36,7 +36,7 @@ img {
     display: block;
 }
 
-/* 🔒 보안: 텍스트를 마우스 드래그로 선택하지 못하도록 차단 */
+/* 🔒 보안: 사이트 텍스트 복사 및 드래그 전면 방지 */
 body.protect-selection {
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -115,7 +115,7 @@ body.protect-selection textarea {
     100% { transform: translate3d(-1000px, 0, 0); opacity: 0; }
 }
 
-/* 계절 파티클 구조 */
+/* 계절 파티클 */
 .seasonal-effect-layer {
     position: fixed;
     inset: 0;
@@ -334,7 +334,7 @@ body.season-winter .seasonal-particle { color: #f4fbff; }
 .image-wrapper img, .item-image img, #slide-image { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
 .timeline-card:hover .image-wrapper img, .gallery-item:hover .item-image img { transform: scale(1.04); }
 
-/* 이미지 로딩 스켈레톤 단락 */
+/* 이미지 로딩 보완 스켈레톤 단락 */
 .memory-img-skeleton { position: relative; overflow: hidden; background: rgba(25, 20, 45, 0.55); }
 .memory-img-skeleton::before {
     content: ''; position: absolute; inset: 0; z-index: 3;
@@ -455,7 +455,6 @@ body.bgm-playing .stars { opacity: 0.48; filter: saturate(1.2) brightness(1.1); 
 .theme-options button { border: none; padding: 9px 14px; border-radius: 999px; background: rgba(255,255,255,0.1); color: #e5d9f2; cursor: pointer; }
 .theme-options button.active { background: #fff; color: #000; }
 
-/* 테마 컬러 변경 */
 body.theme-cherry { background-color: #170b18; }
 body.theme-cherry .main-title { background: linear-gradient(45deg, #ff9acb, #fff0f7); -webkit-text-fill-color: transparent; -webkit-background-clip: text; }
 body.theme-cherry .bgm-disk, body.theme-cherry .timeline-dot, body.theme-cherry .bouncing { color: #ff9acb; border-color: #ff9acb; }
@@ -513,7 +512,7 @@ body.lightbox-open { overflow: hidden; }
 .heart-burst-btn { display: block; margin: 18px auto 0; padding: 12px 26px; border-radius: 999px; background: linear-gradient(45deg, #c7a4ff, #ff8fd8); font-weight: bold; cursor: pointer; border: none; color: #100b26; }
 
 /* =========================================
-   9. 오버레이 로딩 및 시스템 스크린 (글자 깨짐 및 크기 유동 방지)
+   9. 오버레이 로딩 및 시스템 스크린 (글자 깨짐 방지 장치 완비)
 ========================================= */
 .loading-screen { 
     position: fixed; 
@@ -527,6 +526,7 @@ body.lightbox-open { overflow: hidden; }
     transition: opacity 0.58s ease, visibility 0.58s ease; 
     gap: 22px; 
     text-align: center; 
+    /* ✨ 외부 구글 웹폰트 연동 전 출렁거림(FOUT) 방지를 위해 시스템 탑재 폰트 고정 선언 */
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", dotum, sans-serif;
 }
 .loading-screen.hide { opacity: 0; visibility: hidden; }
@@ -621,7 +621,7 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
     position: relative; z-index: 2; padding: 110px 20px 160px; text-align: center; overflow: visible;
 }
 
-/* 🖥️ 데스크톱 기본 상태: 모바일 전용 빠른 메뉴바 단락을 숨김 처리 (사용자 요청 문제 완벽 해결) */
+/* 🖥️ [해결책] 컴퓨터 데스크톱 기본 화면에서는 모바일 빠른이동 메뉴바를 완벽 차단(숨김) */
 .mobile-nav {
     display: none;
 }
@@ -664,7 +664,7 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
     100% { transform: scale(1.04); text-shadow: 0 0 25px rgba(199, 164, 255, 0.9), 0 0 10px #fff; }
 }
 
-/* 📱 768px 이하 모바일 화면 전용 오버라이딩 구역 */
+/* 📱 768px 이하 모바일 디바이스 가독 레이아웃 반응형 */
 @media screen and (max-width: 768px) {
     body { padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
     .intro-section { min-height: 100svh; padding: 80px 18px 145px; }
@@ -686,7 +686,7 @@ footer { text-align: center; padding: 80px 20px 50px; background: linear-gradien
     .credits-roll { padding: 44px 18px 130px; }
     .credits-final-message h3 { font-size: clamp(1.55rem, 8vw, 2.4rem); letter-spacing: 2px; }
     
-    /* 📱 모바일 브라우저 전용 빠른 네비게이션 플로팅 제어 복원 선언 */
+    /* 📱 모바일 브라우저 한정으로 플로팅 단 단락 활성화 정렬 */
     .mobile-nav {
         display: flex;
         position: fixed; left: 16px; bottom: calc(142px + env(safe-area-inset-bottom));
