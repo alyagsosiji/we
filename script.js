@@ -2071,14 +2071,17 @@
     runWhenReady(initExtraSafeFeatures);
 })();
 // ==========================================================================
-// 📱 모바일 전용 최적화 버튼 동적 제어 (데스크탑 차단 완료)
+// 📱 모바일 전용 최적화 버튼 제어 (중복 생성 오류 해결 및 왼쪽 위 탑재)
 // ==========================================================================
 function initMobilePerformanceMode() {
-    // 768px 초과하는 데스크탑(PC) 환경에서는 완전히 실행을 중단하여 순정 상태 유지
+    // 768px 초과 데스크탑(PC) 환경에서는 완전히 실행을 차단하여 순정 상태 유지
     if (window.innerWidth > 768) return;
 
-    if (document.getElementById("mobile-perf-toggle")) return;
+    // [버튼 두 개 뜨는 오류 해결 1] 기존에 잔존하거나 중복 노출된 버튼 요소를 완벽 탐색 후 사전 제거
+    const existingButtons = document.querySelectorAll("#mobile-perf-toggle, .mobile-perf-btn, .perf-mobile-btn");
+    existingButtons.forEach(btn => btn.remove());
 
+    // 최적화 버튼 새롭게 단 한 개만 클린 동적 생성
     const perfBtn = document.createElement("button");
     perfBtn.id = "mobile-perf-toggle";
     perfBtn.className = "mobile-perf-btn";
@@ -2087,7 +2090,7 @@ function initMobilePerformanceMode() {
 
     document.body.appendChild(perfBtn);
 
-    // 모바일 한정 디폴트 최적화 활성화 (ON)
+    // 모바일 기본값: 최적화 자동 활성화 (디폴트 ON)
     document.body.classList.add("perf-mode-active");
     let isOptimized = true;
 
