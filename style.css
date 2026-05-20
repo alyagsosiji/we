@@ -3781,3 +3781,121 @@ body.theme-letter .aurora, body.letter .aurora, [data-theme="letter"] .aurora { 
     body.theme-letter .mobile-nav-links a, body.letter .mobile-nav-links a, [data-theme="letter"] .mobile-nav-links a { color: rgba(92, 64, 51, 0.6) !important; }
     body.theme-letter .mobile-nav-toggle { color: rgba(92, 64, 51, 1) !important; }
 }
+/* ==========================================================================
+   📱 [최종 통합본] 음악 플레이어 대각선 위 최적화 버튼 및 하단 가려짐 완벽 해결
+   ========================================================================== */
+
+/* 1. 모바일 순정 관성 물리 스크롤 강제 복원 */
+@media screen and (max-width: 768px) {
+    html, body {
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        overscroll-behavior-y: auto !important;
+        touch-action: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+    }
+
+    * {
+        -webkit-tap-highlight-color: transparent !important;
+        outline: none !important;
+    }
+
+    /* 2. 📌 [하단 가려짐 원천 해결] 음악 플레이어와 메뉴 바의 물리적 공백 확보 */
+    footer, .footer-section {
+        position: relative !important;
+        z-index: 10 !important;
+        display: block !important;
+        /* 하단바 두께와 버튼 높이를 완벽하게 보정하여 최하단 저작권 글귀의 파묻힘을 완전 방지합니다. */
+        padding-bottom: calc(190px + env(safe-area-inset-bottom)) !important;
+    }
+
+    /* 3. JS 동적 생성 최적화 버튼 스타일 (우측 하단 BGM 플레이어 바로 위 대각선 방향 안착) */
+    .mobile-perf-btn {
+        display: flex !important;
+        position: fixed !important;
+        right: 16px !important;
+        /* 기존 음악 플레이어 위치(bottom 88px) 기준 바로 위 대각선 안전 구역 정밀 좌표 계산 */
+        bottom: calc(148px + env(safe-area-inset-bottom)) !important;
+        z-index: 999999 !important; /* 클릭 레이어 씹힘 현상 철저히 방지 */
+        background: #ffc107 !important; /* 디폴트 ON 활성화 상태를 뜻하는 영롱한 골드 컬러 */
+        color: #0c0a1e !important;
+        border: 1px solid #ffc107 !important;
+        padding: 8px 14px !important;
+        border-radius: 999px !important;
+        font-size: 11px !important;
+        font-weight: bold !important;
+        cursor: pointer !important;
+        align-items: center !important;
+        gap: 6px !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35) !important;
+        transition: all 0.25s ease-in-out !important;
+    }
+
+    /* 최적화 기능을 직접 수동으로 OFF 시켰을 때의 스타일 매칭 */
+    .mobile-perf-btn.opt-off {
+        background: rgba(25, 20, 45, 0.6) !important;
+        color: rgba(255, 255, 255, 0.6) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+
+    /* 4. ⚡ [JS 활성화 연동] 대량의 입자 연산 및 모바일 렉 유발 핵심 주범 소멸 처리 */
+    body.perf-mode-active .stars {
+        animation: none !important;
+        display: none !important; /* 끊임없이 CPU 주사율을 갉아먹는 무수한 별빛 입자 연산 전면 중단 */
+    }
+
+    body.perf-mode-active .aurora {
+        background: #070714 !important; /* 움직이는 실시간 오로라 그라데이션 연산을 중지 */
+        animation: none !important;
+    }
+
+    body.perf-mode-active .timeline-card,
+    body.perf-mode-active .gallery-item,
+    body.perf-mode-active .d-day-counter,
+    body.perf-mode-active .welcome-box,
+    body.perf-mode-active .letter-lock-container {
+        backdrop-filter: none !important; /* GPU 메모리를 마비시키는 실시간 투명 블러 필터 작동 차단 */
+        -webkit-backdrop-filter: none !important;
+        background: rgba(18, 14, 35, 0.96) !important; /* 가독성에 문제없도록 암막 밸런스 조정 */
+    }
+
+    /* 5. 모바일 좁은 화면 대응 1열 일등 정렬 가이드 마감 */
+    .timeline-container { padding: 30px 16px 40px !important; }
+    .timeline-container::after { left: 20px !important; transform: none !important; }
+    .timeline-item { width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; padding-left: 42px !important; padding-bottom: 30px !important; }
+    .timeline-item:nth-child(even) { padding-left: 42px !important; }
+    .timeline-item:nth-child(odd) .timeline-dot, .timeline-item:nth-child(even) .timeline-dot { left: 2px !important; right: auto !important; top: 20px !important; }
+    .gallery-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
+    
+    .mobile-nav-toggle { background: transparent !important; border: none !important; box-shadow: none !important; }
+    .mobile-nav { position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100% !important; z-index: 99999 !important; }
+
+    /* 문장 줄바꿈 단어 단위 정돈 */
+    h1, h2, h3, p, span, a, .intro-content, .timeline-card p {
+        word-break: keep-all !important;
+        overflow-wrap: break-word !important;
+    }
+}
+
+/* ==========================================================================
+   🎨 테마 체인지 가동 시 모바일 네비게이션 무드 일체화
+   ========================================================================== */
+body.theme-cherry .aurora, body.cherry .aurora, [data-theme="cherry"] .aurora { background: radial-gradient(circle at 20% 30%, rgba(255, 192, 203, 0.5) 0%, transparent 60%), radial-gradient(circle at 80% 70%, rgba(255, 140, 170, 0.3) 0%, transparent 60%) !important; }
+body.theme-ocean .aurora, body.ocean .aurora, [data-theme="ocean"] .aurora { background: radial-gradient(circle at 20% 30%, rgba(0, 230, 240, 0.2) 0%, transparent 60%), radial-gradient(circle at 80% 70%, rgba(0, 100, 255, 0.3) 0%, transparent 60%) !important; }
+body.theme-letter .aurora, body.letter .aurora, [data-theme="letter"] .aurora { background: radial-gradient(circle at 30% 20%, rgba(255, 248, 230, 0.7) 0%, transparent 50%), radial-gradient(circle at 70% 80%, rgba(225, 200, 165, 0.4) 0%, transparent 60%) !important; }
+
+@media screen and (max-width: 768px) {
+    body.theme-cherry .mobile-nav, body.cherry .mobile-nav, [data-theme="cherry"] .mobile-nav { background: rgba(255, 242, 245, 0.98) !important; border-top: 1px solid rgba(255, 105, 180, 0.18) !important; }
+    body.theme-cherry .mobile-nav-links a, body.cherry .mobile-nav-links a, [data-theme="cherry"] .mobile-nav-links a { color: rgba(165, 55, 85, 0.6) !important; }
+    body.theme-cherry .mobile-nav-toggle { color: rgba(165, 55, 85, 1) !important; }
+
+    body.theme-ocean .mobile-nav, body.ocean .mobile-nav, [data-theme="ocean"] .mobile-nav { background: rgba(6, 16, 33, 0.98) !important; border-top: 1px solid rgba(0, 206, 209, 0.18) !important; }
+    body.theme-ocean .mobile-nav-links a, body.ocean .mobile-nav-links a, [data-theme="ocean"] .mobile-nav-links a { color: rgba(100, 255, 218, 0.6) !important; }
+    body.theme-ocean .mobile-nav-toggle { color: rgba(100, 255, 218, 1) !important; }
+
+    body.theme-letter .mobile-nav, body.letter .mobile-nav, [data-theme="letter"] .mobile-nav { background: rgba(248, 242, 228, 0.98) !important; border-top: 1px solid rgba(139, 90, 43, 0.12) !important; }
+    body.theme-letter .mobile-nav-links a, body.letter .mobile-nav-links a, [data-theme="letter"] .mobile-nav-links a { color: rgba(92, 64, 51, 0.6) !important; }
+    body.theme-letter .mobile-nav-toggle { color: rgba(92, 64, 51, 1) !important; }
+}
