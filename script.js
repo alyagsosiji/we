@@ -1,8 +1,8 @@
 (() => {
     "use strict";
 
-    // final-v7-easter: 슬라이드 일시정지 + 로딩 최적화 + 라이트박스 설명 + 엔딩 완료 표시
-    // [보안 및 안정성 강화 패치 결합 완료]
+    // final-v6: 슬라이드 일시정지 + 로딩 최적화 + 라이트박스 설명 + 엔딩 완료 표시
+    // [보안 패치 및 PC 레이아웃 안정화 코드 완전 통합본]
 
     if (window.__memorySiteFinalScriptLoaded) return;
     window.__memorySiteFinalScriptLoaded = true;
@@ -21,7 +21,7 @@
     const LOADING_MIN_VISIBLE_MS = 700;
     const LOADING_MAX_VISIBLE_MS = 1800;
     const loadingStartedAt = Date.now();
-    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.20 10:30";
+    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.19 17:00";
     const LONG_PRESS_MS = 850;
 
     let slideIndex = 0;
@@ -33,7 +33,7 @@
     let secretToastTimer = null;
     let titleClickCount = 0;
     let footerClickCount = 0;
-    let bgmSecretClickCount = 0; // 원본 변수명 100% 복원
+    let bgmSecretClickCount = 0; 
     let typedSecretBuffer = "";
     let dateBuffer = ""; 
     let endingFireworkPlayed = false;
@@ -102,9 +102,7 @@
         img.src = safeSrc;
     }
 
-    // =========================================
-    // 🔒 사이트 보안 제어 장치 (우클릭, 소스 보기 단축키 완전 차단)
-    // =========================================
+    // 🔒 [보안 강화] 마우스 우클릭 및 핵심 단축키 전면 차단 기능
     function initSiteSecurity() {
         document.addEventListener("contextmenu", event => {
             if (!event.target.closest("input, textarea")) {
@@ -425,7 +423,7 @@
     }
 
     function createStar(x, y) {
-        if (Math.random() > 0.75) return; // 원본 확률 분기 복원
+        if (Math.random() > 0.75) return;
 
         const star = document.createElement("div");
         star.className = "mouse-star";
@@ -440,7 +438,7 @@
         star.style.height = `${size}px`;
 
         document.body.appendChild(star);
-        setTimeout(() => star.remove(), 1000); // 원본 시간 복원
+        setTimeout(() => star.remove(), 1000);
     }
 
     function updateDday() {
@@ -474,11 +472,11 @@
         const scrollStar = document.getElementById("scroll-star");
         const stars = document.querySelector(".stars");
 
-        currentScrollPercent += (targetScrollPercent - currentScrollPercent) * 0.1; // 원본 수식 가속도 복원
+        currentScrollPercent += (targetScrollPercent - currentScrollPercent) * 0.1;
         currentParallax += (targetParallax - currentParallax) * 0.1;
 
         if (scrollBar) scrollBar.style.width = `${Math.max(0, Math.min(currentScrollPercent, 100))}%`;
-        if (scrollStar) scrollStar.style.transform = `rotate(${currentScrollPercent * 3.6}deg)`; // 원본 회전축 처리 복원
+        if (scrollStar) scrollStar.style.transform = `rotate(${currentScrollPercent * 3.6}deg)`;
         if (stars) stars.style.transform = `translateY(-${currentParallax}px)`;
 
         window.requestAnimationFrame(smoothScrollAnimation);
@@ -595,7 +593,7 @@
             return {
                 src: img?.getAttribute("src") || fallback,
                 fallback,
-                title: item.querySelector(".item-title")?.innerText || "우리의 순간",
+                title: item.querySelector(".item-title")?.innerText || "우 우리의 순간",
                 desc: item.querySelector(".item-desc")?.innerText || "소중한 기억"
             };
         });
@@ -639,7 +637,7 @@
 
         function updateActiveByScroll() {
             ticking = false;
-            const checkLine = window.scrollY + Math.min(window.innerHeight * 0.42, 360); // 원본 가중치 수식 복원
+            const checkLine = window.scrollY + Math.min(window.innerHeight * 0.42, 360);
             let activeId = sections[0].id;
 
             for (const section of sections) {
@@ -736,29 +734,11 @@
         document.getElementById("theme-panel")?.classList.toggle("open");
     }
 
-    // =========================================
-    // 1. 점검 모드 제어 시스템
-    // =========================================
     function readStorage(key) {
         try { return localStorage.getItem(key); } catch (e) { return null; }
     }
     function safeSet(key, value) {
         try { localStorage.setItem(key, value); } catch (error) {}
-    }
-    function runWhenReady(callback) {
-        if (document.readyState === "loading") {
-            document.addEventListener("DOMContentLoaded", callback, { once: true });
-        } else {
-            callback();
-        }
-    }
-    function showMiniToast(message, duration = 2400) {
-        const toast = document.getElementById("secret-toast");
-        if (!toast) return;
-        toast.innerHTML = message;
-        toast.classList.add("show");
-        clearTimeout(toast._extraFeatureTimer);
-        toast._extraFeatureTimer = setTimeout(() => { toast.classList.remove("show"); }, duration);
     }
 
     function createMaintenanceScreenIfMissing() {
@@ -804,9 +784,6 @@
         }
     }
 
-    // =========================================
-    // 2. 이스터에그 제어 시스템
-    // =========================================
     function showEasterToast(message, duration = 3000) {
         const toast = document.getElementById("secret-toast");
         if (!toast) return;
@@ -898,7 +875,7 @@
         const diskButton = document.querySelector(".bgm-main-btn");
         if (!diskButton) return;
         diskButton.addEventListener("click", () => {
-            bgmSecretClickCount += 1; // 원본 구조 보존
+            bgmSecretClickCount += 1;
             clearTimeout(initBgmDiskEggBoost._timer);
             initBgmDiskEggBoost._timer = setTimeout(() => { bgmSecretClickCount = 0; }, 3000);
             if (bgmSecretClickCount >= 7) {
@@ -960,7 +937,6 @@
         });
     }
     
-    // index.html에서 명시적으로 사용하는 별빛 팝업 숨기기 기믹 연동 복원
     window.hideEasterSecret = function() {
         document.getElementById("easter-secret")?.classList.remove("revealed");
     };
@@ -974,9 +950,6 @@
         initMainTitleEasterEgg();
     }
 
-    // =========================================
-    // 3. 위로 가기 별 버튼
-    // =========================================
     function initBackToTopStar() {
         if (document.getElementById("back-to-top-star")) return;
         const button = document.createElement("button");
@@ -992,9 +965,6 @@
         }, { passive: true });
     }
 
-    // =========================================
-    // 4. 이미지 스켈레톤 UI 처리
-    // =========================================
     function initImageSkeletons() {
         $$(".image-wrapper img, .item-image img, #slide-image").forEach(img => {
             const container = img.closest(".image-wrapper, .item-image, .slide-image-wrap");
@@ -1007,9 +977,6 @@
         });
     }
 
-    // =========================================
-    // 5. 시간대별 인사 문구
-    // =========================================
     function initTimeGreeting() {
         if (document.getElementById("memory-time-greeting")) return;
         const hour = new Date().getHours();
@@ -1031,20 +998,14 @@
 
         const randomMessage = document.getElementById("random-message");
         const visitCount = document.getElementById("visit-count");
-        const introContent = document.querySelector(".intro-content");
 
         if (randomMessage) {
             randomMessage.insertAdjacentElement("afterend", greeting);
         } else if (visitCount) {
             visitCount.insertAdjacentElement("beforebegin", greeting);
-        } else if (introContent) {
-            introContent.appendChild(greeting);
         }
     }
 
-    // =========================================
-    // 6. 플레이어 볼륨 메모리 저장
-    // =========================================
     function initBgmVolumeMemory() {
         const audio = document.getElementById("myAudio");
         const volumeSlider = document.getElementById("bgm-volume");
@@ -1085,9 +1046,6 @@
         updateMuteIcon();
     }
 
-    // =========================================
-    // 7. 엔딩 크레딧 감상 완료 배지
-    // =========================================
     function createEndingCompleteBadge() {
         let badge = document.getElementById("ending-complete-badge");
         if (badge) return badge;
@@ -1120,9 +1078,6 @@
         }
     }
 
-    // =========================================
-    // 8. 모바일 터치이벤트 및 폴백 (마우스별빛 포함)
-    // =========================================
     function initMouseStars() {
         document.addEventListener("mousemove", event => createStar(event.clientX, event.clientY), { passive: true });
         document.addEventListener("touchmove", event => {
@@ -1131,9 +1086,6 @@
         }, { passive: true });
     }
 
-    // =========================================
-    // 9. 테마 선택 기능 메모리 보완
-    // =========================================
     function initThemePanelMemory() {
         $$(".theme-options button").forEach(btn => {
             btn.addEventListener("click", () => {
@@ -1147,9 +1099,6 @@
         });
     }
 
-    // =========================================
-    // 10. 기록장 업데이트 알림
-    // =========================================
     function initUpdateNotice() {
         if (document.getElementById("memory-update-notice")) return;
 
@@ -1171,9 +1120,6 @@
         }
     }
 
-    // =========================================
-    // 엔딩 크레딧 핵심 조율 시스템 (세부 분할 함수 복원)
-    // =========================================
     function initEndingCreditsObserver() {
         const credits = document.getElementById("ending-credits");
         if (!credits || !("IntersectionObserver" in window)) return;
@@ -1266,7 +1212,7 @@
         let count = 26;
 
         if (month >= 3 && month <= 5) {
-            season = "spring"; symbols = ["❀", "✿", "♡", "✦"]; count = 24; // 원본 배열 복원
+            season = "spring"; symbols = ["❀", "✿", "♡", "✦"]; count = 24;
         } else if (month >= 6 && month <= 8) {
             season = "summer"; symbols = ["🫧", "✨", "🫧"]; count = 20;
         } else if (month >= 9 && month <= 11) {
@@ -1373,17 +1319,8 @@
         });
     }
 
-    function initExtraSafeFeatures() {
-        initBackToTopStar();
-        initImageSkeletons();
-        initTimeGreeting();
-        initUpdateNotice();
-        initEndingCompleteBadge();
-        initBgmVolumeMemory();
-    }
-
     function init() {
-        initSiteSecurity(); // 보안 구동 추가
+        initSiteSecurity(); // 보안 컨트롤 구동
         const savedVisit = safeStorage.get("memorySiteVisitCount") || "0";
         const newVisit = parseInt(savedVisit, 10) + 1;
         safeStorage.set("memorySiteVisitCount", String(newVisit));
@@ -1413,6 +1350,39 @@
         });
     }
 
+    // =========================================
+    // 10. 기록장 업데이트 알림 및 원본 서브 특성 가동
+    // =========================================
+    function initUpdateNotice() {
+        if (document.getElementById("memory-update-notice")) return;
+
+        const notice = document.createElement("p");
+        notice.id = "memory-update-notice";
+        notice.className = "memory-update-notice";
+        notice.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i>${SITE_UPDATE_TEXT}`;
+
+        const timeGreeting = document.getElementById("memory-time-greeting");
+        const visitCount = document.getElementById("visit-count");
+        const introContent = document.querySelector(".intro-content");
+
+        if (timeGreeting) {
+            timeGreeting.insertAdjacentElement("afterend", notice);
+        } else if (visitCount) {
+            visitCount.insertAdjacentElement("beforebegin", notice);
+        } else if (introContent) {
+            introContent.appendChild(notice);
+        }
+    }
+
+    function initExtraSafeFeatures() {
+        initBackToTopStar();
+        initImageSkeletons();
+        initTimeGreeting();
+        initUpdateNotice();
+        initEndingCompleteBadge();
+        initBgmVolumeMemory();
+    }
+
     window.toggleBGM = toggleBGM;
     window.toggleMute = toggleMute;
     window.checkPassword = checkPassword;
@@ -1429,6 +1399,8 @@
 
     window.addEventListener("load", hideLoadingScreen, { once: true });
     setTimeout(hideLoadingScreen, LOADING_MAX_VISIBLE_MS);
+    
+    // 원본 흐름 스크립트 결합 실행 고정
     runWhenReady(init);
     runWhenReady(initExtraSafeFeatures);
 })();
