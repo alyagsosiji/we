@@ -21,7 +21,7 @@
     const LOADING_MIN_VISIBLE_MS = 700;
     const LOADING_MAX_VISIBLE_MS = 1800;
     const loadingStartedAt = Date.now();
-    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.19 17:00";
+    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.20 10:30";
     const LONG_PRESS_MS = 850;
 
     let slideIndex = 0;
