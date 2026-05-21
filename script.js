@@ -1,3687 +1,2078 @@
-/* final-v6: 슬라이드 일시정지 + 로딩 최적화 + 라이트박스 설명 + 엔딩 완료 표시 */
-/* 기본 리셋 및 폰트 설정 */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    font-family: 'Gowun Batang', 'Nanum Myeongjo', serif;
-    background-color: #070714;
-    color: #ffffff;
-    overflow-x: hidden;
-    position: relative;
-    overscroll-behavior-y: none;
-    touch-action: pan-y;
-    min-height: 100vh;
-}
-
-button,
-input,
-textarea {
-    font-family: inherit;
-}
-
-img {
-    max-width: 100%;
-    display: block;
-}
-
-/* 깊은 우주의 오로라 빛 배경 */
-.aurora {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    background:
-        radial-gradient(circle at 20% 30%, rgba(90, 40, 150, 0.2) 0%, transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(40, 60, 150, 0.2) 0%, transparent 50%);
-    z-index: -1;
-    pointer-events: none;
-}
-
-/* 별빛 배경 애니메이션 */
-.stars {
-    position: fixed;
-    top: -30px;
-    left: -30px;
-    width: calc(100% + 60px);
-    height: calc(100% + 60px);
-    background: url('https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?w=1600') repeat top center;
-    background-size: cover;
-    opacity: 0.35;
-    z-index: -2;
-    will-change: transform, background-position;
-    pointer-events: none;
-    animation: slowDrift 150s linear infinite;
-}
-
-@keyframes slowDrift {
-    0% { background-position: 0 0; }
-    100% { background-position: 0 -2000px; }
-}
-
-/* 인트로 섹션 */
-.intro-section {
-    min-height: 100svh;
-    height: auto;
-    padding: 90px 20px 150px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    position: relative;
-}
-
-.intro-content {
-    width: min(92vw, 760px);
-    position: relative;
-    z-index: 2;
-    animation: introFadeStable 1.6s ease-in-out both;
-}
-
-@keyframes introFadeStable {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-.sub-title {
-    font-size: 1.2rem;
-    line-height: 1.6;
-    letter-spacing: 4px;
-    color: #e5d9f2;
-    margin-bottom: 15px;
-    text-shadow: 0 0 15px rgba(229, 217, 242, 0.6);
-}
-
-.main-title {
-    font-size: 3.5rem;
-    line-height: 1.25;
-    font-weight: 700;
-    letter-spacing: 6px;
-    background: linear-gradient(45deg, #c7a4ff, #ffffff);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    text-shadow: 0 0 25px rgba(199, 164, 255, 0.4);
-}
-
-.scroll-down {
-    position: absolute;
-    left: 50%;
-    bottom: max(34px, env(safe-area-inset-bottom));
-    transform: translateX(-50%);
-    width: min(92vw, 520px);
-    min-height: 58px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    color: #bcafd0;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    text-shadow: 0 0 10px rgba(188, 175, 208, 0.5);
-    z-index: 3;
-}
-
-.scroll-down p {
-    margin: 0;
-    line-height: 1.6;
-}
-
-.bouncing {
-    margin-top: 0;
-    font-size: 1.5rem;
-    color: #c7a4ff;
-    animation: bounce 2s infinite;
-}
-
-/* 타임라인 레이아웃 */
-.timeline-container {
-    position: relative;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 50px 20px 100px;
-}
-
-.timeline-container::after {
-    content: '';
-    position: absolute;
-    width: 2px;
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(to bottom, transparent, #c7a4ff, #8263cf, transparent);
-    box-shadow: 0 0 15px rgba(199, 164, 255, 0.7);
-    z-index: 1;
-}
-
-.timeline-item {
-    width: 50%;
-    position: relative;
-    margin-bottom: 80px;
-    opacity: 0;
-    transform: translateY(40px);
-    transition: opacity 0.9s cubic-bezier(0.25, 1, 0.5, 1), transform 0.9s cubic-bezier(0.25, 1, 0.5, 1);
-    z-index: 2;
-}
-
-.timeline-item.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.timeline-item:nth-child(odd) {
-    margin-left: 0;
-    padding-right: 45px;
-}
-
-.timeline-item:nth-child(even) {
-    margin-left: 50%;
-    padding-left: 45px;
-}
-
-.timeline-card,
-.gallery-item {
-    background: rgba(25, 20, 45, 0.45);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(199, 164, 255, 0.25);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(199, 164, 255, 0.05);
-    transition: transform 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
-}
-
-.timeline-card {
-    border-radius: 20px;
-    padding: 30px;
-}
-
-.timeline-card:hover,
-.gallery-item:hover {
-    transform: translateY(-5px);
-    border-color: rgba(199, 164, 255, 0.6);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6), inset 0 0 20px rgba(199, 164, 255, 0.15);
-}
-
-.timeline-dot {
-    position: absolute;
-    width: 36px;
-    height: 36px;
-    top: 30px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: #c7a4ff;
-    font-size: 0.9rem;
-    background: #0d0a20;
-    border: 3px solid #c7a4ff;
-    border-radius: 50%;
-    z-index: 3;
-    box-shadow: 0 0 20px rgba(199, 164, 255, 0.8), inset 0 0 10px rgba(199, 164, 255, 0.4);
-    animation: heartPulse 2.5s infinite;
-}
-
-.timeline-item:nth-child(odd) .timeline-dot {
-    right: -18px;
-}
-
-.timeline-item:nth-child(even) .timeline-dot {
-    left: -18px;
-}
-
-.timeline-date {
-    font-size: 1.1rem;
-    color: #d1b8fc;
-    font-weight: bold;
-    margin-bottom: 10px;
-    letter-spacing: 1px;
-}
-
-.timeline-card h2 {
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-    color: #ffffff;
-    text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
-}
-
-.image-wrapper,
-.item-image,
-.slide-image-wrap {
-    width: 100%;
-    overflow: hidden;
-    background: rgba(199, 164, 255, 0.08);
-}
-
-.image-wrapper {
-    aspect-ratio: 4 / 3;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-}
-
-.image-wrapper img,
-.item-image img,
-#slide-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-}
-
-.image-wrapper img,
-.item-image img {
-    transition: transform 0.6s ease;
-}
-
-.timeline-card:hover .image-wrapper img,
-.gallery-item:hover .item-image img {
-    transform: scale(1.05);
-}
-
-.timeline-card p {
-    font-size: 1.05rem;
-    line-height: 1.7;
-    color: #ccc5da;
-}
-
-/* 푸터 디자인 */
-footer {
-    text-align: center;
-    padding: 80px 20px 50px;
-    background: linear-gradient(to top, rgba(7, 7, 20, 1), transparent);
-    position: relative;
-    z-index: 1;
-}
-
-.footer-content p {
-    font-size: 1rem;
-    color: #bcafd0;
-    margin-bottom: 15px;
-}
-
-.copyright {
-    font-size: 0.85rem !important;
-    color: #6a617e !important;
-    margin-top: 30px;
-    letter-spacing: 1px;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-10px); }
-    60% { transform: translateY(-5px); }
-}
-
-@keyframes heartPulse {
-    0%, 100% { box-shadow: 0 0 20px rgba(199, 164, 255, 0.5), inset 0 0 10px rgba(199, 164, 255, 0.3); }
-    50% { box-shadow: 0 0 35px rgba(199, 164, 255, 1), inset 0 0 15px rgba(199, 164, 255, 0.6); }
-}
-
-/* 갤러리 섹션 */
-.gallery-section {
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 20px 20px 100px;
-    position: relative;
-    z-index: 2;
-}
-
-.gallery-header {
-    text-align: center;
-    margin-bottom: 50px;
-}
-
-.gallery-title {
-    font-size: 1.8rem;
-    color: #ffffff;
-    margin-bottom: 10px;
-    text-shadow: 0 0 15px rgba(199, 164, 255, 0.4);
-}
-
-.gallery-sub {
-    color: #bcafd0;
-    font-size: 1rem;
-    letter-spacing: 1px;
-}
-
-.gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-}
-
-.gallery-item {
-    border-radius: 15px;
-    padding: 25px;
-    text-align: center;
-    opacity: 0;
-    transform: translateY(40px);
-}
-
-.gallery-item.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-
-.item-title {
-    font-size: 1.25rem;
-    color: #e5d9f2;
-    margin-bottom: 15px;
-    font-weight: bold;
-}
-
-.item-image {
-    aspect-ratio: 1 / 1.08;
-    border-radius: 10px;
-    margin-bottom: 15px;
-}
-
-.item-desc {
-    color: #ccc5da;
-    font-size: 0.95rem;
-    line-height: 1.6;
-}
-
-.sns-links {
-    margin: 25px 0 15px;
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-}
-
-.sns-links a {
-    color: #bcafd0;
-    font-size: 1.8rem;
-    transition: all 0.3s ease;
-    text-decoration: none;
-}
-
-.sns-links a:hover {
-    color: #ffffff;
-    transform: translateY(-5px);
-    text-shadow: 0 0 15px rgba(199, 164, 255, 0.8);
-}
-
-/* 실시간 디데이 카운터 */
-.d-day-counter {
-    margin-top: 40px;
-    margin-bottom: 20px;
-    min-width: min(92vw, 430px);
-    background: rgba(25, 20, 45, 0.45);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(199, 164, 255, 0.3);
-    border-radius: 20px;
-    padding: 20px 30px;
-    display: inline-block;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(199, 164, 255, 0.1);
-}
-
-.d-day-label {
-    font-size: 1rem;
-    color: #e5d9f2;
-    margin-bottom: 15px;
-    letter-spacing: 2px;
-}
-
-.time-blocks {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: nowrap;
-}
-
-.time-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 60px;
-}
-
-.time-box span {
-    display: inline-block;
-    min-width: 2ch;
-    font-size: 2.2rem;
-    font-weight: 700;
-    color: #ffffff;
-    text-shadow: 0 0 15px rgba(199, 164, 255, 0.9);
-    font-family: 'Courier New', Courier, monospace;
-}
-
-.time-box p {
-    font-size: 0.9rem;
-    color: #bcafd0;
-    margin-top: 5px;
-}
-
-/* BGM 플레이어 */
-#bgm-container {
-    position: fixed;
-    right: 30px;
-    bottom: 30px;
-    z-index: 1000;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    border: 1px solid rgba(199, 164, 255, 0.45);
-    box-shadow: 0 0 15px rgba(199, 164, 255, 0.3);
-}
-
-#bgm-container.bgm-player {
-    gap: 12px;
-    border-radius: 999px;
-    padding: 10px 14px 10px 10px;
-    background: rgba(25, 20, 45, 0.72);
-    max-width: min(92vw, 360px);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-.bgm-main-btn,
-#bgm-mute-btn {
-    border: none;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-    padding: 0;
-}
-
-.bgm-disk {
-    font-size: 2rem;
-    color: #c7a4ff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.rotating {
-    animation: rotateDisk 3s linear infinite;
-}
-
-@keyframes rotateDisk {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-#bgm-container.playing {
-    box-shadow: 0 0 22px rgba(199, 164, 255, 0.55);
-}
-
-.music-info {
-    min-width: 0;
-    text-align: left;
-}
-
-.music-info p {
-    font-size: 0.7rem;
-    color: #bcafd0;
-    margin-bottom: 2px;
-    letter-spacing: 1px;
-}
-
-.music-info strong {
-    display: block;
-    color: #ffffff;
-    font-size: 0.88rem;
-    max-width: 220px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.bgm-controls {
-    margin-top: 6px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-#bgm-mute-btn {
-    color: #c7a4ff;
-    font-size: 0.95rem;
-}
-
-#bgm-volume {
-    width: 110px;
-    accent-color: #c7a4ff;
-    cursor: pointer;
-}
-
-/* 비밀 편지 */
-.secret-letter-section {
-    max-width: 700px;
-    margin: 100px auto;
-    padding: 20px;
-    text-align: center;
-    position: relative;
-    z-index: 2;
-}
-
-.letter-lock-container {
-    background: rgba(25, 20, 45, 0.6);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(199, 164, 255, 0.3);
-    padding: 50px 30px;
-    border-radius: 30px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-}
-
-.letter-lock-container i {
-    font-size: 3rem;
-    color: #c7a4ff;
-    margin-bottom: 20px;
-}
-
-.password-field {
-    margin-top: 25px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-}
-
-#letter-password {
-    width: 120px;
-    height: 50px;
-    padding: 0 10px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid #c7a4ff;
-    border-radius: 10px;
-    color: white;
-    text-align: center;
-    font-size: 1.5rem;
-    letter-spacing: 5px;
-    font-family: Arial, sans-serif;
-    outline: none;
-}
-
-#letter-password::placeholder {
-    font-size: 1.2rem;
-    letter-spacing: 2px;
-}
-
-.password-field button {
-    height: 50px;
-    padding: 0 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: 10px;
-    background: #c7a4ff;
-    color: #1a1a2e;
-    font-weight: bold;
-    font-size: 1.05rem;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.password-field button:hover {
-    background: #ffffff;
-    box-shadow: 0 0 15px #c7a4ff;
-    transform: translateY(-3px);
-}
-
-.letter-paper {
-    background: #fffdf5;
-    color: #333;
-    padding: 50px 40px;
-    border-radius: 5px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    position: relative;
-    transform: rotate(-1deg);
-    animation: openPaper 1s ease-out;
-}
-
-#open-icon {
-    font-size: 2.5rem;
-    color: #ff6b6b;
-    margin-bottom: 20px;
-}
-
-.letter-paper h2 {
-    font-family: 'Gowun Batang', serif;
-    margin-bottom: 30px;
-    color: #1a1a2e;
-}
-
-.letter-text {
-    font-size: 1.1rem;
-    line-height: 1.8;
-    text-align: left;
-    margin-bottom: 40px;
-}
-
-.letter-signature {
-    font-size: 1.2rem;
-    font-weight: bold;
-    text-align: right;
-}
-
-@keyframes openPaper {
-    from { opacity: 0; transform: scale(0.8) rotate(0deg); }
-    to { opacity: 1; transform: scale(1) rotate(-1deg); }
-}
-
-/* 별똥별 */
-.shooting-stars {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    transform: rotate(-45deg);
-    pointer-events: none;
-}
-
-.shooting-stars span {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 100px;
-    height: 2px;
-    background: linear-gradient(90deg, #ffffff, transparent);
-    box-shadow: 0 0 10px #ffffff;
-    animation: shooting 3s linear infinite;
-    opacity: 0;
-}
-
-.shooting-stars span:nth-child(1) { top: 10%; left: 80%; animation-delay: 0s; animation-duration: 3s; }
-.shooting-stars span:nth-child(2) { top: 30%; left: 60%; animation-delay: 1.5s; animation-duration: 4s; }
-.shooting-stars span:nth-child(3) { top: -10%; left: 40%; animation-delay: 2.5s; animation-duration: 3.5s; }
-.shooting-stars span:nth-child(4) { top: 70%; left: 90%; animation-delay: 0.8s; animation-duration: 2.5s; }
-
-@keyframes shooting {
-    0% { transform: translateX(0); opacity: 1; }
-    100% { transform: translateX(-1000px); opacity: 0; }
-}
-
-/* 라이트박스 */
-.lightbox {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    inset: 0;
-    width: 100%;
-    min-height: 100svh;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    padding: 28px;
-}
-
-.lightbox.show {
-    display: flex;
-    opacity: 1;
-}
-
-.lightbox img {
-    max-width: min(90vw, 1100px);
-    max-height: 90svh;
-    width: auto;
-    height: auto;
-    border-radius: 15px;
-    box-shadow: 0 0 30px rgba(199, 164, 255, 0.4);
-    transform: scale(0.8);
-    transition: transform 0.4s ease;
-    object-fit: contain;
-}
-
-.lightbox.show img {
-    transform: scale(1);
-}
-
-.close-lightbox {
-    position: absolute;
-    top: 30px;
-    right: 40px;
-    font-size: 3rem;
-    color: #fff;
-    cursor: pointer;
-    text-shadow: 0 0 10px #c7a4ff;
-    transition: 0.3s;
-    z-index: 2;
-}
-
-.close-lightbox:hover {
-    color: #c7a4ff;
-    transform: scale(1.1);
-}
-
-.mouse-star {
-    position: fixed;
-    pointer-events: none;
-    background: #ffffff;
-    border-radius: 50%;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 1), 0 0 30px rgba(199, 164, 255, 0.9), 0 0 45px rgba(199, 164, 255, 0.6);
-    animation: sparkleTrail 1s ease-out forwards;
-    z-index: 9998;
-    will-change: transform, opacity;
-    transform: translate(-50%, -50%);
-}
-
-@keyframes sparkleTrail {
-    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
-    30% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.1); }
-}
-
-.random-message {
-    min-height: 32px;
-    margin-top: 25px;
-    font-size: 1.1rem;
-    line-height: 1.7;
-    color: #e5d9f2;
-    font-style: italic;
-    letter-spacing: 1px;
-    text-shadow: 0 0 10px rgba(199, 164, 255, 0.6);
-    animation: fadeIn 2s ease-in-out;
-}
-
-.scroll-progress-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: transparent;
-    z-index: 10000;
-}
-
-.scroll-progress-bar {
-    height: 100%;
-    width: 0%;
-    background: #c7a4ff;
-    box-shadow: 0 0 10px #c7a4ff, 0 0 20px #ffffff;
-    position: relative;
-    border-radius: 0 2px 2px 0;
-    will-change: width;
-}
-
-#scroll-star {
-    position: absolute;
-    right: -8px;
-    top: -6px;
-    color: #ffffff;
-    text-shadow: 0 0 10px #c7a4ff;
-    font-size: 14px;
-}
-
-.reply-btn {
-    display: none;
-    margin-top: 40px;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px 30px;
-    background: linear-gradient(45deg, #c7a4ff, #8263cf);
-    color: #1a1a2e;
-    text-decoration: none;
-    border: none;
-    border-radius: 30px;
-    font-size: 1.05rem;
-    font-weight: bold;
-    box-shadow: 0 5px 20px rgba(199, 164, 255, 0.4);
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.reply-btn.is-visible {
-    display: inline-flex;
-}
-
-.reply-btn:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(199, 164, 255, 0.8);
-    color: #ffffff;
-}
-
-.reply-modal {
-    display: none;
-    position: fixed;
-    z-index: 10001;
-    inset: 0;
-    min-height: 100svh;
-    background: rgba(0, 0, 0, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    justify-content: center;
-    align-items: center;
-    opacity: 0;
-    transition: opacity 0.4s ease;
-    padding: 24px;
-}
-
-.reply-modal.show {
-    display: flex;
-    opacity: 1;
-}
-
-.reply-box {
-    width: 90%;
-    max-width: 500px;
-    background: rgba(255, 253, 245, 0.95);
-    padding: 40px;
-    border-radius: 15px;
-    box-shadow: 0 15px 40px rgba(199, 164, 255, 0.5);
-    position: relative;
-    text-align: center;
-    transform: translateY(30px);
-    transition: transform 0.4s ease;
-}
-
-.reply-modal.show .reply-box {
-    transform: translateY(0);
-}
-
-.close-reply {
-    position: absolute;
-    top: 15px;
-    right: 25px;
-    font-size: 2rem;
-    color: #6a617e;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.close-reply:hover {
-    color: #ff6b6b;
-}
-
-.reply-box h3 {
-    font-family: 'Gowun Batang', serif;
-    color: #1a1a2e;
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-    text-align: left;
-}
-
-#reply-text {
-    width: 100%;
-    height: 200px;
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid #bcafd0;
-    font-family: 'Gowun Batang', serif;
-    font-size: 1.1rem;
-    line-height: 1.8;
-    color: #333;
-    resize: none;
-    outline: none;
-    margin-bottom: 30px;
-}
-
-#reply-text::placeholder {
-    color: #aaa;
-    font-style: italic;
-}
-
-.send-letter-btn {
-    background: linear-gradient(45deg, #c7a4ff, #8263cf);
-    color: white;
-    border: none;
-    padding: 12px 35px;
-    border-radius: 30px;
-    font-size: 1.1rem;
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 5px 15px rgba(199, 164, 255, 0.5);
-    transition: 0.3s;
-}
-
-.send-letter-btn:hover {
-    background: #8263cf;
-    transform: translateY(-3px);
-}
-
-/* 로딩 화면 */
-.loading-screen {
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle at center, rgba(30, 18, 60, 0.98), rgba(7, 7, 20, 0.98));
-    z-index: 20000;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 22px;
-    transition: opacity 0.7s ease, visibility 0.7s ease;
-}
-
-.loading-screen.hide {
-    opacity: 0;
-    visibility: hidden;
-}
-
-.loading-star {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    background: rgba(199, 164, 255, 0.15);
-    border: 1px solid rgba(199, 164, 255, 0.45);
-    box-shadow: 0 0 30px rgba(199, 164, 255, 0.75);
-    animation: loadingTwinkle 1.4s ease-in-out infinite;
-}
-
-.loading-star i {
-    font-size: 2rem;
-}
-
-.loading-screen p {
-    color: #e5d9f2;
-    font-size: 1.1rem;
-    letter-spacing: 2px;
-    text-shadow: 0 0 12px rgba(199, 164, 255, 0.7);
-}
-
-@keyframes loadingTwinkle {
-    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.85; }
-    50% { transform: scale(1.18) rotate(25deg); opacity: 1; }
-}
-
-/* 첫 방문 안내 */
-.welcome-modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 15000;
-    background: rgba(0, 0, 0, 0.72);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    justify-content: center;
-    align-items: center;
-    padding: 24px;
-}
-
-.welcome-modal.show {
-    display: flex;
-}
-
-.welcome-box {
-    width: min(92vw, 460px);
-    position: relative;
-    text-align: center;
-    padding: 44px 32px 36px;
-    border-radius: 28px;
-    background: rgba(25, 20, 45, 0.88);
-    border: 1px solid rgba(199, 164, 255, 0.35);
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6), 0 0 35px rgba(199, 164, 255, 0.18);
-    animation: welcomePop 0.65s cubic-bezier(0.25, 1, 0.5, 1);
-}
-
-.welcome-close {
-    position: absolute;
-    top: 16px;
-    right: 22px;
-    border: none;
-    background: transparent;
-    color: #bcafd0;
-    font-size: 2rem;
-    cursor: pointer;
-}
-
-.welcome-icon {
-    font-size: 2.5rem;
-    color: #c7a4ff;
-    margin-bottom: 18px;
-    text-shadow: 0 0 20px rgba(199, 164, 255, 0.8);
-}
-
-.welcome-box h2 {
-    color: #ffffff;
-    font-size: 1.6rem;
-    margin-bottom: 16px;
-}
-
-.welcome-box p {
-    color: #d7cdea;
-    line-height: 1.7;
-    margin-bottom: 28px;
-}
-
-.welcome-start-btn {
-    border: none;
-    border-radius: 999px;
-    padding: 13px 28px;
-    background: linear-gradient(45deg, #c7a4ff, #8263cf);
-    color: #1a1a2e;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(199, 164, 255, 0.35);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.welcome-start-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(199, 164, 255, 0.55);
-}
-
-@keyframes welcomePop {
-    from { opacity: 0; transform: translateY(25px) scale(0.95); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* 사진 슬라이드쇼 */
-.slideshow-section {
-    max-width: 1000px;
-    margin: 0 auto 90px;
-    padding: 30px 20px 10px;
-    position: relative;
-    z-index: 2;
-    text-align: center;
-}
-
-.slideshow-header {
-    margin-bottom: 32px;
-}
-
-.slideshow-header h2 {
-    font-size: 1.8rem;
-    color: #ffffff;
-    margin-bottom: 10px;
-    text-shadow: 0 0 15px rgba(199, 164, 255, 0.45);
-}
-
-.slideshow-header p {
-    color: #bcafd0;
-    letter-spacing: 1px;
-}
-
-.slideshow-frame {
-    position: relative;
-    border-radius: 28px;
-    overflow: hidden;
-    border: 1px solid rgba(199, 164, 255, 0.28);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45), inset 0 0 25px rgba(199, 164, 255, 0.08);
-    background: rgba(25, 20, 45, 0.45);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-
-.slide-image-wrap {
-    position: relative;
-    aspect-ratio: 16 / 9;
-    min-height: 420px;
-}
-
-#slide-image {
-    opacity: 0;
-    transform: scale(1.02);
-    transition: opacity 0.45s ease, transform 0.8s ease;
-}
-
-#slide-image.show {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.slide-caption {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 80px 28px 30px;
-    text-align: left;
-    background: linear-gradient(to top, rgba(7, 7, 20, 0.9), transparent);
-}
-
-.slide-caption h3 {
-    color: #ffffff;
-    font-size: 1.45rem;
-    margin-bottom: 8px;
-    text-shadow: 0 0 15px rgba(0,0,0,0.8);
-}
-
-.slide-caption p {
-    color: #e5d9f2;
-    line-height: 1.6;
-}
-
-.slide-btn {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 3;
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 1px solid rgba(199, 164, 255, 0.45);
-    background: rgba(7, 7, 20, 0.45);
-    color: #ffffff;
-    cursor: pointer;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    transition: background 0.3s ease, transform 0.3s ease;
-}
-
-.slide-btn:hover {
-    background: rgba(199, 164, 255, 0.35);
-    transform: translateY(-50%) scale(1.08);
-}
-
-.slide-btn.prev { left: 18px; }
-.slide-btn.next { right: 18px; }
-
-.slide-dots {
-    margin-top: 18px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-}
-
-.slide-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(199, 164, 255, 0.35);
-    cursor: pointer;
-    transition: width 0.3s ease, background 0.3s ease;
-}
-
-.slide-dot.active {
-    width: 28px;
-    border-radius: 999px;
-    background: #c7a4ff;
-    box-shadow: 0 0 12px rgba(199, 164, 255, 0.75);
-}
-
-/* 모바일 하단 메뉴 */
-.mobile-nav {
-    display: none;
-}
-
-/* 테마 변경 / 하트 폭죽 / 방문 횟수 */
-.theme-panel {
-    position: fixed;
-    top: 90px;
-    right: 30px;
-    z-index: 10002;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.theme-toggle-btn {
-    width: 48px;
-    height: 48px;
-    border: 1px solid rgba(199, 164, 255, 0.45);
-    border-radius: 50%;
-    background: rgba(25, 20, 45, 0.65);
-    color: #ffffff;
-    cursor: pointer;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 0 18px rgba(199, 164, 255, 0.35);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.theme-toggle-btn:hover {
-    transform: translateY(-3px) rotate(12deg);
-    box-shadow: 0 0 26px rgba(199, 164, 255, 0.7);
-}
-
-.theme-options {
-    display: none;
-    gap: 8px;
-    padding: 10px;
-    border: 1px solid rgba(199, 164, 255, 0.3);
-    border-radius: 999px;
-    background: rgba(25, 20, 45, 0.7);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-}
-
-.theme-panel.open .theme-options {
-    display: flex;
-    animation: themeMenuIn 0.35s ease forwards;
-}
-
-.theme-options button {
-    border: none;
-    border-radius: 999px;
-    padding: 9px 14px;
-    background: rgba(255,255,255,0.1);
-    color: #e5d9f2;
-    cursor: pointer;
-    transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease;
-}
-
-.theme-options button:hover,
-.theme-options button.active {
-    background: #ffffff;
-    color: #1a1a2e;
-    transform: translateY(-2px);
-}
-
-@keyframes themeMenuIn {
-    from { opacity: 0; transform: translateX(12px); }
-    to { opacity: 1; transform: translateX(0); }
-}
-
-.visit-count {
-    display: inline-block;
-    min-height: 28px;
-    margin-top: 14px;
-    padding: 8px 16px;
-    border: 1px solid rgba(199, 164, 255, 0.28);
-    border-radius: 999px;
-    background: rgba(25, 20, 45, 0.45);
-    color: #e5d9f2;
-    font-size: 0.98rem;
-    line-height: 1.7;
-    letter-spacing: 0.5px;
-    text-shadow: 0 0 10px rgba(199, 164, 255, 0.45);
-}
-
-.heart-burst-btn {
-    display: block;
-    margin: 18px auto 0;
-    padding: 12px 26px;
-    border: 1px solid rgba(255,255,255,0.22);
-    border-radius: 999px;
-    background: linear-gradient(45deg, #c7a4ff, #ff8fd8);
-    color: #160d2c;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(199, 164, 255, 0.35);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.heart-burst-btn:hover {
-    transform: translateY(-4px) scale(1.03);
-    box-shadow: 0 12px 32px rgba(255, 143, 216, 0.45);
-}
-
-.heart-particle {
-    position: fixed;
-    left: var(--start-x);
-    top: var(--start-y);
-    z-index: 10003;
-    pointer-events: none;
-    font-size: var(--heart-size);
-    color: var(--heart-color);
-    text-shadow: 0 0 14px currentColor;
-    animation: heartFirework var(--heart-duration) cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    will-change: transform, opacity;
-}
-
-@keyframes heartFirework {
-    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.4) rotate(0deg); }
-    70% { opacity: 1; }
-    100% { opacity: 0; transform: translate(calc(-50% + var(--move-x)), calc(-50% + var(--move-y))) scale(1.25) rotate(var(--rotate)); }
-}
-
-/* [핵심 수정] 테마별 설정: 버튼/텍스트 가림 버그를 원천 봉쇄하기 위해 오직 '배경색'과 '오로라' 구문만 조절 */
-body.theme-cherry { background-color: #170b18; }
-body.theme-cherry .aurora {
-    background:
-        radial-gradient(circle at 20% 30%, rgba(255, 151, 198, 0.28) 0%, transparent 52%),
-        radial-gradient(circle at 80% 72%, rgba(255, 212, 228, 0.22) 0%, transparent 48%);
-}
-
-body.theme-ocean { background-color: #03141f; }
-body.theme-ocean .aurora {
-    background:
-        radial-gradient(circle at 18% 28%, rgba(73, 207, 255, 0.25) 0%, transparent 50%),
-        radial-gradient(circle at 82% 72%, rgba(66, 255, 203, 0.18) 0%, transparent 50%);
-}
-
-body.theme-letter { background-color: #120d18; }
-body.theme-letter .aurora {
-    background:
-        radial-gradient(circle at 25% 35%, rgba(255, 220, 155, 0.24) 0%, transparent 50%),
-        radial-gradient(circle at 78% 70%, rgba(211, 158, 255, 0.18) 0%, transparent 50%);
-}
-
-body.protect-selection {
-    -webkit-user-select: none;
-    user-select: none;
-}
-
-body.protect-selection input,
-body.protect-selection textarea {
-    -webkit-user-select: text;
-    user-select: text;
-}
-
-/* 편지 봉투 */
-.letter-envelope-stage {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 180px;
-    margin-bottom: 18px;
-    perspective: 900px;
-}
-
-.letter-envelope {
-    position: relative;
-    width: 260px;
-    height: 150px;
-    filter: drop-shadow(0 18px 24px rgba(0,0,0,0.35));
-    transform-style: preserve-3d;
-}
-
-.envelope-back,
-.envelope-front,
-.envelope-flap,
-.envelope-paper-preview {
-    position: absolute;
-    inset: 0;
-    border-radius: 14px;
-}
-
-.envelope-back {
-    background: linear-gradient(145deg, #fff2c7, #ffd98e);
-    border: 1px solid rgba(80, 45, 20, 0.14);
-}
-
-.envelope-front {
-    background:
-        linear-gradient(32deg, transparent 49%, rgba(255,255,255,0.35) 50%, transparent 51%),
-        linear-gradient(148deg, transparent 49%, rgba(0,0,0,0.08) 50%, transparent 51%),
-        linear-gradient(145deg, #ffe7aa, #f4bf73);
-    clip-path: polygon(0 35%, 50% 78%, 100% 35%, 100% 100%, 0 100%);
-    z-index: 4;
-}
-
-.envelope-flap {
-    background: linear-gradient(145deg, #ffe9b8, #f5c879);
-    clip-path: polygon(0 0, 100% 0, 50% 68%);
-    transform-origin: top center;
-    z-index: 5;
-    box-shadow: inset 0 -8px 18px rgba(255,255,255,0.18);
-}
-
-.envelope-paper-preview {
-    width: 210px;
-    height: 120px;
-    left: 25px;
-    top: 24px;
-    padding-top: 28px;
-    background: #fffdf5;
-    color: #352039;
-    text-align: center;
-    border-radius: 10px;
-    z-index: 2;
-    box-shadow: 0 8px 18px rgba(0,0,0,0.18);
-}
-
-.envelope-paper-preview i {
-    color: #ff6b9d;
-    font-size: 1.6rem;
-    display: block;
-    margin-bottom: 8px;
-}
-
-.envelope-paper-preview span {
-    font-weight: 700;
-    letter-spacing: 1px;
-}
-
-.letter-content-container.unlocked .envelope-flap { animation: envelopeFlapOpen 1.1s ease forwards; }
-.letter-content-container.unlocked .envelope-paper-preview { animation: envelopePaperRise 1.35s 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.letter-content-container.unlocked .letter-envelope { animation: envelopeFadeAway 0.8s 1.65s ease forwards; }
-.letter-content-container.unlocked .letter-envelope-stage { animation: envelopeStageCollapse 0.65s 1.85s ease forwards; }
-
-@keyframes envelopeFlapOpen {
-    0% { transform: rotateX(0deg); z-index: 5; }
-    55%, 100% { transform: rotateX(172deg); z-index: 1; }
-}
-
-@keyframes envelopePaperRise {
-    0% { transform: translateY(0) scale(1); }
-    70% { transform: translateY(-105px) scale(1.05); }
-    100% { transform: translateY(-92px) scale(1.02); }
-}
-
-@keyframes envelopeFadeAway {
-    to { opacity: 0; transform: translateY(26px) scale(0.92); }
-}
-
-@keyframes envelopeStageCollapse {
-    to { height: 0; margin-bottom: 0; opacity: 0; }
-}
-
-body.bgm-playing .aurora { animation: bgmAuroraPulse 4.5s ease-in-out infinite; }
-body.bgm-playing .stars { opacity: 0.48; filter: saturate(1.2) brightness(1.1); }
-body.bgm-playing .shooting-stars span { animation-duration: 2.2s; box-shadow: 0 0 14px #ffffff, 0 0 28px rgba(199,164,255,0.9); }
-body.bgm-playing .main-title { filter: drop-shadow(0 0 12px rgba(199,164,255,0.55)); }
-
-.bgm-player.playing::after {
-    content: '';
-    position: absolute;
-    inset: -8px;
-    border-radius: 999px;
-    border: 1px solid rgba(199, 164, 255, 0.42);
-    animation: musicWave 1.8s ease-out infinite;
-    pointer-events: none;
-}
-
-@keyframes bgmAuroraPulse {
-    0%, 100% { filter: brightness(1) saturate(1); opacity: 1; }
-    50% { filter: brightness(1.35) saturate(1.35); opacity: 1; }
-}
-
-@keyframes musicWave {
-    from { transform: scale(0.92); opacity: 0.7; }
-    to { transform: scale(1.2); opacity: 0; }
-}
-
-.easter-hint {
-    margin-top: 12px;
-    font-size: 0.88rem;
-    color: rgba(229,217,242,0.78);
-    letter-spacing: 0.5px;
-}
-
-.secret-toast {
-    position: fixed;
-    left: 50%;
-    bottom: 105px;
-    z-index: 10004;
-    max-width: min(520px, calc(100vw - 32px));
-    padding: 14px 20px;
-    border-radius: 999px;
-    background: rgba(20, 15, 42, 0.86);
-    border: 1px solid rgba(199, 164, 255, 0.42);
-    color: #fff;
-    text-align: center;
-    box-shadow: 0 14px 34px rgba(0,0,0,0.38), 0 0 24px rgba(199, 164, 255, 0.25);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    opacity: 0;
-    transform: translate(-50%, 20px) scale(0.95);
-    pointer-events: none;
-    transition: opacity 0.35s ease, transform 0.35s ease;
-}
-
-.secret-toast.show {
-    opacity: 1;
-    transform: translate(-50%, 0) scale(1);
-}
-
-.easter-secret-section {
-    display: none;
-    max-width: 760px;
-    margin: 70px auto 30px;
-    padding: 20px;
-    position: relative;
-    z-index: 2;
-}
-
-.easter-secret-section.revealed {
-    display: block;
-    animation: fadeIn 0.8s ease forwards;
-}
-
-.easter-secret-card {
-    padding: 42px 34px;
-    border-radius: 28px;
-    text-align: center;
-    background: rgba(25, 20, 45, 0.62);
-    border: 1px solid rgba(199, 164, 255, 0.34);
-    box-shadow: 0 18px 44px rgba(0,0,0,0.38), inset 0 0 24px rgba(199, 164, 255, 0.08);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-}
-
-.easter-secret-card i {
-    font-size: 2.5rem;
-    color: #ffd98e;
-    margin-bottom: 16px;
-    text-shadow: 0 0 18px rgba(255,217,142,0.7);
-}
-
-.easter-secret-card h2 {
-    margin-bottom: 16px;
-    color: #fff;
-}
-
-.easter-secret-card p {
-    color: #ccc5da;
-    line-height: 1.8;
-    margin-bottom: 24px;
-}
-
-.easter-secret-card button {
-    border: none;
-    border-radius: 999px;
-    padding: 11px 22px;
-    font-weight: 700;
-    cursor: pointer;
-    background: linear-gradient(45deg, #c7a4ff, #ffd98e);
-    color: #181021;
-}
-
-.seasonal-effect-layer {
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    pointer-events: none;
-    overflow: hidden;
-}
-
-.seasonal-particle {
-    position: absolute;
-    top: -8vh;
-    left: var(--season-left);
-    font-size: var(--season-size);
-    opacity: var(--season-opacity);
-    animation: seasonFall var(--season-duration) linear var(--season-delay) infinite;
-    will-change: transform, opacity;
-    text-shadow: 0 0 12px rgba(255,255,255,0.28);
-}
-
-body.season-spring .seasonal-particle { color: #ffc8df; }
-body.season-summer .seasonal-particle { color: #b7f7ff; }
-body.season-autumn .seasonal-particle { color: #ffc078; }
-body.season-winter .seasonal-particle { color: #f4fbff; }
-
-@keyframes seasonFall {
-    0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
-    10% { opacity: var(--season-opacity); }
-    100% { transform: translate3d(var(--season-drift), 112vh, 0) rotate(var(--season-rotate)); opacity: 0; }
-}
-
-body.season-summer .seasonal-particle {
-    animation-name: summerBubbleFloat;
-    top: auto;
-    bottom: -8vh;
-}
-
-@keyframes summerBubbleFloat {
-    0% { transform: translate3d(0, 8vh, 0) scale(0.75); opacity: 0; }
-    12% { opacity: var(--season-opacity); }
-    100% { transform: translate3d(var(--season-drift), -112vh, 0) scale(1.25); opacity: 0; }
-}
-
-/* 엔딩 크레딧 - D-day 네모 박스 안에서 항상 영화 크레딧처럼 올라가도록 수정 */
-.ending-credits-section {
-    position: relative;
-    z-index: 2;
-    min-height: auto;
-    padding: 110px 20px 160px;
-    overflow: visible;
-    text-align: center;
-}
-
-.credits-header {
-    margin-bottom: 34px;
-}
-
-.credits-header p {
-    color: #bcafd0;
-    letter-spacing: 4px;
-    margin-bottom: 12px;
-}
-
-.credits-header h2 {
-    font-size: 1.8rem;
-    line-height: 1.5;
-    text-shadow: 0 0 15px rgba(199, 164, 255, 0.4);
-}
-
-/* D-day 카운터와 같은 반투명 네모 카드 */
-.credits-mask {
-    --credits-box-height: clamp(560px, 72vh, 700px);
-    --credits-roll-start: 78%;
-    --credits-roll-end: 1900px;
-    --credits-duration: 58s;
-    position: relative;
-    width: min(92vw, 760px);
-    height: var(--credits-box-height);
-    margin: 0 auto;
-    overflow: hidden;
-    border-radius: 24px;
-    border: 1px solid rgba(199, 164, 255, 0.3);
-    background: rgba(25, 20, 45, 0.45);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.4),
-        inset 0 0 20px rgba(199, 164, 255, 0.1);
-}
-
-/* 영화관 크레딧처럼 위아래가 자연스럽게 사라지는 마스크 */
-.credits-mask::before,
-.credits-mask::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    height: 120px;
-    z-index: 3;
-    pointer-events: none;
-}
-
-.credits-mask::before {
-    top: 0;
-    background: linear-gradient(to bottom, rgba(25, 20, 45, 0.98), rgba(25, 20, 45, 0));
-}
-
-.credits-mask::after {
-    bottom: 0;
-    background: linear-gradient(to top, rgba(25, 20, 45, 0.98), rgba(25, 20, 45, 0));
-}
-
-.credits-roll {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    padding: 56px 30px 180px;
-    opacity: 1;
-    transform: translate3d(0, var(--credits-roll-start), 0);
-    will-change: transform;
-
-    /* 핵심 수정: .play 클래스가 없어도 실제 파일을 열면 바로 움직이도록 적용 */
-    animation: movieCreditsRoll var(--credits-duration) linear infinite;
-}
-
-/* JS가 붙이는 클래스와도 호환되도록 유지 */
-.ending-credits-section.play .credits-roll {
-    animation: movieCreditsRoll var(--credits-duration) linear infinite !important;
-}
-
-.ending-credits-section.resetting .credits-roll {
-    animation: none !important;
-}
-
-@keyframes movieCreditsRoll {
-    0% {
-        transform: translate3d(0, var(--credits-roll-start), 0);
-    }
-    100% {
-        transform: translate3d(0, calc(-1 * var(--credits-roll-end)), 0);
-    }
-}
-
-.credits-roll p,
-.credits-roll h2,
-.credits-roll h3,
-.credits-roll strong {
-    display: block;
-    margin-bottom: 22px;
-    line-height: 1.8;
-}
-
-.credits-roll h3 {
-    font-size: 1.65rem;
-    color: #ffffff;
-    letter-spacing: 2px;
-    text-shadow: 0 0 18px rgba(199, 164, 255, 0.45);
-}
-
-.credits-roll strong {
-    color: #ffffff;
-    font-size: 1.08rem;
-    text-shadow: 0 0 10px rgba(199, 164, 255, 0.35);
-}
-
-.credit-small {
-    color: #bcafd0;
-    letter-spacing: 2px;
-}
-
-.credit-message {
-    margin-top: 22px;
-    color: #e5d9f2;
-}
-
-.replay-credits-btn,
-.replay-ending-btn,
-.ending-replay-btn,
-#replay-ending-btn {
-    position: relative;
-    z-index: 10;
-    margin-top: 34px;
-    margin-bottom: 70px;
-    border: none;
-    border-radius: 999px;
-    padding: 12px 24px;
-    background: linear-gradient(45deg, #c7a4ff, #8263cf);
-    color: #1a1a2e;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 8px 24px rgba(199, 164, 255, 0.35);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.replay-credits-btn:hover,
-.replay-ending-btn:hover,
-.ending-replay-btn:hover,
-#replay-ending-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(199, 164, 255, 0.55);
-}
-
-
-@media screen and (max-width: 768px) {
-    .ending-credits-section {
-        min-height: auto;
-        padding: 90px 18px 130px;
-    }
-
-    .credits-mask {
-        --credits-box-height: min(62vh, 540px);
-        --credits-roll-start: 76%;
-        width: min(92vw, 430px);
-        height: var(--credits-box-height);
-        border-radius: 22px;
-    }
-
-    .credits-mask::before,
-    .credits-mask::after {
-        height: 86px;
-    }
-
-    .credits-roll {
-        padding: 44px 18px 130px;
-    }
-
-    .credits-roll h3 {
-        font-size: 1.38rem;
-    }
-
-    .credits-roll strong {
-        font-size: 1rem;
-    }
-
-
-    body {
-        padding-bottom: calc(92px + env(safe-area-inset-bottom));
-    }
-
-    .intro-section {
-        min-height: 100svh;
-        padding: 80px 18px 145px;
-    }
-
-    .intro-content {
-        width: 100%;
-    }
-
-    .main-title {
-        font-size: clamp(2.2rem, 10vw, 2.8rem);
-        line-height: 1.25;
-    }
-
-    .sub-title {
-        font-size: 1rem;
-        line-height: 1.6;
-    }
-
-    .d-day-counter {
-        min-width: 0;
-        width: min(92vw, 390px);
-        margin-top: 32px;
-        padding: 15px 20px;
-    }
-
-    .time-blocks {
-        gap: 12px;
-    }
-
-    .time-box {
-        min-width: 50px;
-    }
-
-    .time-box span {
-        font-size: 1.8rem;
-    }
-
-    .scroll-down {
-        bottom: max(28px, env(safe-area-inset-bottom));
-        font-size: 0.9rem;
-        width: 90vw;
-    }
-
-    .timeline-container::after {
-        left: 30px;
-        transform: translateX(0);
-    }
-
-    .timeline-item {
-        width: 100%;
-        margin-left: 0 !important;
-        padding-left: 70px !important;
-        padding-right: 0 !important;
-    }
-
-    .timeline-item:nth-child(odd) .timeline-dot,
-    .timeline-item:nth-child(even) .timeline-dot {
-        left: 12px;
-        right: auto;
-    }
-
-    .gallery-grid {
-        grid-template-columns: 1fr;
-    }
-
-    #home,
-    #timeline,
-    #gallery,
-    #letter {
-        scroll-margin-top: 18px;
-    }
-
-    .mobile-nav {
-        position: fixed;
-        left: 50%;
-        bottom: calc(12px + env(safe-area-inset-bottom));
-        transform: translate3d(-50%, 0, 0);
-        -webkit-transform: translate3d(-50%, 0, 0);
-        z-index: 12000;
-        width: calc(100% - 28px);
-        max-width: 430px;
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 6px;
-        padding: 10px;
-        border-radius: 24px;
-        background: rgba(25, 20, 45, 0.82);
-        border: 1px solid rgba(199, 164, 255, 0.3);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5);
-        will-change: transform;
-    }
-
-    .mobile-nav a {
-        text-decoration: none;
-        color: #bcafd0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 4px;
-        padding: 8px 4px;
-        border-radius: 16px;
-        font-size: 0.78rem;
-        transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
-    }
-
-    .mobile-nav a i {
-        font-size: 1.05rem;
-    }
-
-    .mobile-nav a.active,
-    .mobile-nav a:hover {
-        color: #ffffff;
-        background: rgba(199, 164, 255, 0.22);
-        transform: translateY(-2px);
-        box-shadow: inset 0 0 12px rgba(199, 164, 255, 0.16);
-    }
-
-    #bgm-container.bgm-player {
-        right: 16px;
-        bottom: 96px;
-        padding: 9px;
-    }
-
-    .music-info {
-        display: none;
-    }
-
-    .slide-image-wrap {
-        min-height: 420px;
-        aspect-ratio: 4 / 5;
-    }
-
-    .slide-caption {
-        padding: 70px 22px 24px;
-    }
-
-    .slide-caption h3 {
-        font-size: 1.2rem;
-    }
-
-    .slide-btn {
-        width: 42px;
-        height: 42px;
-    }
-
-    .theme-panel {
-        top: 18px;
-        right: 16px;
-        flex-direction: column;
-        align-items: flex-end;
-    }
-
-    .theme-options {
-        flex-direction: column;
-        border-radius: 22px;
-        align-items: stretch;
-    }
-
-    .theme-options button {
-        min-width: 86px;
-    }
-
-    .visit-count {
-        font-size: 0.9rem;
-    }
-
-    .secret-toast {
-        bottom: calc(92px + env(safe-area-inset-bottom));
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .slide-image-wrap {
-        min-height: 340px;
-    }
-
-    .slideshow-section {
-        margin-bottom: 70px;
-    }
-
-    .welcome-box {
-        padding: 40px 24px 32px;
-    }
-
-    .password-field {
-        flex-wrap: wrap;
-    }
-
-    .letter-paper {
-        padding: 38px 26px;
-    }
-}
-
-@media screen and (max-height: 720px) {
-    .intro-section {
-        min-height: 100svh;
-        height: auto;
-        padding-top: 70px;
-        padding-bottom: 70px;
-        flex-direction: column;
-    }
-
-    .scroll-down {
-        position: relative;
-        left: auto;
-        bottom: auto;
-        transform: none;
-        margin-top: 36px;
-    }
-}
-
-/* credits-reached-v4: 엔딩 도달 시 재생 + 마지막 To be continued 고정 */
-.ending-credits-section {
-    position: relative;
-    z-index: 2;
-    padding: 110px 20px 160px;
-    overflow: visible !important;
-    text-align: center;
-}
-
-.credits-mask {
-    --credits-box-height: clamp(560px, 72vh, 700px);
-    --credits-roll-start: calc(var(--credits-box-height) + 40px);
-    --credits-roll-end: 1900px;
-    --credits-duration: 64s;
-    position: relative;
-    width: min(92vw, 760px);
-    height: var(--credits-box-height);
-    margin: 0 auto;
-    overflow: hidden !important;
-    border-radius: 24px;
-    border: 1px solid rgba(199, 164, 255, 0.3);
-    background: rgba(25, 20, 45, 0.45);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.4),
-        inset 0 0 20px rgba(199, 164, 255, 0.1);
-}
-
-.credits-roll {
-    position: absolute !important;
-    left: 0;
-    right: 0;
-    top: 0;
-    padding: 56px 30px 180px;
-    opacity: 1;
-    visibility: visible;
-    transform: translate3d(0, var(--credits-roll-start), 0);
-    will-change: transform, opacity;
-    animation: none !important;
-}
-
-.ending-credits-section.play:not(.ended) .credits-roll {
-    animation: movieCreditsRoll var(--credits-duration) linear 1 forwards !important;
-}
-
-.ending-credits-section.resetting .credits-roll,
-.ending-credits-section:not(.play) .credits-roll {
-    animation: none !important;
-}
-
-.ending-credits-section.ended .credits-roll {
-    opacity: 0;
-    visibility: hidden;
-    animation: none !important;
-}
-
-.credits-final-message {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 32px;
-    text-align: center;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: scale(0.96);
-    transition: opacity 1s ease, transform 1s ease, visibility 1s ease;
-}
-
-.credits-final-message h3 {
-    margin: 0;
-    color: #ffffff;
-    font-size: clamp(1.8rem, 5vw, 3rem);
-    letter-spacing: 3px;
-    line-height: 1.5;
-    text-shadow:
-        0 0 18px rgba(199, 164, 255, 0.75),
-        0 0 35px rgba(255, 255, 255, 0.18);
-}
-
-.ending-credits-section.ended .credits-final-message {
-    opacity: 1;
-    visibility: visible;
-    transform: scale(1);
-}
-
-@keyframes movieCreditsRoll {
-    0% {
-        transform: translate3d(0, var(--credits-roll-start), 0);
-    }
-    100% {
-        transform: translate3d(0, calc(-1 * var(--credits-roll-end)), 0);
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .credits-mask {
-        --credits-box-height: min(62vh, 540px);
-        width: min(92vw, 430px);
-        height: var(--credits-box-height);
-        border-radius: 22px;
-    }
-
-    .credits-roll {
-        padding: 44px 18px 130px;
-    }
-
-    .credits-final-message h3 {
-        font-size: clamp(1.55rem, 8vw, 2.4rem);
-        letter-spacing: 2px;
-    }
-}
-
-
-/* =========================================
-final-v6 요청 반영: 슬라이드 일시정지, 라이트박스 설명, 모바일 안정화, 엔딩 완료 표시
-========================================= */
-
-/* 로딩 화면 최소/최대 시간 조절에 맞춘 부드러운 종료 */
-.loading-screen {
-    transition: opacity 0.58s ease, visibility 0.58s ease !important;
-}
-
-/* 이미지 로딩 시 레이아웃 밀림 방지 강화 */
-.image-wrapper {
-    aspect-ratio: 4 / 3 !important;
-}
-
-.item-image {
-    aspect-ratio: 1 / 1.08 !important;
-}
-
-.slide-image-wrap {
-    aspect-ratio: 16 / 9;
-    min-height: 420px;
-    background: rgba(199, 164, 255, 0.08);
-}
-
-.image-wrapper img,
-.item-image img,
-#slide-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* 슬라이드쇼 일시정지 버튼 */
-.slide-pause-btn {
-    margin: 18px auto 0;
-    padding: 10px 20px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 9px;
-    border: 1px solid rgba(199, 164, 255, 0.36);
-    border-radius: 999px;
-    background: rgba(25, 20, 45, 0.62);
-    color: #e5d9f2;
-    cursor: pointer;
-    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28), inset 0 0 14px rgba(199, 164, 255, 0.08);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    transition: transform 0.28s ease, background 0.28s ease, color 0.28s ease, box-shadow 0.28s ease;
-}
-
-.slide-pause-btn:hover,
-.slide-pause-btn.paused {
-    transform: translateY(-2px);
-    background: rgba(199, 164, 255, 0.24);
-    color: #ffffff;
-    box-shadow: 0 10px 28px rgba(199, 164, 255, 0.24);
-}
-
-/* 라이트박스 사진 설명 표시 */
-.lightbox {
-    padding: 28px !important;
-}
-
-.lightbox-content {
-    width: min(92vw, 1100px);
-    max-height: 92svh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-}
-
-.lightbox-content img,
-.lightbox img {
-    max-width: 100%;
-    max-height: min(76svh, 760px);
-    width: auto;
-    height: auto;
-    object-fit: contain;
-}
-
-.lightbox-caption {
-    width: min(92vw, 760px);
-    padding: 16px 20px;
-    border: 1px solid rgba(199, 164, 255, 0.28);
-    border-radius: 18px;
-    background: rgba(25, 20, 45, 0.78);
-    color: #e5d9f2;
-    text-align: center;
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.36);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-
-.lightbox-caption h3 {
-    margin-bottom: 6px;
-    color: #ffffff;
-    font-size: 1.15rem;
-    line-height: 1.5;
-}
-
-.lightbox-caption p {
-    color: #ccc5da;
-    font-size: 0.95rem;
-    line-height: 1.6;
-}
-
-body.lightbox-open {
-    overflow: hidden;
-}
-
-/* 엔딩 크레딧: 도달 후 재생, 완료 후 To be continued만 표시 */
-.ending-credits-section {
-    position: relative;
-    z-index: 2;
-    padding: 110px 20px 160px !important;
-    overflow: visible !important;
-    text-align: center;
-}
-
-.credits-mask {
-    --credits-box-height: clamp(560px, 72vh, 700px);
-    --credits-roll-start: calc(var(--credits-box-height) + 40px);
-    --credits-roll-end: 1900px;
-    --credits-duration: 58s;
-    position: relative !important;
-    width: min(92vw, 760px) !important;
-    height: var(--credits-box-height) !important;
-    margin: 0 auto !important;
-    overflow: hidden !important;
-    border-radius: 24px !important;
-    border: 1px solid rgba(199, 164, 255, 0.3) !important;
-    background: rgba(25, 20, 45, 0.45) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(199, 164, 255, 0.1) !important;
-}
-
-.credits-roll {
-    position: absolute !important;
-    left: 0 !important;
-    right: 0 !important;
-    top: 0 !important;
-    padding: 56px 30px 180px !important;
-    opacity: 1;
-    visibility: visible;
-    transform: translate3d(0, var(--credits-roll-start), 0);
-    animation: none !important;
-    will-change: transform, opacity;
-}
-
-.ending-credits-section.play:not(.ended) .credits-roll {
-    animation: movieCreditsRoll var(--credits-duration) linear 1 forwards !important;
-}
-
-.ending-credits-section.ended .credits-roll {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    animation: none !important;
-}
-
-.credits-final-message {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 32px;
-    text-align: center;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: scale(0.96);
-    transition: opacity 1s ease, transform 1s ease, visibility 1s ease;
-}
-
-.credits-final-message h3 {
-    margin: 0;
-    color: #ffffff;
-    font-size: clamp(1.8rem, 5vw, 3rem);
-    letter-spacing: 3px;
-    line-height: 1.5;
-    text-shadow: 0 0 18px rgba(199, 164, 255, 0.75), 0 0 35px rgba(255, 255, 255, 0.18);
-}
-
-.ending-credits-section.ended .credits-final-message {
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: scale(1) !important;
-}
-
-/* 모바일 글자 크기/자간 안정화 + 하단 가림 방지 */
-@media screen and (max-width: 768px) {
-    body {
-        padding-bottom: env(safe-area-inset-bottom) !important;
-    }
-
-    .main-title {
-        font-size: clamp(2.15rem, 9.4vw, 2.75rem) !important;
-        letter-spacing: 2.5px !important;
-        line-height: 1.25 !important;
-    }
-
-    .sub-title {
-        font-size: 0.98rem !important;
-        letter-spacing: 2.4px !important;
-    }
-
-    .d-day-label {
-        letter-spacing: 1px !important;
-    }
-
-    .random-message,
-    .easter-hint,
-    .visit-count {
-        max-width: 92vw;
-        word-break: keep-all;
-        overflow-wrap: break-word;
-    }
-
-    .slide-image-wrap {
-        aspect-ratio: 4 / 5;
-        min-height: 340px !important;
-    }
-
-    .slide-pause-btn {
-        font-size: 0.92rem;
-        padding: 10px 17px;
-    }
-
-    .lightbox {
-        padding: 20px !important;
-    }
-
-    .lightbox-content img,
-    .lightbox img {
-        max-height: 68svh;
-    }
-
-    .lightbox-caption {
-        padding: 14px 16px;
-    }
-
-    .credits-mask {
-        --credits-box-height: min(62vh, 540px);
-        --credits-duration: 54s;
-        width: min(92vw, 430px) !important;
-        height: var(--credits-box-height) !important;
-        border-radius: 22px !important;
-    }
-
-    .credits-roll {
-        padding: 44px 18px 130px !important;
-    }
-
-    .credits-final-message h3 {
-        font-size: clamp(1.55rem, 8vw, 2.4rem);
-        letter-spacing: 2px;
-    }
-
-    /* 모바일 메뉴: 화면 아래를 가리지 않는 왼쪽 세로 플로팅 */
-    .mobile-nav {
-        position: fixed !important;
-        left: 16px !important;
-        right: auto !important;
-        bottom: calc(150px + env(safe-area-inset-bottom)) !important;
-        transform: none !important;
-        width: auto !important;
-        max-width: none !important;
-        display: flex !important;
-        flex-direction: column-reverse !important;
-        align-items: flex-start !important;
-        gap: 10px !important;
-        padding: 0 !important;
-        border: none !important;
-        border-radius: 0 !important;
-        background: transparent !important;
-        box-shadow: none !important;
-        backdrop-filter: none !important;
-        -webkit-backdrop-filter: none !important;
-        z-index: 12000 !important;
-    }
-
-    .mobile-nav-toggle {
-        width: 56px;
-        height: 56px;
-        border-radius: 50%;
-        border: 1px solid rgba(199, 164, 255, 0.45);
-        background: rgba(25, 20, 45, 0.82);
-        color: #ffffff;
-        font-size: 1.3rem;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 0 22px rgba(199, 164, 255, 0.45);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-    }
-
-    .mobile-nav.open .mobile-nav-toggle,
-    .mobile-nav-toggle:hover {
-        transform: rotate(90deg) scale(1.05);
-        background: rgba(199, 164, 255, 0.28);
-        box-shadow: 0 0 30px rgba(199, 164, 255, 0.75);
-    }
-
-    .mobile-nav-links {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        padding: 10px;
-        border-radius: 24px;
-        background: rgba(25, 20, 45, 0.86);
-        border: 1px solid rgba(199, 164, 255, 0.35);
-        box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
-        opacity: 0;
-        visibility: hidden;
-        pointer-events: none;
-        transform: translateY(12px) scale(0.94);
-        transform-origin: bottom left;
-        transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
-    }
-
-    .mobile-nav.open .mobile-nav-links {
-        opacity: 1;
-        visibility: visible;
-        pointer-events: auto;
-        transform: translateY(0) scale(1);
-    }
-
-    .mobile-nav a {
-        width: 118px !important;
-        min-height: 44px !important;
-        padding: 10px 14px !important;
-        border-radius: 16px !important;
-        display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        gap: 10px !important;
-        text-decoration: none !important;
-        color: #bcafd0 !important;
-        font-size: 0.9rem !important;
-        background: rgba(255, 255, 255, 0.06) !important;
-        box-shadow: none !important;
-        transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease !important;
-    }
-
-    .mobile-nav a i {
-        width: 20px;
-        font-size: 1rem;
-        text-align: center;
-    }
-
-    .mobile-nav a span {
-        display: inline-block;
-        white-space: nowrap;
-    }
-
-    .mobile-nav a.active,
-    .mobile-nav a:hover {
-        color: #ffffff !important;
-        background: rgba(199, 164, 255, 0.24) !important;
-        transform: translateX(4px) !important;
-        box-shadow: inset 0 0 12px rgba(199, 164, 255, 0.16) !important;
-    }
-
-    #bgm-container.bgm-player {
-        right: 16px !important;
-        bottom: calc(88px + env(safe-area-inset-bottom)) !important;
-    }
-}
-
-@media screen and (max-width: 420px) {
-    .mobile-nav {
-        left: 12px !important;
-        bottom: calc(140px + env(safe-area-inset-bottom)) !important;
-    }
-
-    .mobile-nav-toggle {
-        width: 52px;
-        height: 52px;
-        font-size: 1.2rem;
-    }
-
-    .mobile-nav a {
-        width: 112px !important;
-        font-size: 0.86rem !important;
-    }
-}
-/* =========================================
-사이트 점검중 화면
-기본은 숨김, JS에서 show 클래스가 붙을 때만 표시
-========================================= */
-
-.maintenance-screen {
-    position: fixed;
-    inset: 0;
-    z-index: 30000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 28px;
-    background:
-        radial-gradient(circle at 20% 25%, rgba(199, 164, 255, 0.20), transparent 42%),
-        radial-gradient(circle at 80% 70%, rgba(255, 143, 216, 0.14), transparent 45%),
-        rgba(7, 7, 20, 0.96);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    overflow: hidden;
-}
-
-.maintenance-screen.show {
-    display: flex;
-}
-
-.maintenance-screen::before {
-    content: '';
-    position: absolute;
-    inset: -40px;
-    background-image:
-        radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1.5px),
-        radial-gradient(circle, rgba(199,164,255,0.6) 1px, transparent 1.5px);
-    background-size: 70px 70px, 110px 110px;
-    background-position: 0 0, 35px 45px;
-    opacity: 0.24;
-    animation: maintenanceStars 80s linear infinite;
-    pointer-events: none;
-}
-
-.maintenance-screen::after {
-    content: '';
-    position: absolute;
-    width: 360px;
-    height: 360px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(199,164,255,0.24), transparent 65%);
-    filter: blur(4px);
-    animation: maintenanceGlow 4.5s ease-in-out infinite;
-    pointer-events: none;
-}
-
-.maintenance-card {
-    position: relative;
-    z-index: 2;
-    width: min(92vw, 620px);
-    padding: 54px 34px 46px;
-    text-align: center;
-    border-radius: 30px;
-    border: 1px solid rgba(199, 164, 255, 0.34);
-    background: rgba(25, 20, 45, 0.62);
-    box-shadow:
-        0 22px 60px rgba(0, 0, 0, 0.58),
-        inset 0 0 26px rgba(199, 164, 255, 0.10);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    animation: maintenanceCardIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.maintenance-orbit {
-    position: relative;
-    width: 92px;
-    height: 92px;
-    margin: 0 auto 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.maintenance-orbit span {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    border: 1px solid rgba(199, 164, 255, 0.42);
-    box-shadow: 0 0 24px rgba(199, 164, 255, 0.34);
-    animation: maintenanceOrbit 3.4s linear infinite;
-}
-
-.maintenance-orbit span::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #ffffff;
-    box-shadow: 0 0 14px #c7a4ff;
-}
-
-.maintenance-orbit i {
-    color: #ffffff;
-    font-size: 2.2rem;
-    text-shadow: 0 0 20px rgba(199, 164, 255, 0.9);
-    animation: maintenanceTwinkle 1.7s ease-in-out infinite;
-}
-
-.maintenance-label {
-    margin-bottom: 14px;
-    color: #bcafd0;
-    font-size: 0.85rem;
-    letter-spacing: 4px;
-}
-
-.maintenance-card h1 {
-    margin-bottom: 20px;
-    color: #ffffff;
-    font-size: clamp(1.75rem, 5vw, 2.6rem);
-    line-height: 1.45;
-    text-shadow: 0 0 20px rgba(199, 164, 255, 0.42);
-}
-
-.maintenance-message {
-    color: #e5d9f2;
-    font-size: 1.05rem;
-    line-height: 1.9;
-    margin-bottom: 30px;
-}
-
-.maintenance-progress {
-    position: relative;
-    width: min(320px, 76vw);
-    height: 8px;
-    margin: 0 auto 24px;
-    overflow: hidden;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(199, 164, 255, 0.22);
-}
-
-.maintenance-progress span {
-    position: absolute;
-    top: 0;
-    left: -45%;
-    width: 45%;
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, transparent, #c7a4ff, #ff8fd8, transparent);
-    box-shadow: 0 0 18px rgba(199, 164, 255, 0.8);
-    animation: maintenanceLoading 1.9s ease-in-out infinite;
-}
-
-.maintenance-small {
-    color: rgba(229, 217, 242, 0.72);
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-}
-
-body.maintenance-active {
-    overflow: hidden;
-}
-
-@keyframes maintenanceStars {
-    from {
-        transform: translate3d(0, 0, 0);
-    }
-    to {
-        transform: translate3d(0, -260px, 0);
-    }
-}
-
-@keyframes maintenanceGlow {
-    0%, 100% {
-        opacity: 0.45;
-        transform: scale(0.96);
-    }
-    50% {
-        opacity: 0.85;
-        transform: scale(1.08);
-    }
-}
-
-@keyframes maintenanceCardIn {
-    from {
-        opacity: 0;
-        transform: translateY(28px) scale(0.96);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes maintenanceOrbit {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes maintenanceTwinkle {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 0.82;
-    }
-    50% {
-        transform: scale(1.18);
-        opacity: 1;
-    }
-}
-
-@keyframes maintenanceLoading {
-    0% {
-        left: -45%;
-    }
-    100% {
-        left: 100%;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .maintenance-card {
-        padding: 46px 24px 38px;
-        border-radius: 26px;
-    }
-
-    .maintenance-label {
-        font-size: 0.76rem;
-        letter-spacing: 3px;
-    }
-
-    .maintenance-message {
-        font-size: 0.96rem;
-    }
-}
-.Github {
-    text-decoration: none;
-    color: blue;
-}
-.Github:hover {
-    color: yellow; /* 빨간색 */
-}
-
-/* 3. 클릭할 때(active) 색상 변경 */
-.Github:active {
-    color: green; /* 파란색 */
-}
-/* =========================================
-로딩 화면 문구 크기/위치 고정
-========================================= */
-
-.loading-screen {
-    gap: 22px;
-}
-
-.loading-screen p {
-    width: min(90vw, 420px);
-    min-height: 32px;
-    line-height: 32px;
-    margin: 0;
-    text-align: center;
-
-    font-size: 1.1rem;
-    font-weight: 400;
-    letter-spacing: 2px;
-
-    transform: none !important;
-    animation: none !important;
-    transition: none !important;
-    will-change: auto;
-}
-
-/* 별 아이콘만 움직이게 고정 */
-.loading-star {
-    flex: 0 0 72px;
-}
-
-.loading-star i {
-    line-height: 1;
-}
-
-/* 모바일에서도 글자 크기 고정 */
-@media screen and (max-width: 480px) {
-    .loading-screen p {
-        font-size: 1rem;
-        line-height: 30px;
-        min-height: 30px;
-        letter-spacing: 1.5px;
-    }
-}
-/* =========================================
-로딩 화면 글자 크기/위치 흔들림 고정
-========================================= */
-
-.loading-screen {
-    text-align: center;
-    overflow: hidden;
-}
-
-.loading-screen p {
-    width: min(86vw, 360px);
-    min-height: 34px;
-    margin: 0;
-    
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-    font-size: 1.1rem;
-    line-height: 1.6;
-    font-weight: 600;
-    letter-spacing: 2px;
-    white-space: nowrap;
-
-    color: #e5d9f2;
-    text-shadow: 0 0 12px rgba(199, 164, 255, 0.7);
-
-    animation: none !important;
-    transform: none !important;
-    transition: none !important;
-
-    font-synthesis: none;
-    text-rendering: geometricPrecision;
-}
-/* =========================================
-로딩 중 뒤 화면 안 보이게 고정
-========================================= */
-
-.loading-screen {
-    background:
-        radial-gradient(circle at center, rgba(30, 18, 60, 1), rgba(7, 7, 20, 1)) !important;
-    opacity: 1;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-}
-
-.loading-screen::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(circle at 20% 30%, rgba(199, 164, 255, 0.18), transparent 45%),
-        radial-gradient(circle at 80% 70%, rgba(255, 143, 216, 0.12), transparent 45%);
-    pointer-events: none;
-    z-index: 0;
-}
-
-.loading-screen > * {
-    position: relative;
-    z-index: 1;
-}
-
-/* 로딩이 끝날 때 뒤 화면이 서서히 비치는 현상 방지 */
-.loading-screen.hide {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.25s ease, visibility 0.25s ease;
-}
-/* =========================================
-점검중 화면 안정화 / 검은 화면 방지
-========================================= */
-
-html.maintenance-mode-active,
-body.maintenance-mode-active {
-    overflow: hidden !important;
-}
-
-#maintenance-screen {
-    position: fixed;
-    inset: 0;
-    z-index: 999999;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 28px;
-    background:
-        radial-gradient(circle at 20% 25%, rgba(199, 164, 255, 0.20), transparent 42%),
-        radial-gradient(circle at 80% 70%, rgba(255, 143, 216, 0.14), transparent 45%),
-        rgba(7, 7, 20, 1);
-    overflow: hidden;
-}
-
-#maintenance-screen.show {
-    display: flex !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-}
-
-#maintenance-screen::before {
-    content: '';
-    position: absolute;
-    inset: -40px;
-    background-image:
-        radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1.5px),
-        radial-gradient(circle, rgba(199,164,255,0.6) 1px, transparent 1.5px);
-    background-size: 70px 70px, 110px 110px;
-    background-position: 0 0, 35px 45px;
-    opacity: 0.24;
-    animation: maintenanceStars 80s linear infinite;
-    pointer-events: none;
-}
-
-.maintenance-card {
-    position: relative;
-    z-index: 2;
-    width: min(92vw, 620px);
-    padding: 54px 34px 46px;
-    text-align: center;
-    border-radius: 30px;
-    border: 1px solid rgba(199, 164, 255, 0.34);
-    background: rgba(25, 20, 45, 0.72);
-    box-shadow:
-        0 22px 60px rgba(0, 0, 0, 0.58),
-        inset 0 0 26px rgba(199, 164, 255, 0.10);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-}
-
-.maintenance-orbit {
-    position: relative;
-    width: 92px;
-    height: 92px;
-    margin: 0 auto 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.maintenance-orbit span {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    border: 1px solid rgba(199, 164, 255, 0.42);
-    box-shadow: 0 0 24px rgba(199, 164, 255, 0.34);
-    animation: maintenanceOrbit 3.4s linear infinite;
-}
-
-.maintenance-orbit span::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #ffffff;
-    box-shadow: 0 0 14px #c7a4ff;
-}
-
-.maintenance-orbit i {
-    color: #ffffff;
-    font-size: 2.2rem;
-    text-shadow: 0 0 20px rgba(199, 164, 255, 0.9);
-}
-
-.maintenance-label {
-    margin-bottom: 14px;
-    color: #bcafd0;
-    font-size: 0.85rem;
-    letter-spacing: 4px;
-}
-
-.maintenance-card h1 {
-    margin-bottom: 20px;
-    color: #ffffff;
-    font-size: clamp(1.75rem, 5vw, 2.6rem);
-    line-height: 1.45;
-    text-shadow: 0 0 20px rgba(199, 164, 255, 0.42);
-}
-
-.maintenance-message {
-    color: #e5d9f2;
-    font-size: 1.05rem;
-    line-height: 1.9;
-    margin-bottom: 30px;
-}
-
-.maintenance-progress {
-    position: relative;
-    width: min(320px, 76vw);
-    height: 8px;
-    margin: 0 auto 24px;
-    overflow: hidden;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(199, 164, 255, 0.22);
-}
-
-.maintenance-progress span {
-    position: absolute;
-    top: 0;
-    left: -45%;
-    width: 45%;
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, transparent, #c7a4ff, #ff8fd8, transparent);
-    box-shadow: 0 0 18px rgba(199, 164, 255, 0.8);
-    animation: maintenanceLoading 1.9s ease-in-out infinite;
-}
-
-.maintenance-small {
-    color: rgba(229, 217, 242, 0.72);
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-}
-
-@keyframes maintenanceStars {
-    from { transform: translate3d(0, 0, 0); }
-    to { transform: translate3d(0, -260px, 0); }
-}
-
-@keyframes maintenanceOrbit {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-@keyframes maintenanceLoading {
-    0% { left: -45%; }
-    100% { left: 100%; }
-}
-/* =========================================
-로딩 화면 별 아이콘 즉시 표시
-Font Awesome 로딩 지연 방지
-========================================= */
-
-.loading-star {
-    position: relative;
-    flex-shrink: 0;
-}
-
-.loading-star i {
-    display: none !important;
-}
-
-.loading-star::before {
-    content: "★";
-    display: block;
-    color: #ffffff;
-    font-family: Arial, sans-serif;
-    font-size: 2rem;
-    line-height: 1;
-    text-shadow:
-        0 0 12px rgba(255, 255, 255, 0.9),
-        0 0 22px rgba(199, 164, 255, 0.9);
-}
-/* =========================================
-엔딩 크레딧 종료 후 To be continued 즉시 표시
-========================================= */
-
-.credits-final-message {
-    transition: none !important;
-}
-
-.ending-credits-section.ended .credits-final-message {
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: scale(1) !important;
-    transition: none !important;
-}
-
-.ending-credits-section.ended .credits-roll {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    animation: none !important;
-}
-
-/* =========================================
-final-v7-easter: 사이트 분위기 맞춤 이스터에그 추가
-========================================= */
-
-.sub-title {
-    cursor: pointer;
-}
-
-.subtitle-constellation-easter {
-    position: fixed;
-    inset: 0;
-    z-index: 16000;
-    pointer-events: none;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    padding-top: clamp(82px, 17vh, 170px);
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.5s ease, visibility 0.5s ease;
-}
-
-.subtitle-constellation-easter.show {
-    opacity: 1;
-    visibility: visible;
-}
-
-.constellation-card {
-    width: min(88vw, 520px);
-    padding: 20px 20px 22px;
-    border-radius: 28px;
-    border: 1px solid rgba(199, 164, 255, 0.32);
-    background: rgba(25, 20, 45, 0.58);
-    box-shadow:
-        0 18px 52px rgba(0, 0, 0, 0.46),
-        inset 0 0 24px rgba(199, 164, 255, 0.09);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    transform: translateY(18px) scale(0.96);
-    animation: constellationCardPop 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.constellation-card svg {
-    width: 100%;
-    height: auto;
-    display: block;
-    overflow: visible;
-}
-
-.constellation-card polyline,
-.constellation-card line {
-    fill: none;
-    stroke: rgba(255, 255, 255, 0.78);
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    stroke-dasharray: 720;
-    stroke-dashoffset: 720;
-    filter: drop-shadow(0 0 10px rgba(199, 164, 255, 0.88));
-    animation: constellationLineDraw 1.45s ease forwards;
-}
-
-.constellation-card line {
-    animation-delay: 0.25s;
-}
-
-.constellation-card circle {
-    fill: #ffffff;
-    stroke: rgba(199, 164, 255, 0.8);
-    stroke-width: 1.5;
-    filter: drop-shadow(0 0 10px rgba(199, 164, 255, 1));
-    opacity: 0;
-    transform-origin: center;
-    animation: constellationStarPop 0.55s ease forwards;
-}
-
-.constellation-card circle:nth-of-type(1) { animation-delay: 0.15s; }
-.constellation-card circle:nth-of-type(2) { animation-delay: 0.32s; }
-.constellation-card circle:nth-of-type(3) { animation-delay: 0.49s; }
-.constellation-card circle:nth-of-type(4) { animation-delay: 0.66s; }
-.constellation-card circle:nth-of-type(5) { animation-delay: 0.83s; }
-.constellation-card circle:nth-of-type(6) { animation-delay: 1s; }
-.constellation-card circle:nth-of-type(7) { animation-delay: 1.17s; }
-
-.constellation-card p {
-    margin: 10px 0 0;
-    color: #e5d9f2;
-    text-align: center;
-    line-height: 1.7;
-    letter-spacing: 1px;
-    text-shadow: 0 0 12px rgba(199, 164, 255, 0.6);
-}
-
-@keyframes constellationCardPop {
-    to {
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes constellationLineDraw {
-    to {
-        stroke-dashoffset: 0;
-    }
-}
-
-@keyframes constellationStarPop {
-    0% {
-        opacity: 0;
-        transform: scale(0.3);
-    }
-    60% {
-        opacity: 1;
-        transform: scale(1.35);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* 숨겨진 테마 기믹 조절: 배경 테마만 바인딩 */
-body.theme-our-night {
-    background-color: #05020f;
-}
-
-body.theme-our-night .aurora {
-    background:
-        radial-gradient(circle at 24% 28%, rgba(180, 125, 255, 0.30) 0%, transparent 52%),
-        radial-gradient(circle at 78% 72%, rgba(255, 143, 216, 0.22) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(100, 70, 255, 0.14) 0%, transparent 60%);
-}
-
-body.our-night-unlocked::after,
-body.bgm-secret-boost::after,
-body.heart-reward-active::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 9997;
-    pointer-events: none;
-    background:
-        radial-gradient(circle at 24% 36%, rgba(255, 255, 255, 0.18), transparent 16%),
-        radial-gradient(circle at 70% 62%, rgba(255, 143, 216, 0.16), transparent 18%),
-        radial-gradient(circle at 50% 18%, rgba(199, 164, 255, 0.16), transparent 18%);
-    animation: easterGlowPulse 1.6s ease-in-out infinite;
-}
-
-body.bgm-secret-boost .shooting-stars span {
-    animation-duration: 1.25s !important;
-    box-shadow: 0 0 18px #ffffff, 0 0 36px rgba(255, 143, 216, 0.95) !important;
-}
-
-body.bgm-secret-boost .aurora,
-body.heart-reward-active .aurora {
-    filter: brightness(1.4) saturate(1.35);
-}
-
-body.heart-reward-active .heart-burst-btn {
-    animation: heartRewardButtonPulse 0.9s ease-in-out infinite;
-}
-
-@keyframes easterGlowPulse {
-    0%, 100% { opacity: 0.35; }
-    50% { opacity: 0.82; }
-}
-
-@keyframes heartRewardButtonPulse {
-    0%, 100% { transform: translateY(-2px) scale(1); }
-    50% { transform: translateY(-6px) scale(1.07); }
-}
-
-.credits-final-message {
-    cursor: pointer;
-    pointer-events: auto;
-}
-
-.credits-final-message.clicked-reward h3 {
-    animation: finalMessageReward 0.9s ease-in-out 2;
-}
-
-@keyframes finalMessageReward {
-    0%, 100% {
-        transform: scale(1);
-        text-shadow: 0 0 18px rgba(199, 164, 255, 0.75), 0 0 35px rgba(255, 255, 255, 0.18);
-    }
-    50% {
-        transform: scale(1.08);
-        text-shadow: 0 0 26px rgba(255, 143, 216, 0.92), 0 0 46px rgba(199, 164, 255, 0.6);
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .subtitle-constellation-easter {
-        padding-top: clamp(70px, 13vh, 120px);
-    }
-
-    .constellation-card {
-        width: min(90vw, 420px);
-        padding: 16px 16px 18px;
-        border-radius: 24px;
-    }
-
-    .constellation-card p {
-        font-size: 0.92rem;
-        word-break: keep-all;
-    }
-}
-/* =========================================
-추가 기능 3, 5, 6, 7, 8, 10
-- 위로 가기 별 버튼
-- 사진 로딩 스켈레톤
-- 시간대별 인사
-- 엔딩 감상 완료 배지
-- BGM 볼륨 기억 표시 보조
-- 업데이트 알림
-========================================= */
-
-/* 3. 위로 가기 별 버튼 */
-.back-to-top-star {
-    position: fixed;
-    right: 24px;
-    bottom: 150px;
-    z-index: 12050;
-    width: 52px;
-    height: 52px;
-    border: 1px solid rgba(199, 164, 255, 0.45);
-    border-radius: 50%;
-    background: rgba(25, 20, 45, 0.82);
-    color: #ffffff;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow:
-        0 0 22px rgba(199, 164, 255, 0.45),
-        inset 0 0 14px rgba(199, 164, 255, 0.08);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(16px) scale(0.9);
-    pointer-events: none;
-    transition:
-        opacity 0.3s ease,
-        visibility 0.3s ease,
-        transform 0.3s ease,
-        box-shadow 0.3s ease,
-        background 0.3s ease;
-}
-
-.back-to-top-star.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-    pointer-events: auto;
-}
-
-.back-to-top-star:hover {
-    background: rgba(199, 164, 255, 0.26);
-    box-shadow: 0 0 30px rgba(199, 164, 255, 0.75);
-    transform: translateY(-4px) scale(1.05);
-}
-
-.back-to-top-star i {
-    font-size: 1.25rem;
-    text-shadow: 0 0 14px rgba(199, 164, 255, 0.9);
-}
-
-
-/* 5. 사진 로딩 스켈레톤 */
-.memory-img-skeleton {
-    position: relative;
-    overflow: hidden;
-    background:
-        linear-gradient(135deg, rgba(199, 164, 255, 0.08), rgba(255, 255, 255, 0.04)),
-        rgba(25, 20, 45, 0.55) !important;
-}
-
-.memory-img-skeleton::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 3;
-    background:
-        linear-gradient(
-            110deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.06) 36%,
-            rgba(199, 164, 255, 0.24) 50%,
-            rgba(255, 255, 255, 0.06) 64%,
-            transparent 100__
-        );
-    transform: translateX(-120%);
-    animation: memorySkeletonShine 1.45s ease-in-out infinite;
-    pointer-events: none;
-}
-
-.memory-img-skeleton::after {
-    content: '✦';
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: rgba(229, 217, 242, 0.72);
-    font-size: 1.6rem;
-    text-shadow: 0 0 16px rgba(199, 164, 255, 0.8);
-    pointer-events: none;
-}
-
-.memory-img-skeleton.memory-img-loaded::before,
-.memory-img-skeleton.memory-img-loaded::after {
-    opacity: 0;
-    visibility: hidden;
-    animation: none;
-}
-
-@keyframes memorySkeletonShine {
-    0% {
-        transform: translateX(-120%);
-    }
-    100% {
-        transform: translateX(120%);
-    }
-}
-
-
-/* 6. 방문 시간대별 인사 + 10. 업데이트 알림 */
-.memory-time-greeting,
-.memory-update-notice,
-.ending-complete-badge {
-    width: fit-content;
-    max-width: min(92vw, 520px);
-    margin: 14px auto 0;
-    padding: 9px 16px;
-    border: 1px solid rgba(199, 164, 255, 0.28);
-    border-radius: 999px;
-    background: rgba(25, 20, 45, 0.46);
-    color: #e5d9f2;
-    font-size: 0.95rem;
-    line-height: 1.6;
-    letter-spacing: 0.5px;
-    text-align: center;
-    text-shadow: 0 0 10px rgba(199, 164, 255, 0.42);
-    box-shadow:
-        0 8px 24px rgba(0, 0, 0, 0.26),
-        inset 0 0 14px rgba(199, 164, 255, 0.06);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-}
-
-.memory-time-greeting i,
-.memory-update-notice i,
-.ending-complete-badge i {
-    color: #c7a4ff;
-    margin-right: 6px;
-}
-
-
-/* 7. 엔딩 감상 완료 배지 */
-.ending-complete-badge {
-    display: none;
-    border-color: rgba(255, 217, 142, 0.38);
-    color: #fff3c7;
-    background: rgba(40, 31, 54, 0.58);
-}
-
-.ending-complete-badge.show {
-    display: block;
-    animation: endingBadgePop 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes endingBadgePop {
-    from {
-        opacity: 0;
-        transform: translateY(12px) scale(0.96);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-
-/* 8. BGM 볼륨 저장 안내용 작은 반짝임 */
-#bgm-volume.memory-volume-saved {
-    filter: drop-shadow(0 0 8px rgba(199, 164, 255, 0.65));
-}
-
-
-/* 모바일 위치 조정 */
-@media screen and (max-width: 768px) {
-    .back-to-top-star {
-        right: 16px;
-        bottom: calc(154px + env(safe-area-inset-bottom));
-        width: 48px;
-        height: 48px;
-    }
-
-    .memory-time-greeting,
-    .memory-update-notice,
-    .ending-complete-badge {
-        font-size: 0.88rem;
-        padding: 8px 14px;
-        word-break: keep-all;
-    }
-}
-/* =========================================
-엔딩 배지 추가 시 아래 안내문 잘림 방지
-========================================= */
-
-/* 배지가 생겼을 때 인트로 하단 공간 확보 */
-body.has-ending-complete-badge .intro-section {
-    padding-bottom: 210px !important;
-}
-
-/* 안내 문구가 항상 위에 보이도록 */
-body.has-ending-complete-badge .scroll-down {
-    z-index: 5;
-}
-
-/* 배지가 생겼을 때 인트로 내용이 안내문과 너무 가까워지지 않게 */
-body.has-ending-complete-badge .intro-content {
-    transform: translateY(-18px);
-}
-
-/* 모바일에서는 더 여유 있게 */
-@media screen and (max-width: 768px) {
-    body.has-ending-complete-badge .intro-section {
-        padding-bottom: 230px !important;
-    }
-
-    body.has-ending-complete-badge .intro-content {
-        transform: translateY(-24px);
-    }
-
-    body.has-ending-complete-badge .scroll-down {
-        bottom: max(34px, env(safe-area-inset-bottom)) !important;
-    }
-}
-
-/* 화면 높이가 낮으면 absolute 고정을 풀어서 잘림 방지 */
-@media screen and (max-height: 760px) {
-    body.has-ending-complete-badge .intro-section {
-        min-height: auto !important;
-        padding-top: 80px !important;
-        padding-bottom: 80px !important;
-        flex-direction: column !important;
-    }
-
-    body.has-ending-complete-badge .intro-content {
-        transform: none !important;
-    }
-
-    body.has-ending-complete-badge .scroll-down {
-        position: relative !important;
-        left: auto !important;
-        bottom: auto !important;
-        transform: none !important;
-        margin-top: 42px !important;
-    }
-}
-/* ==========================================================================
-   💻 & 📱 [최종 완전판] 맨 왼쪽 위 고정형 통합 최적화 시스템 스타일 가이드
-   ========================================================================== */
-
-/* HTML에 직접 추가되었을 수 있는 과거 체크박스 흔적 제거 */
-.perf-mobile-btn, #perf-mode-toggle {
-    display: none !important;
-}
-
-/* 1. [공통 디자인] 데스크탑 및 모바일 화면 공통 '맨 왼쪽 위' 정밀 정착 */
-.mobile-perf-btn {
-    display: flex !important;
-    position: fixed !important;
-    /* 상단 상태바/노치 세이프 아웃 구역 자동 계산 및 왼쪽 위 마진 배치 */
-    top: max(16px, env(safe-area-inset-top)) !important;
-    left: 16px !important;
-    right: auto !important;
-    bottom: auto !important;
-    z-index: 999999 !important; /* 상단 배너나 텍스트에 클릭이 씹히지 않도록 조치 */
-    
-    background: #ffc107 !important; /* 최적화가 켜져서 활성화된 상태의 골드 앰버 테마 */
-    color: #0c0a1e !important;
-    border: 1px solid #ffc107 !important;
-    padding: 7px 12px !important;
-    border-radius: 999px !important;
-    font-size: 11px !important;
-    font-weight: bold !important;
-    align-items: center !important;
-    gap: 5px !important;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
-    transition: all 0.25s ease-in-out !important;
-    cursor: pointer !important;
-}
-
-/* 최적화 버튼이 꺼져 있을 때 (PC 디폴트 / 모바일 수동 정지 상태) */
-.mobile-perf-btn.opt-off {
-    background: rgba(30, 25, 55, 0.85) !important;
-    color: rgba(255, 255, 255, 0.7) !important;
-    border: 1px solid rgba(255, 255, 255, 0.25) !important;
-}
-
-/* 2. ⚡ [핵심 렉 줄이기 필터] 최적화 ON 모드가 가동되면 시스템 연산 일시 해제 */
-body.perf-mode-active .stars {
-    animation: none !important;
-    display: none !important; /* 끊임없이 움직여 연산 과부하를 초래하는 별빛 입자 즉시 소멸 */
-}
-body.perf-mode-active .aurora {
-    animation: none !important;
-}
-body.perf-mode-active .timeline-card,
-body.perf-mode-active .gallery-item,
-body.perf-mode-active .d-day-counter,
-body.perf-mode-active .welcome-box,
-body.perf-mode-active .letter-lock-container {
-    backdrop-filter: none !important; /* 그래픽 리소스를 점유하는 카드 뒷면 실시간 흐림(Blur) 필터링 제어 */
-    -webkit-backdrop-filter: none !important;
-    background: rgba(18, 14, 35, 0.96) !important; /* 필터 가 꺼져도 글귀 시인성에 문제 없도록 명도 보정 */
-}
-
-/* 🎨 [배경 테마 고정 최적화] 최적화 모드가 켜진 상태에서도 배경 테마 연동이 완벽히 동기화되도록 바인딩 */
-body.perf-mode-active .aurora { background: #070714 !important; }
-body.perf-mode-active.theme-cherry .aurora, body.perf-mode-active.cherry .aurora { background: #170b18 !important; }
-body.perf-mode-active.theme-ocean .aurora, body.perf-mode-active.ocean .aurora { background: #03141f !important; }
-body.perf-mode-active.theme-letter .aurora, body.perf-mode-active.letter .aurora { background: #120d18 !important; }
-body.perf-mode-active.theme-our-night .aurora, body.perf-mode-active.our-night .aurora { background: #05020f !important; }
-
-/* 3. 📱 모바일 환경 전용 (화면 가로폭 768px 이하) 완전 격리 최적화 규격 */
-@media screen and (max-width: 768px) {
-    html, body {
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        overscroll-behavior-y: auto !important;
-        touch-action: auto !important;
-        -webkit-overflow-scrolling: touch !important;
-    }
-
-    * {
-        -webkit-tap-highlight-color: transparent !important;
-        outline: none !important;
-    }
-
-    /* 하단 고정바 뒤로 문구가 숨는 문제 완벽 차단 공백 형성 */
-    footer, .footer-section {
-        position: relative !important;
-        z-index: 10 !important;
-        display: block !important;
-        padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
-    }
-
-    /* 모바일 반응형 1열 구조 정돈 */
-    .timeline-container { padding: 30px 16px 40px !important; }
-    .timeline-container::after { left: 20px !important; transform: none !important; }
-    .timeline-item { width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; padding-left: 42px !important; padding-bottom: 30px !important; }
-    .timeline-item:nth-child(even) { padding-left: 42px !important; }
-    .timeline-item:nth-child(odd) .timeline-dot, .timeline-item:nth-child(even) .timeline-dot { left: 2px !important; right: auto !important; top: 20px !important; }
-    .gallery-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
-    
-    .mobile-nav-toggle { background: transparent !important; border: none !important; box-shadow: none !important; }
-    .mobile-nav { position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100% !important; z-index: 99999 !important; }
-
-    /* 문장 흐름 단위 정돈 (줄바꿈이 이상하게 끊어지는 버그 방지) */
-    h1, h2, h3, p, span, a, .intro-content, .timeline-card p {
-        word-break: keep-all !important;
-        overflow-wrap: break-word !important;
-    }
-}
+(() => {
+    "use strict";
+
+    // final-v6: 슬라이드 일시정지 + 로딩 최적화 + 라이트박스 설명 + 엔딩 완료 표시
+
+    if (window.__memorySiteFinalScriptLoaded) return;
+    window.__memorySiteFinalScriptLoaded = true;
+
+    const DEFAULT_FALLBACK_IMAGE = "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=900&auto=format&fit=crop&q=70";
+    const SITE_THEMES = ["night", "cherry", "ocean", "letter"];
+    const loveMessages = [
+        "사랑해. 하은아.",
+        "언제나 곁에 있어줘.",
+        "우리의 이야기가 언제나 행복하기를.",
+        "언제나 웃어줘, 그럼 나도 웃을테니.",
+        "밤하늘의 별처럼 언제나 밝게 빛나기를.",
+        "나에게 넌 언제나 밝게 빛나는 밤하늘의 별이야."
+    ];
+
+    let slideIndex = 0;
+    let slideTimer = null;
+    let slides = [];
+    let slidePaused = false;
+    let slidePauseLocked = false;
+    let slideResumeTimer = null;
+    let secretToastTimer = null;
+    let titleClickCount = 0;
+    let footerClickCount = 0;
+    let bgmSecretClickCount = 0;
+    let typedSecretBuffer = "";
+    let endingFireworkPlayed = false;
+    let endingFinishTimer = null;
+    let currentScrollPercent = 0;
+    let targetScrollPercent = 0;
+    let currentParallax = 0;
+    let targetParallax = 0;
+
+    const $ = (selector, root = document) => root.querySelector(selector);
+    const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
+
+    const safeStorage = {
+        get(key) {
+            try {
+                return window.localStorage ? window.localStorage.getItem(key) : null;
+            } catch (error) {
+                console.warn("localStorage 읽기 오류:", error);
+                return null;
+            }
+        },
+        set(key, value) {
+            try {
+                if (window.localStorage) window.localStorage.setItem(key, value);
+            } catch (error) {
+                console.warn("localStorage 저장 오류:", error);
+            }
+        }
+    };
+
+    function onReady(callback) {
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", callback, { once: true });
+        } else {
+            callback();
+        }
+    }
+
+    function setText(id, value) {
+        const element = document.getElementById(id);
+        if (element) element.innerText = value;
+    }
+
+    function extractFallbackFromOnError(onErrorText) {
+        if (!onErrorText) return DEFAULT_FALLBACK_IMAGE;
+        const match = String(onErrorText).match(/this\.src\s*=\s*['"]([^'"]+)['"]/i);
+        return match ? match[1] : DEFAULT_FALLBACK_IMAGE;
+    }
+
+    function setSafeImage(img, src, fallback = DEFAULT_FALLBACK_IMAGE, alt = "") {
+        if (!img) return;
+
+        const safeSrc = src || fallback || DEFAULT_FALLBACK_IMAGE;
+        const safeFallback = fallback || DEFAULT_FALLBACK_IMAGE;
+
+        img.onerror = function () {
+            if (this.dataset.fallbackApplied === "true") return;
+            this.dataset.fallbackApplied = "true";
+            this.src = safeFallback;
+        };
+
+        if (alt) img.alt = alt;
+        img.dataset.fallbackApplied = "false";
+        img.src = safeSrc;
+    }
+
+    // [수정 완료] 인위적인 시간 제한을 제거하고, 완전히 로딩이 끝난 후 페이드아웃 후 최적화 버튼 생성 트리거 연동
+    function hideLoadingScreen() {
+        const loadingScreen = document.getElementById("loading-screen");
+        if (!loadingScreen || loadingScreen.dataset.hidden === "true") {
+            // 로딩 화면이 이미 처리되었거나 없다면 최적화 버튼 즉시 조립
+            if (typeof window.initHybridPerformanceMode === "function") {
+                window.initHybridPerformanceMode();
+            }
+            return;
+        }
+
+        loadingScreen.dataset.hidden = "true";
+        loadingScreen.classList.add("hide");
+        
+        // 로딩 화면의 페이드아웃 트랜지션(580ms)이 완벽히 끝난 시점에 display를 끄고 버튼 실행
+        setTimeout(() => {
+            loadingScreen.style.display = "none";
+            if (typeof window.initHybridPerformanceMode === "function") {
+                window.initHybridPerformanceMode();
+            }
+        }, 580);
+    }
+
+    function closeWelcomeModal() {
+        const modal = document.getElementById("welcome-modal");
+        if (!modal) return;
+
+        modal.classList.remove("show");
+        modal.setAttribute("aria-hidden", "true");
+        safeStorage.set("memorySiteWelcomeSeen", "true");
+    }
+
+    function toggleBGM() {
+        const audio = document.getElementById("myAudio");
+        const icon = document.getElementById("bgm-icon");
+        const player = document.getElementById("bgm-container");
+        if (!audio) return;
+
+        if (audio.paused) {
+            audio.play().then(() => {
+                icon?.classList.add("rotating");
+                player?.classList.add("playing");
+                document.body.classList.add("bgm-playing");
+            }).catch(error => {
+                console.error("BGM 재생 오류:", error);
+                alert("음원을 재생할 수 없어! 기기의 소리 설정이나 절전 모드를 확인해줘 🥺");
+            });
+        } else {
+            audio.pause();
+            icon?.classList.remove("rotating");
+            player?.classList.remove("playing");
+            document.body.classList.remove("bgm-playing");
+        }
+    }
+
+    function toggleMute(event) {
+        event?.stopPropagation();
+
+        const audio = document.getElementById("myAudio");
+        const muteIcon = document.getElementById("bgm-mute-icon");
+        if (!audio || !muteIcon) return;
+
+        audio.muted = !audio.muted;
+        muteIcon.className = audio.muted ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
+    }
+
+    async function sha256(text) {
+        if (window.crypto && window.crypto.subtle && window.TextEncoder) {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(text);
+            const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
+            return Array.from(new Uint8Array(hashBuffer)).map(byte => byte.toString(16).padStart(2, "0")).join("");
+        }
+        return sha256Fallback(text);
+    }
+
+    function sha256Fallback(text) {
+        const rightRotate = (value, amount) => (value >>> amount) | (value << (32 - amount));
+        const maxWord = Math.pow(2, 32);
+        const words = [];
+        const hash = [];
+        const k = [];
+        const isComposite = {};
+        let primeCounter = 0;
+
+        for (let candidate = 2; primeCounter < 64; candidate++) {
+            if (!isComposite[candidate]) {
+                for (let i = 0; i < 313; i += candidate) isComposite[i] = candidate;
+                hash[primeCounter] = (Math.pow(candidate, 0.5) * maxWord) | 0;
+                k[primeCounter++] = (Math.pow(candidate, 1 / 3) * maxWord) | 0;
+            }
+        }
+
+        let ascii = unescape(encodeURIComponent(text));
+        const asciiBitLength = ascii.length * 8;
+        ascii += "\x80";
+
+        while (ascii.length % 64 - 56) ascii += "\x00";
+
+        for (let i = 0; i < ascii.length; i++) {
+            words[i >> 2] |= ascii.charCodeAt(i) << (((3 - i) % 4) * 8);
+        }
+
+        words[words.length] = (asciiBitLength / maxWord) | 0;
+        words[words.length] = asciiBitLength;
+
+        for (let j = 0; j < words.length;) {
+            const w = words.slice(j, j += 16);
+            const oldHash = hash.slice(0);
+
+            for (let i = 0; i < 64; i++) {
+                const w15 = w[i - 15];
+                const w2 = w[i - 2];
+                const a = hash[0];
+                const e = hash[4];
+                const temp1 = hash[7]
+                    + (rightRotate(e, 6) ^ rightRotate(e, 11) ^ rightRotate(e, 25))
+                    + ((e & hash[5]) ^ ((~e) & hash[6]))
+                    + k[i]
+                    + (w[i] = i < 16 ? w[i] : (
+                        w[i - 16]
+                        + (rightRotate(w15, 7) ^ rightRotate(w15, 18) ^ (w15 >>> 3))
+                        + w[i - 7]
+                        + (rightRotate(w2, 17) ^ rightRotate(w2, 19) ^ (w2 >>> 10))
+                    ) | 0);
+                const temp2 = (rightRotate(a, 2) ^ rightRotate(a, 13) ^ rightRotate(a, 22))
+                    + ((a & hash[1]) ^ (a & hash[2]) ^ (hash[1] & hash[2]));
+
+                hash.pop();
+                hash.unshift((temp1 + temp2) | 0);
+                hash[4] = (hash[4] + temp1) | 0;
+            }
+
+            for (let i = 0; i < 8; i++) hash[i] = (hash[i] + oldHash[i]) | 0;
+        }
+
+        let result = "";
+        for (let i = 0; i < 8; i++) {
+            for (let j = 3; j + 1; j--) {
+                const byte = (hash[i] >> (j * 8)) & 255;
+                result += (byte < 16 ? "0" : "") + byte.toString(16);
+            }
+        }
+        return result;
+    }
+
+    async function checkPassword() {
+        const inputElement = document.getElementById("letter-password");
+        const lockScreen = document.getElementById("lock-screen");
+        const realContent = document.getElementById("letter-real-content");
+        const letterTextDiv = document.querySelector(".letter-text");
+        const replyBtn = document.getElementById("reply-btn");
+        const submitBtn = document.querySelector(".password-field button");
+
+        if (!inputElement || !lockScreen || !realContent || !letterTextDiv || !replyBtn) return;
+
+        const savedPasswordHash = "adfaab87038c95002ab05463e743201605457409b7129f9a3a8cddcb8caea1a2";
+        const inputHash = await sha256(inputElement.value || "");
+
+        if (inputHash === savedPasswordHash) {
+            if (submitBtn) submitBtn.disabled = true;
+
+            lockScreen.style.display = "none";
+            realContent.style.display = "block";
+            realContent.classList.add("unlocked");
+            replyBtn.classList.remove("is-visible");
+
+            const originalHTML = letterTextDiv.innerHTML;
+            letterTextDiv.innerHTML = "";
+
+            setTimeout(() => {
+                typeWriterEffect(letterTextDiv, originalHTML, 20, () => {
+                    replyBtn.classList.add("is-visible");
+                    replyBtn.animate?.([{ opacity: 0 }, { opacity: 1 }], { duration: 1000, fill: "forwards" });
+                });
+            }, 800);
+        } else {
+            alert("비밀번호가 틀렸어! 우리의 소중한 날짜를 입력해줘.");
+            inputElement.value = "";
+            inputElement.focus();
+        }
+    }
+
+    function typeWriterEffect(element, html, baseSpeed, onComplete) {
+        if (!element) return;
+
+        const tokens = html.match(/<[^>]+>|[^<]/g) || [];
+        let i = 0;
+        let currentHTML = "";
+        element.innerHTML = "";
+
+        function type() {
+            if (i < tokens.length) {
+                const token = tokens[i];
+                currentHTML += token;
+                element.innerHTML = currentHTML;
+                i += 1;
+
+                if (token.startsWith("<")) {
+                    type();
+                } else {
+                    const randomSpeed = Math.max(5, baseSpeed + (Math.random() * 20 - 10));
+                    setTimeout(type, randomSpeed);
+                }
+            } else if (typeof onComplete === "function") {
+                onComplete();
+            }
+        }
+        type();
+    }
+
+    function openReplyBox() {
+        document.getElementById("reply-modal")?.classList.add("show");
+    }
+
+    function closeReplyBox() {
+        document.getElementById("reply-modal")?.classList.remove("show");
+    }
+
+    function sendReply() {
+        const replyText = document.getElementById("reply-text");
+        const text = replyText?.value || "";
+
+        if (text.trim() === "") {
+            alert("내용을 조금이라도 적어줘! 🥺");
+            return;
+        }
+
+        alert("우리의 기록장에 편지가 잘 남겨졌어! 고마워. ❤️");
+
+        const myEmail = "atritime@gmail.com";
+        const subject = encodeURIComponent("[우리의 기록장] 사이트에서 누군가 보낸 답장이야.");
+        const body = encodeURIComponent(text);
+
+        window.location.href = `mailto:${myEmail}?subject=${subject}&body=${body}`;
+        closeReplyBox();
+        replyText.value = "";
+    }
+
+    function closeLightbox(event) {
+        const lightbox = document.getElementById("lightbox");
+        if (!lightbox) return;
+
+        if (event) {
+            const target = event.target;
+            const clickedBackdrop = target === lightbox;
+            const clickedClose = target?.classList?.contains("close-lightbox");
+            if (!clickedBackdrop && !clickedClose) return;
+            event.stopPropagation();
+        }
+
+        lightbox.classList.remove("show");
+        document.body.classList.remove("lightbox-open");
+
+        const lightboxImg = document.getElementById("lightbox-img");
+        const lightboxTitle = document.getElementById("lightbox-title");
+        const lightboxDesc = document.getElementById("lightbox-desc");
+
+        if (lightboxImg) lightboxImg.removeAttribute("src");
+        if (lightboxTitle) lightboxTitle.innerText = "";
+        if (lightboxDesc) lightboxDesc.innerText = "";
+    }
+
+    function initLightbox() {
+        const galleryImages = $$(".item-image img");
+        const lightbox = document.getElementById("lightbox");
+        const lightboxImg = document.getElementById("lightbox-img");
+        const lightboxTitle = document.getElementById("lightbox-title");
+        const lightboxDesc = document.getElementById("lightbox-desc");
+        const closeButton = $(".close-lightbox");
+        if (!lightbox || !lightboxImg) return;
+
+        galleryImages.forEach(img => {
+            img.style.cursor = "pointer";
+            img.addEventListener("click", event => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const item = img.closest(".gallery-item");
+                const title = item?.querySelector(".item-title")?.innerText?.trim() || img.alt || "확대된 사진";
+                const desc = item?.querySelector(".item-desc")?.innerText?.trim() || "";
+
+                setSafeImage(lightboxImg, img.currentSrc || img.src, img.dataset.fallback || DEFAULT_FALLBACK_IMAGE, title);
+                if (lightboxTitle) lightboxTitle.innerText = title;
+                if (lightboxDesc) lightboxDesc.innerText = desc;
+
+                lightbox.classList.add("show");
+                document.body.classList.add("lightbox-open");
+            });
+        });
+
+        lightboxImg.addEventListener("click", event => event.stopPropagation());
+        closeButton?.addEventListener("click", closeLightbox);
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape") closeLightbox();
+        });
+    }
+
+    function createStar(x, y) {
+        if (Math.random() > 0.75) return;
+
+        const star = document.createElement("div");
+        star.className = "mouse-star";
+
+        const offsetX = (Math.random() - 0.5) * 15;
+        const offsetY = (Math.random() - 0.5) * 15;
+        const size = Math.random() * 6 + 6;
+
+        star.style.left = `${x + offsetX}px`;
+        star.style.top = `${y + offsetY}px`;
+        star.style.width = `${size}px`;
+        star.style.height = `${size}px`;
+
+        document.body.appendChild(star);
+        setTimeout(() => star.remove(), 1000);
+    }
+
+    function updateDday() {
+        const startDate = new Date("2026-04-16T00:00:00").getTime();
+        const now = Date.now();
+        let distance = now - startDate;
+        const labelElement = document.querySelector(".d-day-label");
+
+        if (Number.isNaN(startDate)) return;
+
+        if (distance < 0) {
+            if (labelElement) labelElement.innerText = "우리의 이야기가 시작되기까지";
+            distance = startDate - now;
+        } else if (labelElement) {
+            labelElement.innerText = "우리의 이야기가 시작된 지";
+        }
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        setText("days", String(days+1));
+        setText("hours", String(hours).padStart(2, "0"));
+        setText("minutes", String(minutes).padStart(2, "0"));
+        setText("seconds", String(seconds).padStart(2, "0"));
+    }
+
+    function smoothScrollAnimation() {
+        const scrollBar = document.getElementById("scroll-bar");
+        const scrollStar = document.getElementById("scroll-star");
+        const stars = document.querySelector(".stars");
+
+        currentScrollPercent += (targetScrollPercent - currentScrollPercent) * 0.1;
+        currentParallax += (targetParallax - currentParallax) * 0.1;
+
+        if (scrollBar) scrollBar.style.width = `${Math.max(0, Math.min(currentScrollPercent, 100))}%`;
+        if (scrollStar) scrollStar.style.transform = `rotate(${currentScrollPercent * 3.6}deg)`;
+        if (stars) stars.style.transform = `translateY(-${currentParallax}px)`;
+
+        window.requestAnimationFrame(smoothScrollAnimation);
+    }
+
+    function updateScrollTargets() {
+        const scrollTop = window.scrollY || document.documentElement.scrollTop || 0;
+        const docHeight = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        targetScrollPercent = (scrollTop / docHeight) * 100;
+        targetParallax = (scrollTop / docHeight) * 30;
+    }
+
+    function initScrollEffects() {
+        window.addEventListener("scroll", updateScrollTargets, { passive: true });
+        window.addEventListener("resize", updateScrollTargets);
+        updateScrollTargets();
+        smoothScrollAnimation();
+    }
+
+    function initFadeObserver() {
+        const animateItems = $$(".timeline-item, .gallery-item");
+        if (!animateItems.length) return;
+
+        if (!("IntersectionObserver" in window)) {
+            animateItems.forEach(item => item.classList.add("visible"));
+            return;
+        }
+
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add("visible");
+            });
+        }, { threshold: 0.15 });
+
+        animateItems.forEach(item => observer.observe(item));
+    }
+
+    function initRandomMessage() {
+        const msgElement = document.getElementById("random-message");
+        if (!msgElement) return;
+        msgElement.innerText = loveMessages[Math.floor(Math.random() * loveMessages.length)];
+    }
+
+    function initWelcomeModal() {
+        const welcomeModal = document.getElementById("welcome-modal");
+        const hasSeenWelcome = safeStorage.get("memorySiteWelcomeSeen") === "true";
+
+        if (welcomeModal && !hasSeenWelcome) {
+            setTimeout(() => {
+                welcomeModal.classList.add("show");
+                welcomeModal.setAttribute("aria-hidden", "false");
+            }, 900);
+        }
+    }
+
+    function initBgmControls() {
+        const audio = document.getElementById("myAudio");
+        const volumeSlider = document.getElementById("bgm-volume");
+        const muteIcon = document.getElementById("bgm-mute-icon");
+        const icon = document.getElementById("bgm-icon");
+        const player = document.getElementById("bgm-container");
+        if (!audio) return;
+
+        if (volumeSlider) {
+            const initialVolume = Number(volumeSlider.value);
+            audio.volume = Number.isFinite(initialVolume) ? initialVolume : 0.6;
+            volumeSlider.addEventListener("input", event => {
+                event.stopPropagation();
+                const volume = Number(volumeSlider.value);
+                audio.volume = Number.isFinite(volume) ? volume : 0.6;
+                audio.muted = audio.volume === 0;
+                if (muteIcon) muteIcon.className = audio.muted ? "fa-solid fa-volume-xmark" : "fa-solid fa-volume-high";
+            });
+        }
+
+        audio.addEventListener("play", () => {
+            document.body.classList.add("bgm-playing");
+            player?.classList.add("playing");
+            icon?.classList.add("rotating");
+        });
+        audio.addEventListener("pause", () => {
+            document.body.classList.remove("bgm-playing");
+            player?.classList.remove("playing");
+            icon?.classList.remove("rotating");
+        });
+        audio.addEventListener("ended", () => {
+            document.body.classList.remove("bgm-playing");
+            player?.classList.remove("playing");
+            icon?.classList.remove("rotating");
+        });
+    }
+
+    function initPasswordEnterKey() {
+        const passwordInput = document.getElementById("letter-password");
+        if (!passwordInput) return;
+
+        passwordInput.addEventListener("keydown", event => {
+            if (event.key === "Enter") checkPassword();
+        });
+    }
+
+    function initSlideshow() {
+        const galleryItems = $$(".gallery-item");
+        const dotsContainer = document.getElementById("slide-dots");
+        if (!galleryItems.length || !dotsContainer) return;
+
+        slides = galleryItems.map(item => {
+            const img = item.querySelector("img");
+            const fallback = img?.dataset.fallback || extractFallbackFromOnError(img?.getAttribute("onerror"));
+            if (img) {
+                img.dataset.fallback = fallback;
+                img.onerror = function () {
+                    if (this.dataset.fallbackApplied === "true") return;
+                    this.dataset.fallbackApplied = "true";
+                    this.src = fallback;
+                };
+            }
+
+            return {
+                src: img?.getAttribute("src") || fallback,
+                fallback,
+                title: item.querySelector(".item-title")?.innerText || "우리의 순간",
+                desc: item.querySelector(".item-desc")?.innerText || "소중한 기억"
+            };
+        });
+
+        dotsContainer.innerHTML = "";
+        slides.forEach((_, index) => {
+            const dot = document.createElement("button");
+            dot.type = "button";
+            dot.className = "slide-dot";
+            dot.setAttribute("aria-label", `${index + 1}번째 사진 보기`);
+            dot.addEventListener("click", () => showSlide(index, true));
+            dotsContainer.appendChild(dot);
+        });
+
+        showSlide(0);
+        startSlideTimer();
+        initSlideshowPauseControls();
+    }
+
+    function showSlide(index, resetTimer = false) {
+        if (!slides.length) return;
+
+        slideIndex = (index + slides.length) % slides.length;
+        const currentSlide = slides[slideIndex];
+        const slideImage = document.getElementById("slide-image");
+        const slideTitle = document.getElementById("slide-title");
+        const slideDesc = document.getElementById("slide-desc");
+        const dots = $$(".slide-dot");
+
+        if (slideImage) {
+            slideImage.classList.remove("show");
+            setTimeout(() => {
+                setSafeImage(slideImage, currentSlide.src, currentSlide.fallback, currentSlide.title);
+                slideImage.classList.add("show");
+            }, 120);
+        }
+
+        if (slideTitle) slideTitle.innerText = currentSlide.title;
+        if (slideDesc) slideDesc.innerText = currentSlide.desc;
+
+        dots.forEach((dot, dotIndex) => {
+            dot.classList.toggle("active", dotIndex === slideIndex);
+        });
+
+        if (resetTimer) startSlideTimer();
+    }
+
+    function changeSlide(direction) {
+        showSlide(slideIndex + direction, true);
+    }
+
+    function stopSlideTimer() {
+        if (slideTimer) {
+            clearInterval(slideTimer);
+            slideTimer = null;
+        }
+    }
+
+    function updateSlidePauseButton() {
+        const pauseButton = document.getElementById("slide-pause-btn");
+        if (!pauseButton) return;
+
+        const icon = pauseButton.querySelector("i");
+        const text = pauseButton.querySelector("span");
+        const isPaused = slidePaused || slidePauseLocked;
+
+        pauseButton.classList.toggle("paused", isPaused);
+        pauseButton.setAttribute("aria-pressed", String(isPaused));
+
+        if (icon) icon.className = isPaused ? "fa-solid fa-play" : "fa-solid fa-pause";
+        if (text) text.innerText = isPaused ? "슬라이드 다시 재생" : "슬라이드 일시정지";
+    }
+
+    function setSlidePaused(paused, lock = false) {
+        if (lock) slidePauseLocked = paused;
+        slidePaused = paused;
+
+        if (paused) {
+            stopSlideTimer();
+        } else if (!slidePauseLocked) {
+            startSlideTimer();
+        }
+
+        updateSlidePauseButton();
+    }
+
+    function toggleSlidePause() {
+        const nextPaused = !slidePauseLocked;
+        setSlidePaused(nextPaused, true);
+    }
+
+    function pauseSlideTemporarily() {
+        if (slidePauseLocked) return;
+        clearTimeout(slideResumeTimer);
+        setSlidePaused(true, false);
+        slideResumeTimer = setTimeout(() => {
+            if (!slidePauseLocked) setSlidePaused(false, false);
+        }, 4500);
+    }
+
+    function initSlideshowPauseControls() {
+        const slideshow = document.getElementById("slideshow");
+        if (!slideshow) return;
+
+        slideshow.addEventListener("mouseenter", () => {
+            if (!slidePauseLocked) setSlidePaused(true, false);
+        });
+
+        slideshow.addEventListener("mouseleave", () => {
+            if (!slidePauseLocked) setSlidePaused(false, false);
+        });
+
+        slideshow.addEventListener("touchstart", pauseSlideTemporarily, { passive: true });
+        updateSlidePauseButton();
+    }
+
+    function startSlideTimer() {
+        if (slidePaused || slidePauseLocked) return;
+        if (slideTimer) clearInterval(slideTimer);
+        slideTimer = setInterval(() => showSlide(slideIndex + 1), 3500);
+    }
+
+    function initMobileNavActiveState() {
+        const navLinks = $$(".mobile-nav a");
+        const sections = ["home", "timeline", "gallery", "letter"].map(id => document.getElementById(id)).filter(Boolean);
+        if (!navLinks.length || !sections.length) return;
+
+        let ticking = false;
+
+        function setActiveMenu(activeId) {
+            navLinks.forEach(link => {
+                link.classList.toggle("active", link.getAttribute("href") === `#${activeId}`);
+            });
+        }
+
+        function getMobileNavOffset() {
+            const nav = document.querySelector(".mobile-nav");
+            if (!nav || window.getComputedStyle(nav).display === "none") return 0;
+            return Math.ceil(nav.getBoundingClientRect().height + 18);
+        }
+
+        function updateActiveByScroll() {
+            ticking = false;
+            const checkLine = window.scrollY + Math.min(window.innerHeight * 0.42, 360);
+            let activeId = sections[0].id;
+
+            sections.forEach(section => {
+                const top = section.getBoundingClientRect().top + window.scrollY - 40;
+                if (checkLine >= top) activeId = section.id;
+            });
+
+            setActiveMenu(activeId);
+        }
+
+        function requestUpdate() {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(updateActiveByScroll);
+        }
+
+        navLinks.forEach(link => {
+            link.addEventListener("click", event => {
+                const targetId = link.getAttribute("href")?.replace("#", "");
+                const target = targetId ? document.getElementById(targetId) : null;
+                if (!target) return;
+
+                event.preventDefault();
+                const targetTop = target.getBoundingClientRect().top + window.scrollY - getMobileNavOffset();
+                window.scrollTo({ top: Math.max(targetTop, 0), behavior: "smooth" });
+                setActiveMenu(targetId);
+            });
+        });
+
+        window.addEventListener("scroll", requestUpdate, { passive: true });
+        window.addEventListener("resize", requestUpdate);
+        updateActiveByScroll();
+    }
+
+    function toggleThemePanel() {
+        document.getElementById("theme-panel")?.classList.toggle("open");
+    }
+
+    function setSiteTheme(themeName) {
+        const safeTheme = SITE_THEMES.includes(themeName) ? themeName : "night";
+
+        document.body.classList.remove("theme-cherry", "theme-ocean", "theme-letter");
+        if (safeTheme !== "night") document.body.classList.add(`theme-${safeTheme}`);
+
+        safeStorage.set("memorySiteTheme", safeTheme);
+        updateThemeButtons(safeTheme);
+    }
+
+    function updateThemeButtons(activeTheme) {
+        $$(".theme-options button").forEach(button => {
+            button.classList.toggle("active", button.dataset.theme === activeTheme);
+        });
+    }
+
+    function initThemeSwitcher() {
+        const savedTheme = safeStorage.get("memorySiteTheme") || "night";
+        setSiteTheme(savedTheme);
+
+        document.addEventListener("click", event => {
+            const panel = document.getElementById("theme-panel");
+            if (!panel || panel.contains(event.target)) return;
+            panel.classList.remove("open");
+        });
+    }
+
+    function updateVisitCount() {
+        const visitElement = document.getElementById("visit-count");
+        if (!visitElement) return;
+
+        const storageKey = "memorySiteVisitCount";
+        const currentCount = Number(safeStorage.get(storageKey) || 0) + 1;
+        safeStorage.set(storageKey, String(currentCount));
+        visitElement.innerHTML = `<i class="fa-solid fa-star"></i> 네가 이 기록장에 찾아온 건 <strong>${currentCount}</strong>번째야.`;
+    }
+
+    function launchHeartFireworks(event) {
+        const source = event?.currentTarget || document.querySelector(".heart-burst-btn");
+        const rect = source?.getBoundingClientRect?.();
+        const startX = rect ? rect.left + rect.width / 2 : window.innerWidth / 2;
+        const startY = rect ? rect.top + rect.height / 2 : window.innerHeight / 2;
+        const hearts = ["❤", "♥", "✦", "✧", "💜", "💗"];
+        const colors = ["#ffffff", "#c7a4ff", "#ff8fd8", "#ffd1ec", "#b69cff"];
+
+        for (let i = 0; i < 42; i++) {
+            const particle = document.createElement("span");
+            particle.className = "heart-particle";
+            particle.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 90 + Math.random() * 190;
+            const moveX = Math.cos(angle) * distance;
+            const moveY = Math.sin(angle) * distance - 70;
+            const size = 13 + Math.random() * 17;
+            const duration = 950 + Math.random() * 800;
+
+            particle.style.setProperty("--start-x", `${startX}px`);
+            particle.style.setProperty("--start-y", `${startY}px`);
+            particle.style.setProperty("--move-x", `${moveX}px`);
+            particle.style.setProperty("--move-y", `${moveY}px`);
+            particle.style.setProperty("--heart-size", `${size}px`);
+            particle.style.setProperty("--heart-duration", `${duration}ms`);
+            particle.style.setProperty("--rotate", `${Math.random() * 720 - 360}deg`);
+            particle.style.setProperty("--heart-color", colors[Math.floor(Math.random() * colors.length)]);
+
+            document.body.appendChild(particle);
+            setTimeout(() => particle.remove(), duration + 120);
+        }
+    }
+
+    function initBasicProtection() {
+        document.addEventListener("contextmenu", event => {
+            if (event.target.closest("input, textarea")) return;
+            event.preventDefault();
+        });
+
+        document.body.classList.add("protect-selection");
+
+        document.addEventListener("keydown", event => {
+            const key = event.key.toLowerCase();
+            const blocked =
+                event.key === "F12" ||
+                (event.ctrlKey && event.shiftKey && ["i", "j", "c"].includes(key)) ||
+                (event.ctrlKey && ["u", "s"].includes(key));
+
+            if (blocked) {
+                event.preventDefault();
+                event.stopPropagation();
+                return false;
+            }
+            return true;
+        }, true);
+    }
+
+    function showSecretToast(message, duration = 2800) {
+        const toast = document.getElementById("secret-toast");
+        if (!toast) return;
+
+        toast.innerHTML = message;
+        toast.classList.add("show");
+        clearTimeout(secretToastTimer);
+        secretToastTimer = setTimeout(() => toast.classList.remove("show"), duration);
+    }
+
+    function revealEasterSecret() {
+        const secretSection = document.getElementById("easter-secret");
+        if (!secretSection) return;
+
+        secretSection.classList.add("revealed");
+        secretSection.setAttribute("aria-hidden", "false");
+        showSecretToast("숨겨진 별빛 기록이 열렸어!", 3200);
+        setTimeout(() => secretSection.scrollIntoView({ behavior: "smooth", block: "center" }), 450);
+    }
+
+    function hideEasterSecret() {
+        const secretSection = document.getElementById("easter-secret");
+        if (!secretSection) return;
+
+        secretSection.classList.remove("revealed");
+        secretSection.setAttribute("aria-hidden", "true");
+        showSecretToast("비밀 기록을 다시 별빛 속에 숨겼어.", 2600);
+    }
+
+    function initEasterEggs() {
+        const title = document.querySelector(".main-title");
+        const footer = document.querySelector("footer");
+        const bgmButton = document.querySelector(".bgm-main-btn");
+
+        if (title) {
+            title.style.cursor = "pointer";
+            title.addEventListener("click", () => {
+                titleClickCount += 1;
+                if (titleClickCount === 3) showSecretToast("조금만 더 누르면 숨겨진 별빛이 열릴지도...?", 2200);
+                if (titleClickCount >= 5) {
+                    titleClickCount = 0;
+                    revealEasterSecret();
+                    launchHeartFireworks({ currentTarget: title });
+                }
+            });
+        }
+
+        document.addEventListener("keydown", event => {
+            if (event.ctrlKey || event.metaKey || event.altKey) return;
+            if (event.key.length !== 1) return;
+
+            typedSecretBuffer = (typedSecretBuffer + event.key.toLowerCase()).slice(-12);
+            if (typedSecretBuffer.includes("haeun") || typedSecretBuffer.includes("하은")) {
+                typedSecretBuffer = "";
+                showSecretToast("넌 언제나 밤하늘에서 빛나고 있는 별이야.", 3600);
+                launchHeartFireworks({ currentTarget: document.querySelector(".intro-content") || document.body });
+            }
+        });
+
+        if (footer) {
+            footer.addEventListener("click", () => {
+                footerClickCount += 1;
+                clearTimeout(footer._easterTimer);
+                footer._easterTimer = setTimeout(() => { footerClickCount = 0; }, 1200);
+
+                if (footerClickCount >= 3) {
+                    footerClickCount = 0;
+                    showSecretToast("엔딩 크레딧으로 이동할게. 우리의 이야기는 계속될거야.", 2600);
+                    document.getElementById("ending-credits")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+            });
+        }
+
+        if (bgmButton) {
+            bgmButton.addEventListener("click", () => {
+                bgmSecretClickCount += 1;
+                clearTimeout(bgmButton._easterTimer);
+                bgmButton._easterTimer = setTimeout(() => { bgmSecretClickCount = 0; }, 1600);
+
+                if (bgmSecretClickCount >= 7) {
+                    bgmSecretClickCount = 0;
+                    document.body.classList.add("bgm-playing");
+                    showSecretToast("별빛 증폭 모드가 잠깐 켜졌어.", 2800);
+                    setTimeout(() => {
+                        const audio = document.getElementById("myAudio");
+                        if (!audio || audio.paused) document.body.classList.remove("bgm-playing");
+                    }, 4500);
+                }
+            });
+        }
+    }
+
+    function initSeasonalEffects() {
+        const layer = document.getElementById("seasonal-effect-layer");
+        if (!layer) return;
+
+        const month = new Date().getMonth() + 1;
+        let season = "winter";
+        let symbols = ["❄", "✦", "❅"];
+        let count = 26;
+
+        if (month >= 3 && month <= 5) {
+            season = "spring";
+            symbols = ["❀", "✿", "♡", "✦"];
+            count = 24;
+        } else if (month >= 6 && month <= 8) {
+            season = "summer";
+            symbols = ["○", "◌", "✧", "∙"];
+            count = 22;
+        } else if (month >= 9 && month <= 11) {
+            season = "autumn";
+            symbols = ["🍂", "✦", "◆", "❧"];
+            count = 20;
+        }
+
+        document.body.classList.add(`season-${season}`);
+        layer.innerHTML = "";
+
+        for (let i = 0; i < count; i++) {
+            const particle = document.createElement("span");
+            particle.className = "seasonal-particle";
+            particle.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+            particle.style.setProperty("--season-left", `${Math.random() * 100}%`);
+            particle.style.setProperty("--season-size", `${12 + Math.random() * 18}px`);
+            particle.style.setProperty("--season-duration", `${9 + Math.random() * 12}s`);
+            particle.style.setProperty("--season-delay", `${Math.random() * -18}s`);
+            particle.style.setProperty("--season-drift", `${(Math.random() - 0.5) * 220}px`);
+            particle.style.setProperty("--season-rotate", `${180 + Math.random() * 540}deg`);
+            particle.style.setProperty("--season-opacity", `${0.25 + Math.random() * 0.45}`);
+            layer.appendChild(particle);
+        }
+    }
+
+    function updateEndingCreditsDistance() {
+        const mask = document.querySelector(".credits-mask");
+        const roll = document.getElementById("credits-roll");
+        if (!mask || !roll) return;
+
+        const maskHeight = Math.max(mask.clientHeight, 1);
+
+        const children = Array.from(roll.children).filter(child => {
+            return child.offsetParent !== null;
+        });
+
+        const lastChild = children[children.length - 1];
+        let lastContentBottom = roll.scrollHeight;
+
+        if (lastChild) {
+            const rollRect = roll.getBoundingClientRect();
+            const lastRect = lastChild.getBoundingClientRect();
+            lastContentBottom = lastRect.bottom - rollRect.top;
+        }
+
+        const startY = Math.round(maskHeight + 36);
+        const endY = Math.round(lastContentBottom + 8);
+        const travelDistance = startY + endY;
+        const duration = Math.min(76, Math.max(42, Math.round(travelDistance / 34)));
+
+        mask.style.setProperty("--credits-roll-start", `${startY}px`);
+        mask.style.setProperty("--credits-roll-end", `${endY}px`);
+        mask.style.setProperty("--credits-duration", `${duration}s`);
+    }
+
+    function setEndingFinalVisible(isVisible) {
+        const finalMessage = document.getElementById("credits-final-message");
+        if (!finalMessage) return;
+        finalMessage.setAttribute("aria-hidden", isVisible ? "false" : "true");
+    }
+
+    function prepareEndingCredits() {
+        const credits = document.getElementById("ending-credits");
+        const roll = document.getElementById("credits-roll");
+        if (!credits || !roll) return false;
+
+        updateEndingCreditsDistance();
+        clearTimeout(endingFinishTimer);
+        credits.classList.add("resetting");
+        credits.classList.remove("play", "ended");
+        setEndingFinalVisible(false);
+        void roll.offsetHeight;
+        credits.classList.remove("resetting");
+        return true;
+    }
+
+    function finishEndingCredits() {
+        const credits = document.getElementById("ending-credits");
+        if (!credits) return;
+
+        clearTimeout(endingFinishTimer);
+        credits.classList.remove("play");
+        credits.classList.add("ended");
+        credits.dataset.creditsStarted = "ended";
+        setEndingFinalVisible(true);
+    }
+
+    function getCreditsDurationMs() {
+        const mask = document.querySelector(".credits-mask");
+        const roll = document.getElementById("credits-roll");
+        const cssDuration = mask ? getComputedStyle(mask).getPropertyValue("--credits-duration").trim() : "";
+        const computedDuration = roll ? getComputedStyle(roll).animationDuration : "";
+        const raw = cssDuration || computedDuration || "60s";
+        const seconds = Number.parseFloat(raw);
+        return Number.isFinite(seconds) && seconds > 0 ? seconds * 1000 : 60000;
+    }
+
+    function startEndingCredits(force = false) {
+        const credits = document.getElementById("ending-credits");
+        const roll = document.getElementById("credits-roll");
+        if (!credits || !roll) return;
+
+        if (!force && (credits.classList.contains("play") || credits.classList.contains("ended") || credits.dataset.creditsStarted === "true")) {
+            return;
+        }
+
+        if (!prepareEndingCredits()) return;
+
+        credits.dataset.creditsStarted = "true";
+        requestAnimationFrame(() => {
+            credits.classList.add("play");
+            clearTimeout(endingFinishTimer);
+            endingFinishTimer = setTimeout(finishEndingCredits, getCreditsDurationMs() + 350);
+        });
+
+        if (!endingFireworkPlayed) {
+            endingFireworkPlayed = true;
+            setTimeout(() => {
+                launchHeartFireworks({ currentTarget: credits.querySelector(".credits-header") || credits });
+            }, 900);
+        }
+    }
+
+    function checkEndingCreditsInView() {
+        const credits = document.getElementById("ending-credits");
+        if (!credits || credits.dataset.creditsStarted === "true" || credits.classList.contains("ended")) return;
+
+        const rect = credits.getBoundingClientRect();
+        const viewHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+
+        if (rect.top <= viewHeight * 0.72 && rect.bottom >= viewHeight * 0.22) {
+            startEndingCredits();
+        }
+    }
+
+    function initEndingCredits() {
+        const credits = document.getElementById("ending-credits");
+        const roll = document.getElementById("credits-roll");
+        if (!credits || !roll) return;
+
+        prepareEndingCredits();
+        credits.dataset.creditsStarted = "false";
+
+        roll.addEventListener("animationend", function (event) {
+            if (event.animationName !== "movieCreditsRoll") return;
+            finishEndingCredits();
+        });
+
+        const observer = "IntersectionObserver" in window
+            ? new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) startEndingCredits();
+                });
+            }, { threshold: 0.28 })
+            : null;
+
+        if (observer) observer.observe(credits);
+
+        const requestCheck = () => requestAnimationFrame(checkEndingCreditsInView);
+        window.addEventListener("scroll", requestCheck, { passive: true });
+        window.addEventListener("resize", () => {
+            const shouldKeepEnded = credits.classList.contains("ended");
+            updateEndingCreditsDistance();
+            if (shouldKeepEnded) setEndingFinalVisible(true);
+        });
+        window.addEventListener("load", () => {
+            prepareEndingCredits();
+            credits.dataset.creditsStarted = "false";
+            requestCheck();
+        }, { once: true });
+
+        setTimeout(() => {
+            updateEndingCreditsDistance();
+            requestCheck();
+        }, 250);
+    }
+
+    function restartEndingCredits(showToast = true) {
+        const credits = document.getElementById("ending-credits");
+        if (!credits) return;
+
+        credits.dataset.creditsStarted = "false";
+        startEndingCredits(true);
+
+        if (showToast) showSecretToast("엔딩 크레딧을 다시 재생할게.", 2200);
+    }
+
+    function initImageFallbacks() {
+        $$('img[onerror]').forEach(img => {
+            const fallback = extractFallbackFromOnError(img.getAttribute("onerror"));
+            img.dataset.fallback = fallback;
+            img.removeAttribute("onerror");
+            img.addEventListener("error", function () {
+                if (this.dataset.fallbackApplied === "true") return;
+                this.dataset.fallbackApplied = "true";
+                this.src = fallback;
+            });
+        });
+    }
+
+    function initMouseStars() {
+        document.addEventListener("mousemove", event => createStar(event.clientX, event.clientY), { passive: true });
+        document.addEventListener("touchmove", event => {
+            const touch = event.touches?.[0];
+            if (touch) createStar(touch.clientX, touch.clientY);
+        }, { passive: true });
+    }
+
+    function toggleMobileNav(event) {
+        event?.preventDefault();
+        event?.stopPropagation();
+
+        const nav = document.querySelector(".mobile-nav");
+        const toggleBtn = document.querySelector(".mobile-nav-toggle");
+        const icon = toggleBtn?.querySelector("i");
+        if (!nav || !toggleBtn) return;
+
+        const isOpen = nav.classList.toggle("open");
+        toggleBtn.setAttribute("aria-expanded", String(isOpen));
+        if (icon) icon.className = isOpen ? "fa-solid fa-xmark" : "fa-solid fa-bars";
+    }
+
+    function closeMobileNav() {
+        const nav = document.querySelector(".mobile-nav");
+        const toggleBtn = document.querySelector(".mobile-nav-toggle");
+        const icon = toggleBtn?.querySelector("i");
+        if (!nav || !toggleBtn) return;
+
+        nav.classList.remove("open");
+        toggleBtn.setAttribute("aria-expanded", "false");
+        if (icon) icon.className = "fa-solid fa-bars";
+    }
+
+    function initMobileNavToggle() {
+        const nav = document.querySelector(".mobile-nav");
+        if (!nav) return;
+
+        $$(".mobile-nav a").forEach(link => {
+            link.addEventListener("click", closeMobileNav);
+        });
+
+        document.addEventListener("click", event => {
+            if (!nav.classList.contains("open")) return;
+            if (nav.contains(event.target)) return;
+            closeMobileNav();
+        });
+
+        document.addEventListener("keydown", event => {
+            if (event.key === "Escape") closeMobileNav();
+        });
+
+        window.addEventListener("resize", closeMobileNav);
+    }
+
+    function init() {
+        initImageFallbacks();
+        initFadeObserver();
+        initRandomMessage();
+        initWelcomeModal();
+        initBgmControls();
+        initLightbox();
+        initPasswordEnterKey();
+        initSlideshow();
+        initMobileNavActiveState();
+        initMobileNavToggle();
+        initThemeSwitcher();
+        updateVisitCount();
+        initBasicProtection();
+        initSeasonalEffects();
+        initEasterEggs();
+        initEndingCredits();
+        initScrollEffects();
+        initMouseStars();
+        updateDday();
+        setInterval(updateDday, 1000);
+    }
+
+    window.toggleBGM = toggleBGM;
+    window.toggleMute = toggleMute;
+    window.closeWelcomeModal = closeWelcomeModal;
+    window.checkPassword = checkPassword;
+    window.openReplyBox = openReplyBox;
+    window.closeReplyBox = closeReplyBox;
+    window.sendReply = sendReply;
+    window.closeLightbox = closeLightbox;
+    window.changeSlide = changeSlide;
+    window.toggleSlidePause = toggleSlidePause;
+    window.toggleMobileNav = toggleMobileNav;
+    window.toggleThemePanel = toggleThemePanel;
+    window.setSiteTheme = setSiteTheme;
+    window.launchHeartFireworks = launchHeartFireworks;
+    window.hideEasterSecret = hideEasterSecret;
+    window.restartEndingCredits = restartEndingCredits;
+
+    // [수정 완료] 시간제한을 없애고 사이트 에셋의 완벽한 수집 완료 이벤트 때만 로딩 제어구문 호출
+    window.addEventListener("load", hideLoadingScreen);
+    onReady(init);
+})();
+
+// =========================================
+// 사이트 점검중 화면 제어 - 검은 화면 방지 안정본
+// =========================================
+(function () {
+    "use strict";
+
+    const FORCE_MAINTENANCE_FOR_ALL = false;
+    const STORAGE_KEY = "memorySiteMaintenanceModeFixed";
+
+    function setSavedMode(isOn) {
+        try {
+            localStorage.setItem(STORAGE_KEY, isOn ? "on" : "off");
+        } catch (error) {
+            document.cookie = `${STORAGE_KEY}=${isOn ? "on" : "off"}; path=/; max-age=31536000; SameSite=Lax`;
+        }
+    }
+
+    function getSavedMode() {
+        try {
+            const value = localStorage.getItem(STORAGE_KEY);
+            if (value === "on") return true;
+            if (value === "off") return false;
+        } catch (error) {
+            const cookieValue = document.cookie
+                .split("; ")
+                .find(row => row.startsWith(`${STORAGE_KEY}=`))
+                ?.split("=")[1];
+
+            if (cookieValue === "on") return true;
+            if (cookieValue === "off") return false;
+        }
+        return false;
+    }
+
+    function createMaintenanceScreenIfMissing() {
+        let screen = document.getElementById("maintenance-screen");
+
+        if (screen) return screen;
+
+        screen = document.createElement("div");
+        screen.id = "maintenance-screen";
+        screen.className = "maintenance-screen";
+        screen.setAttribute("aria-hidden", "true");
+
+        screen.innerHTML = `
+            <div class="maintenance-card">
+                <div class="maintenance-orbit" aria-hidden="true">
+                    <span></span>
+                    <i class="fa-solid fa-star"></i>
+                </div>
+                <p class="maintenance-label">SITE MAINTENANCE</p>
+                <h1>우리의 기록장을 잠시 정리하는 중이야.</h1>
+                <p class="maintenance-message">
+                    더 예쁜 추억을 담기 위해 별빛을 다시 고르고 있어.<br>
+                    잠시 후 다시 찾아와줘.
+                </p>
+                <div class="maintenance-progress">
+                    <span></span>
+                </div>
+                <p class="maintenance-small">
+                    To be continued under the same night sky.
+                </p>
+            </div>
+        `;
+
+        document.body.prepend(screen);
+        return screen;
+    }
+
+    function enableMaintenanceScreen() {
+        const screen = createMaintenanceScreenIfMissing();
+
+        screen.classList.add("show");
+        screen.setAttribute("aria-hidden", "false");
+
+        document.documentElement.classList.add("maintenance-mode-active");
+        document.body.classList.add("maintenance-mode-active");
+
+        const loadingScreen = document.getElementById("loading-screen");
+        const welcomeModal = document.getElementById("welcome-modal");
+
+        if (loadingScreen) {
+            loadingScreen.classList.add("hide");
+            loadingScreen.style.display = "none";
+        }
+
+        if (welcomeModal) {
+            welcomeModal.classList.remove("show");
+            welcomeModal.setAttribute("aria-hidden", "true");
+        }
+    }
+
+    function disableMaintenanceScreen() {
+        const screen = document.getElementById("maintenance-screen");
+
+        if (screen) {
+            screen.classList.remove("show");
+            screen.setAttribute("aria-hidden", "true");
+        }
+
+        document.documentElement.classList.remove("maintenance-mode-active");
+        document.body.classList.remove("maintenance-mode-active");
+    }
+
+    function applyMaintenanceMode() {
+        const params = new URLSearchParams(window.location.search);
+        const mode = params.get("maintenance");
+
+        if (mode === "on") setSavedMode(true);
+        if (mode === "off") setSavedMode(false);
+
+        const shouldShow = FORCE_MAINTENANCE_FOR_ALL || getSavedMode();
+
+        if (shouldShow) {
+            enableMaintenanceScreen();
+            setTimeout(enableMaintenanceScreen, 100);
+            setTimeout(enableMaintenanceScreen, 500);
+            setTimeout(enableMaintenanceScreen, 1200);
+            setTimeout(enableMaintenanceScreen, 2600);
+        } else {
+            disableMaintenanceScreen();
+        }
+    }
+
+    window.showMaintenanceScreen = function () {
+        setSavedMode(true);
+        enableMaintenanceScreen();
+    };
+
+    window.hideMaintenanceScreen = function () {
+        setSavedMode(false);
+        disableMaintenanceScreen();
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", applyMaintenanceMode);
+    } else {
+        applyMaintenanceMode();
+    }
+
+    window.addEventListener("load", applyMaintenanceMode);
+})();
+
+// =========================================
+// final-v7-easter: 별자리/0416/숨겨진 테마/엔딩 보상/누적 하트/끝까지 스크롤 이스터에그
+// =========================================
+(function () {
+    "use strict";
+
+    if (window.__memorySiteEasterV7Loaded) return;
+    window.__memorySiteEasterV7Loaded = true;
+
+    const EASTER_DATE_CODE = "0416";
+    const HEART_REWARD_TARGET = 10;
+    const LONG_PRESS_MS = 850;
+
+    let subtitleClickCount = 0;
+    let dateBuffer = "";
+    let bgmDiskClickCount = 0;
+    let heartClickCount = Number(readStorage("memorySiteHeartClicks") || 0);
+    let footerRewardShown = readSession("memorySiteFooterRewardShown") === "true";
+    let longPressTimer = null;
+
+    function readStorage(key) {
+        try {
+            return window.localStorage ? window.localStorage.getItem(key) : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function writeStorage(key, value) {
+        try {
+            if (window.localStorage) window.localStorage.setItem(key, value);
+        } catch (error) {
+            // 안심 차단
+        }
+    }
+
+    function readSession(key) {
+        try {
+            return window.sessionStorage ? window.sessionStorage.getItem(key) : null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function writeSession(key, value) {
+        try {
+            if (window.sessionStorage) window.sessionStorage.setItem(key, value);
+        } catch (error) {
+            // 안심 차단
+        }
+    }
+
+    function showEasterToast(message, duration = 3000) {
+        const toast = document.getElementById("secret-toast");
+        if (!toast) return;
+
+        toast.innerHTML = message;
+        toast.classList.add("show");
+        clearTimeout(showEasterToast._timer);
+        showEasterToast._timer = setTimeout(() => {
+            toast.classList.remove("show");
+        }, duration);
+    }
+
+    function burstAt(element, repeat = 1) {
+        if (typeof window.launchHeartFireworks !== "function") return;
+        const target = element || document.querySelector(".intro-content") || document.body;
+        for (let i = 0; i < repeat; i += 1) {
+            setTimeout(() => {
+                window.launchHeartFireworks({ currentTarget: target });
+            }, i * 260);
+        }
+    }
+
+    function ensureConstellationLayer() {
+        let layer = document.getElementById("subtitle-constellation-easter");
+        if (layer) return layer;
+
+        layer = document.createElement("div");
+        layer.id = "subtitle-constellation-easter";
+        layer.className = "subtitle-constellation-easter";
+        layer.setAttribute("aria-hidden", "true");
+        layer.innerHTML = `
+            <div class="constellation-card">
+                <svg viewBox="0 0 420 220" role="img" aria-label="별자리">
+                    <polyline points="58,144 122,74 188,118 260,52 340,100" />
+                    <line x1="188" y1="118" x2="210" y2="176" />
+                    <line x1="260" y1="52" x2="306" y2="32" />
+                    <circle cx="58" cy="144" r="5" />
+                    <circle cx="122" cy="74" r="6" />
+                    <circle cx="188" cy="118" r="5" />
+                    <circle cx="260" cy="52" r="6" />
+                    <circle cx="340" cy="100" r="5" />
+                    <circle cx="210" cy="176" r="4" />
+                    <circle cx="306" cy="32" r="4" />
+                </svg>
+                <p>너와 함께한 순간들이 하나의 별자리가 되었어.</p>
+            </div>
+        `;
+        document.body.appendChild(layer);
+        return layer;
+    }
+
+    function revealSubtitleConstellation() {
+        const subtitle = document.querySelector(".sub-title") || document.querySelector(".intro-content");
+        const layer = ensureConstellationLayer();
+        layer.classList.remove("show");
+        void layer.offsetWidth;
+        layer.classList.add("show");
+        showEasterToast("너와 함께한 순간들의 기록이 별자리로 이어졌어.", 3400);
+        burstAt(subtitle, 1);
+
+        clearTimeout(revealSubtitleConstellation._timer);
+        revealSubtitleConstellation._timer = setTimeout(() => {
+            layer.classList.remove("show");
+        }, 6200);
+    }
+
+    function initSubtitleConstellationEgg() {
+        const subtitle = document.querySelector(".sub-title");
+        if (!subtitle) return;
+
+        subtitle.setAttribute("title", "숨겨진 별자리가 숨어 있어");
+        subtitle.addEventListener("click", () => {
+            subtitleClickCount += 1;
+            clearTimeout(initSubtitleConstellationEgg._timer);
+            initSubtitleConstellationEgg._timer = setTimeout(() => {
+                subtitleClickCount = 0;
+            }, 1800);
+
+            if (subtitleClickCount === 3) {
+                showEasterToast("조금만 더 누르면 순간들이 이어질지도 몰라.", 2200);
+            }
+
+            if (subtitleClickCount >= 5) {
+                subtitleClickCount = 0;
+                revealSubtitleConstellation();
+            }
+        });
+    }
+
+    function initDateCodeEgg() {
+        document.addEventListener("keydown", event => {
+            if (event.ctrlKey || event.metaKey || event.altKey) return;
+            if (!/^[0-9]$/.test(event.key)) return;
+
+            dateBuffer = (dateBuffer + event.key).slice(-EASTER_DATE_CODE.length);
+            if (dateBuffer === EASTER_DATE_CODE) {
+                dateBuffer = "";
+                showEasterToast("0416, 그날의 별빛을 기억하고 있어.", 3600);
+                burstAt(document.querySelector(".d-day-counter") || document.body, 2);
+            }
+        });
+    }
+
+    function activateOurNightTheme() {
+        document.body.classList.add("theme-our-night");
+        document.body.classList.add("our-night-unlocked");
+        writeStorage("memorySiteHiddenTheme", "our-night");
+        showEasterToast("우리의 밤 테마가 열렸어.", 3200);
+        burstAt(document.querySelector(".theme-toggle-btn") || document.querySelector(".welcome-icon") || document.body, 1);
+
+        clearTimeout(activateOurNightTheme._timer);
+        activateOurNightTheme._timer = setTimeout(() => {
+            document.body.classList.remove("our-night-unlocked");
+        }, 5200);
+    }
+
+    function clearLongPressTimer() {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+    }
+
+    function addLongPress(target) {
+        if (!target) return;
+
+        const start = event => {
+            if (event.type === "mousedown" && event.button !== 0) return;
+            clearLongPressTimer();
+            longPressTimer = setTimeout(activateOurNightTheme, LONG_PRESS_MS);
+        };
+
+        target.addEventListener("mousedown", start);
+        target.addEventListener("touchstart", start, { passive: true });
+        ["mouseup", "mouseleave", "touchend", "touchcancel", "dragstart"].forEach(type => {
+            target.addEventListener(type, clearLongPressTimer);
+        });
+    }
+
+    function initHiddenThemeEgg() {
+        if (readStorage("memorySiteHiddenTheme") === "our-night") {
+            document.body.classList.add("theme-our-night");
+        }
+
+        addLongPress(document.querySelector(".welcome-icon"));
+        addLongPress(document.querySelector(".theme-toggle-btn"));
+    }
+
+    function initBgmDiskEggBoost() {
+        const diskButton = document.querySelector(".bgm-main-btn");
+        if (!diskButton) return;
+
+        diskButton.addEventListener("click", () => {
+            bgmDiskClickCount += 1;
+            clearTimeout(initBgmDiskEggBoost._timer);
+            initBgmDiskEggBoost._timer = setTimeout(() => {
+                bgmDiskClickCount = 0;
+            }, 1600);
+
+            if (bgmDiskClickCount >= 7) {
+                bgmDiskClickCount = 0;
+                document.body.classList.add("bgm-secret-boost");
+                showEasterToast("별빛 증폭 모드가 켜졌어.", 3000);
+                burstAt(diskButton, 1);
+                setTimeout(() => {
+                    document.body.classList.remove("bgm-secret-boost");
+                }, 5200);
+            }
+        });
+    }
+
+    function initEndingRewardEgg() {
+        const finalMessage = document.getElementById("credits-final-message");
+        if (!finalMessage) return;
+
+        finalMessage.setAttribute("title", "다음 장의 작은 문장");
+        finalMessage.addEventListener("click", () => {
+            showEasterToast("이어질 다음 장을 기대할게.", 3600);
+            finalMessage.classList.add("clicked-reward");
+            burstAt(finalMessage, 2);
+            setTimeout(() => {
+                finalMessage.classList.remove("clicked-reward");
+            }, 1800);
+        });
+    }
+
+    function initHeartRewardEgg() {
+        const heartButton = document.querySelector(".heart-burst-btn");
+        if (!heartButton) return;
+
+        heartButton.addEventListener("click", () => {
+            heartClickCount += 1;
+            writeStorage("memorySiteHeartClicks", String(heartClickCount));
+
+            if (heartClickCount === HEART_REWARD_TARGET - 2) {
+                showEasterToast("마음이 거의 별이 될 만큼 모였어.", 2200);
+            }
+
+            if (heartClickCount >= HEART_REWARD_TARGET) {
+                heartClickCount = 0;
+                writeStorage("memorySiteHeartClicks", "0");
+                document.body.classList.add("heart-reward-active");
+                showEasterToast("마음이 가득 차서 별이 되었어!", 3600);
+                burstAt(heartButton, 3);
+                setTimeout(() => {
+                    document.body.classList.remove("heart-reward-active");
+                }, 5200);
+            }
+        });
+    }
+
+    function initFooterScrollReward() {
+        const footer = document.querySelector("footer");
+        if (!footer || footerRewardShown) return;
+
+        function checkFooterReached() {
+            if (footerRewardShown) return;
+            const rect = footer.getBoundingClientRect();
+            const viewHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+
+            if (rect.top <= viewHeight * 0.82) {
+                footerRewardShown = true;
+                writeSession("memorySiteFooterRewardShown", "true");
+                showEasterToast("여기까지 함께 내려와줘서 고마워.", 3400);
+                burstAt(footer, 1);
+                window.removeEventListener("scroll", requestCheck);
+            }
+        }
+
+        function requestCheck() {
+            requestAnimationFrame(checkFooterReached);
+        }
+
+        window.addEventListener("scroll", requestCheck, { passive: true });
+        window.addEventListener("resize", requestCheck);
+        requestCheck();
+    }
+
+    function init() {
+        initSubtitleConstellationEgg();
+        initDateCodeEgg();
+        initHiddenThemeEgg();
+        initBgmDiskEggBoost();
+        initEndingRewardEgg();
+        initHeartRewardEgg();
+        initFooterScrollReward();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init, { once: true });
+    } else {
+        init();
+    }
+})();
+
+// =========================================
+// 추가 기능 3, 5, 6, 7, 8, 10
+// 기존 기능 영향 최소화용 독립 코드
+// =========================================
+(function () {
+    "use strict";
+
+    if (window.__memorySiteExtraSafeFeaturesLoaded) return;
+    window.__memorySiteExtraSafeFeaturesLoaded = true;
+
+    const STORAGE_KEYS = {
+        bgmVolume: "memorySiteBgmVolume",
+        bgmMuted: "memorySiteBgmMuted",
+        endingBadge: "memorySiteEndingCompleteBadge"
+    };
+
+    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.20 17:15";
+
+    function safeGet(key) {
+        try {
+            return localStorage.getItem(key);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function safeSet(key, value) {
+        try {
+            localStorage.setItem(key, value);
+        } catch (error) {
+            // 안심 가이드
+        }
+    }
+
+    function runWhenReady(callback) {
+        if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", callback, { once: true });
+        } else {
+            callback();
+        }
+    }
+
+    function showMiniToast(message, duration = 2400) {
+        const toast = document.getElementById("secret-toast");
+
+        if (!toast) {
+            console.log(message);
+            return;
+        }
+
+        toast.innerHTML = message;
+        toast.classList.add("show");
+
+        clearTimeout(toast._extraFeatureTimer);
+        toast._extraFeatureTimer = setTimeout(() => {
+            toast.classList.remove("show");
+        }, duration);
+    }
+
+    function initBackToTopStar() {
+        if (document.getElementById("back-to-top-star")) return;
+
+        const button = document.createElement("button");
+        button.id = "back-to-top-star";
+        button.className = "back-to-top-star";
+        button.type = "button";
+        button.setAttribute("aria-label", "맨 위로 이동");
+        button.innerHTML = '<i class="fa-solid fa-star"></i>';
+
+        document.body.appendChild(button);
+
+        button.addEventListener("click", function () {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
+
+        function updateButtonVisible() {
+            const shouldShow = window.scrollY > 520;
+            button.classList.toggle("show", shouldShow);
+        }
+
+        window.addEventListener("scroll", updateButtonVisible, { passive: true });
+        window.addEventListener("resize", updateButtonVisible);
+        updateButtonVisible();
+    }
+
+    function initImageSkeletons() {
+        const images = document.querySelectorAll(".image-wrapper img, .item-image img, #slide-image");
+
+        images.forEach(function (img) {
+            const wrapper = img.closest(".image-wrapper, .item-image, .slide-image-wrap");
+            if (!wrapper) return;
+
+            wrapper.classList.add("memory-img-skeleton");
+
+            function markLoading() {
+                wrapper.classList.remove("memory-img-loaded");
+            }
+
+            function markLoaded() {
+                wrapper.classList.add("memory-img-loaded");
+            }
+
+            img.addEventListener("load", markLoaded);
+            img.addEventListener("error", markLoaded);
+
+            if (img.complete && img.naturalWidth > 0) {
+                markLoaded();
+            } else {
+                markLoading();
+            }
+
+            const observer = new MutationObserver(function () {
+                markLoading();
+
+                requestAnimationFrame(function () {
+                    if (img.complete && img.naturalWidth > 0) {
+                        markLoaded();
+                    }
+                });
+            });
+
+            observer.observe(img, {
+                attributes: true,
+                attributeFilter: ["src", "srcset"]
+            });
+        });
+    }
+
+    function initTimeGreeting() {
+        if (document.getElementById("memory-time-greeting")) return;
+
+        const introContent = document.querySelector(".intro-content");
+        if (!introContent) return;
+
+        const hour = new Date().getHours();
+        let icon = "fa-moon";
+        let message = "밤하늘이 예쁜 시간이야. 천천히 우리의 기록장을 둘러봐.";
+
+        if (hour >= 5 && hour < 11) {
+            icon = "fa-sun";
+            message = "좋은 아침이야. 오늘도 우리의 이야기가 조용히 빛나고 있어.";
+        } else if (hour >= 11 && hour < 17) {
+            icon = "fa-cloud-sun";
+            message = "햇살이 머무는 시간이야. 오늘의 기록도 따뜻하기를.";
+        } else if (hour >= 17 && hour < 21) {
+            icon = "fa-star-half-stroke";
+            message = "노을이 내려앉는 시간이야. 우리의 순간들도 예쁘게 남아 있어.";
+        }
+
+        const greeting = document.createElement("p");
+        greeting.id = "memory-time-greeting";
+        greeting.className = "memory-time-greeting";
+        greeting.innerHTML = `<i class="fa-solid ${icon}"></i>${message}`;
+
+        const randomMessage = document.getElementById("random-message");
+        const visitCount = document.getElementById("visit-count");
+
+        if (randomMessage) {
+            randomMessage.insertAdjacentElement("afterend", greeting);
+        } else if (visitCount) {
+            visitCount.insertAdjacentElement("beforebegin", greeting);
+        } else {
+            introContent.appendChild(greeting);
+        }
+    }
+
+    function createEndingCompleteBadge() {
+        let badge = document.getElementById("ending-complete-badge");
+        if (badge) return badge;
+
+        badge = document.createElement("p");
+        badge.id = "ending-complete-badge";
+        badge.className = "ending-complete-badge";
+        badge.innerHTML = '<i class="fa-solid fa-award"></i>엔딩까지 함께한 사람';
+
+        const visitCount = document.getElementById("visit-count");
+        const introContent = document.querySelector(".intro-content");
+
+        if (visitCount) {
+            visitCount.insertAdjacentElement("afterend", badge);
+        } else if (introContent) {
+            introContent.appendChild(badge);
+        } else {
+            document.body.appendChild(badge);
+        }
+        return badge;
+    }
+
+    function showEndingCompleteBadge(save = true) {
+        const badge = createEndingCompleteBadge();
+        badge.classList.add("show");
+
+        if (save) {
+            safeSet(STORAGE_KEYS.endingBadge, "true");
+        }
+    }
+
+    function initEndingCompleteBadge() {
+        const credits = document.getElementById("ending-credits");
+        const badge = createEndingCompleteBadge();
+
+        if (safeGet(STORAGE_KEYS.endingBadge) === "true") {
+            badge.classList.add("show");
+        }
+
+        if (!credits) return;
+
+        const observer = new MutationObserver(function () {
+            if (credits.classList.contains("ended")) {
+                const alreadyHadBadge = safeGet(STORAGE_KEYS.endingBadge) === "true";
+                showEndingCompleteBadge(true);
+
+                if (!alreadyHadBadge) {
+                    showMiniToast("엔딩까지 함께 봐줘서 고마워. 작은 배지가 남았어.", 3000);
+                }
+            }
+        });
+
+        observer.observe(credits, {
+            attributes: true,
+            attributeFilter: ["class"]
+        });
+
+        if (credits.classList.contains("ended")) {
+            showEndingCompleteBadge(true);
+        }
+    }
+
+    function initBgmVolumeMemory() {
+        const audio = document.getElementById("myAudio");
+        const volumeSlider = document.getElementById("bgm-volume");
+        const muteIcon = document.getElementById("bgm-mute-icon");
+
+        if (!audio || !volumeSlider) return;
+
+        const savedVolume = Number(safeGet(STORAGE_KEYS.bgmVolume));
+        const savedMuted = safeGet(STORAGE_KEYS.bgmMuted);
+
+        if (Number.isFinite(savedVolume) && savedVolume >= 0 && savedVolume <= 1) {
+            audio.volume = savedVolume;
+            volumeSlider.value = String(savedVolume);
+        }
+
+        if (savedMuted === "true") {
+            audio.muted = true;
+        } else if (savedMuted === "false") {
+            audio.muted = false;
+        }
+
+        function updateMuteIcon() {
+            if (!muteIcon) return;
+            muteIcon.className = audio.muted || audio.volume === 0
+                ? "fa-solid fa-volume-xmark"
+                : "fa-solid fa-volume-high";
+        }
+
+        function saveCurrentVolume() {
+            safeSet(STORAGE_KEYS.bgmVolume, String(audio.volume));
+            safeSet(STORAGE_KEYS.bgmMuted, String(audio.muted));
+
+            volumeSlider.classList.add("memory-volume-saved");
+            clearTimeout(volumeSlider._volumeSaveTimer);
+            volumeSlider._volumeSaveTimer = setTimeout(function () {
+                volumeSlider.classList.remove("memory-volume-saved");
+            }, 650);
+
+            updateMuteIcon();
+        }
+
+        volumeSlider.addEventListener("input", function () {
+            const nextVolume = Number(volumeSlider.value);
+
+            if (Number.isFinite(nextVolume)) {
+                audio.volume = nextVolume;
+                audio.muted = nextVolume === 0;
+                saveCurrentVolume();
+            }
+        });
+
+        audio.addEventListener("volumechange", function () {
+            volumeSlider.value = String(audio.volume);
+            saveCurrentVolume();
+        });
+
+        updateMuteIcon();
+    }
+
+    function initUpdateNotice() {
+        if (document.getElementById("memory-update-notice")) return;
+
+        const notice = document.createElement("p");
+        notice.id = "memory-update-notice";
+        notice.className = "memory-update-notice";
+        notice.innerHTML = `<i class="fa-solid fa-clock-rotate-left"></i>${SITE_UPDATE_TEXT}`;
+
+        const timeGreeting = document.getElementById("memory-time-greeting");
+        const visitCount = document.getElementById("visit-count");
+        const introContent = document.querySelector(".intro-content");
+
+        if (timeGreeting) {
+            timeGreeting.insertAdjacentElement("afterend", notice);
+        } else if (visitCount) {
+            visitCount.insertAdjacentElement("beforebegin", notice);
+        } else if (introContent) {
+            introContent.appendChild(notice);
+        }
+    }
+
+    function initExtraSafeFeatures() {
+        initBackToTopStar();
+        initImageSkeletons();
+        initTimeGreeting();
+        initUpdateNotice();
+        initEndingCompleteBadge();
+        initBgmVolumeMemory();
+    }
+
+    runWhenReady(initExtraSafeFeatures);
+})();
+
+// ==========================================================================
+// 💻 & 📱 데스크탑/모바일 통합 최적화 버튼 제어 (PC: 디폴트 OFF / 모바일: 디폴트 ON)
+// ==========================================================================
+function initHybridPerformanceMode() {
+    // 중복 생성 및 구버전 잔해 파괴 (버튼 두 개 뜨는 오류 원천 해결)
+    const existingButtons = document.querySelectorAll("#mobile-perf-toggle, .mobile-perf-btn, .perf-mobile-btn");
+    existingButtons.forEach(btn => btn.remove());
+
+    // 만약 사이트 점검모드가 활성화된 상태라면 인터랙션 버튼을 생성하지 않고 즉시 차단
+    if (document.body.classList.contains("maintenance-mode-active") || document.getElementById("maintenance-screen")?.classList.contains("show")) {
+        return;
+    }
+
+    const perfBtn = document.createElement("button");
+    perfBtn.id = "mobile-perf-toggle";
+    perfBtn.className = "mobile-perf-btn";
+    perfBtn.type = "button";
+
+    const isMobile = window.innerWidth <= 768;
+    let isOptimized = false;
+
+    if (isMobile) {
+        // 모바일 접속 시 : 성능 버스트 최적화 자동 활성화 (Default ON)
+        document.body.classList.add("perf-mode-active");
+        perfBtn.classList.remove("opt-off");
+        perfBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> <span class="opt-text">최적화 ON</span>';
+        isOptimized = true;
+    } else {
+        // 컴퓨터 접속 시 : 화려한 은하수/오로라 효과 디폴트 유지 (Default OFF)
+        document.body.classList.remove("perf-mode-active");
+        perfBtn.classList.add("opt-off");
+        perfBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> <span class="opt-text">최적화 OFF</span>';
+        isOptimized = false;
+    }
+
+    document.body.appendChild(perfBtn);
+
+    // 원클릭 부스트 ON / OFF 실시간 전환 인터랙션
+    perfBtn.addEventListener("click", function () {
+        isOptimized = !isOptimized;
+        if (isOptimized) {
+            document.body.classList.add("perf-mode-active");
+            perfBtn.classList.remove("opt-off");
+            perfBtn.querySelector(".opt-text").innerText = "최적화 ON";
+        } else {
+            document.body.classList.remove("perf-mode-active");
+            perfBtn.classList.add("opt-off");
+            perfBtn.querySelector(".opt-text").innerText = "최적화 OFF";
+        }
+    });
+}
+
+// 로딩 화면 모듈 내부에서 완벽한 페이드아웃 종료 후 동적으로 버튼을 불러오도록 외부에 전역 바인딩 처리
+window.initHybridPerformanceMode = initHybridPerformanceMode;
