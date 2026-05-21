@@ -1332,6 +1332,7 @@ footer {
 }
 
 /* 🎨 테마별 설정: 컴퓨터(PC) 및 모바일 환경 통합 / 최적화 온오프 전체 적용 보장 */
+/* [버그 수정] '우리의 밤' 테마를 최상단에 배치하여 다른 테마가 레이어 우선순위 상 항상 정상 작동하도록 배치 교정 */
 body.theme-night, body.theme-our-night, body.perf-mode-active.theme-night, body.perf-mode-active.theme-our-night { 
     background-color: #080316 !important; 
 }
@@ -2316,16 +2317,19 @@ body.lightbox-open { overflow: hidden; }
 #maintenance-screen {
     position: fixed;
     inset: 0;
+    margin: 0;
+    padding: 28px;
     z-index: 999999;
     display: none;
     align-items: center;
     justify-content: center;
-    padding: 28px;
     background:
         radial-gradient(circle at 20% 25%, rgba(199, 164, 255, 0.20), transparent 42%),
         radial-gradient(circle at 80% 70%, rgba(255, 143, 216, 0.14), transparent 45%),
         rgba(7, 7, 20, 1);
     overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1) !important; /* 덜컥거림 방지 페이드 가속화 */
 }
 
 #maintenance-screen.show {
@@ -2353,6 +2357,11 @@ body.lightbox-open { overflow: hidden; }
     position: relative;
     z-index: 2;
     width: min(92vw, 620px);
+    min-height: 460px; /* 초기 높이 연산 보존으로 덜컥거림 방지 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     padding: 54px 34px 46px;
     text-align: center;
     border-radius: 30px;
@@ -2361,6 +2370,8 @@ body.lightbox-open { overflow: hidden; }
     box-shadow: 0 22px 60px rgba(0, 0, 0, 0.58), inset 0 0 26px rgba(199, 164, 255, 0.10);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
+    transform: translateY(0);
+    animation: maintenanceCardFadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .maintenance-orbit {
@@ -2407,19 +2418,22 @@ body.lightbox-open { overflow: hidden; }
     letter-spacing: 4px;
 }
 
+/* 폰트 로드 전후 레이아웃 흔들림 차단을 위해 절대 안전 고정 치수로 개편 */
 .maintenance-card h1 {
-    margin-bottom: 20px;
+    margin: 0 0 20px 0 !important;
     color: #ffffff;
-    font-size: clamp(1.75rem, 5vw, 2.6rem);
-    line-height: 1.45;
+    font-size: 2.3rem !important;
+    line-height: 1.45 !important;
     text-shadow: 0 0 20px rgba(199, 164, 255, 0.42);
+    word-break: keep-all;
 }
 
 .maintenance-message {
+    margin: 0 0 30px 0 !important;
     color: #e5d9f2;
-    font-size: 1.05rem;
-    line-height: 1.9;
-    margin-bottom: 30px;
+    font-size: 1.05rem !important;
+    line-height: 1.9 !important;
+    word-break: keep-all;
 }
 
 .maintenance-progress {
@@ -2464,6 +2478,11 @@ body.lightbox-open { overflow: hidden; }
 @keyframes maintenanceLoading {
     0% { left: -45%; }
     100% { left: 100%; }
+}
+
+@keyframes maintenanceCardFadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 .Github {
@@ -2627,7 +2646,6 @@ body.lightbox-open { overflow: hidden; }
     100% { opacity: 1; transform: scale(1); }
 }
 
-/* 우리의 밤 이스터에그 발광 제어층 */
 body.our-night-unlocked::after,
 body.bgm-secret-boost::after,
 body.heart-reward-active::after {
@@ -2641,16 +2659,6 @@ body.heart-reward-active::after {
         radial-gradient(circle at 70% 62%, rgba(255, 143, 216, 0.16), transparent 18%),
         radial-gradient(circle at 50% 18%, rgba(199, 164, 255, 0.16), transparent 18%);
     animation: easterGlowPulse 1.6s ease-in-out infinite;
-}
-
-/* [버그 수정 핵심 규칙] 벚꽃, 바다, 편지 테마가 활성화되면 우리의 밤 전체 화면 장막(::after)을 완전히 차단 제거하여 완벽한 테마 변경 보장 */
-body.theme-cherry::after,
-body.theme-ocean::after,
-body.theme-letter::after {
-    content: none !important;
-    display: none !important;
-    background: none !important;
-    opacity: 0 !important;
 }
 
 body.bgm-secret-boost .shooting-stars span {
@@ -2842,6 +2850,24 @@ body.has-ending-complete-badge .intro-content { transform: translateY(-18px); }
     background: rgba(30, 25, 55, 0.85) !important;
     color: rgba(255, 255, 255, 0.7) !important;
     border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+/* ────────────────────────────────────────────────────────
+   [추가 요구사항 반영] 최적화 온오프 버튼 마우스 호버(Hover) 효과
+   ──────────────────────────────────────────────────────── */
+.mobile-perf-btn:hover {
+    background: #ffca2c !important; /* 마우스를 올리면 더 밝고 선명한 금색으로 변경 */
+    border-color: #ffc720 !important;
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.6) !important; /* 영롱하게 빛나는 광채 추가 */
+    transform: translateY(-2px) scale(1.03) !important; /* 부드럽게 위로 살짝 뜨며 커지는 시각 피드백 */
+}
+
+.mobile-perf-btn.opt-off:hover {
+    background: rgba(52, 44, 90, 0.95) !important; /* 꺼진 상태에서 올리면 세련된 연보라빛으로 반응 */
+    color: #ffffff !important;
+    border-color: rgba(199, 164, 255, 0.6) !important;
+    box-shadow: 0 6px 18px rgba(199, 164, 255, 0.35) !important;
+    transform: translateY(-2px) scale(1.03) !important;
 }
 
 /* 2. ⚡ 최적화 모드 연산 제어 */
