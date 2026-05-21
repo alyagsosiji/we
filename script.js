@@ -930,7 +930,7 @@
                     setTimeout(() => {
                         const audio = document.getElementById("myAudio");
                         if (!audio || audio.paused) document.body.classList.remove("bgm-playing");
-                    }, 4500);
+                    }, 7000);
                 }
             });
         }
@@ -1257,7 +1257,7 @@
 (function () {
     "use strict";
 
-    const FORCE_MAINTENANCE_FOR_ALL = false;
+    const FORCE_MAINTENANCE_FOR_ALL = true;
     const STORAGE_KEY = "memorySiteMaintenanceModeFixed";
 
     function setSavedMode(isOn) {
