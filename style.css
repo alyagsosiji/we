@@ -869,7 +869,6 @@ footer {
 
 .reply-modal.show {
     display: flex;
-    opacity: 1;
 }
 
 .reply-box {
@@ -1332,7 +1331,7 @@ footer {
     100% { opacity: 0; transform: translate(calc(-50% + var(--move-x)), calc(-50% + var(--move-y))) scale(1.25) rotate(var(--rotate)); }
 }
 
-/* [핵심 수정] 테마별 설정: 버튼/텍스트 가림 버그를 원천 봉쇄하기 위해 오직 '배경색'과 '오로라' 구문만 조절 */
+/* 🎨 테마별 설정: 오직 '전체 배경색'과 '오로라 레이어' 구문만 분리하여 조절 */
 body.theme-cherry { background-color: #170b18; }
 body.theme-cherry .aurora {
     background:
@@ -1352,6 +1351,14 @@ body.theme-letter .aurora {
     background:
         radial-gradient(circle at 25% 35%, rgba(255, 220, 155, 0.24) 0%, transparent 50%),
         radial-gradient(circle at 78% 70%, rgba(211, 158, 255, 0.18) 0%, transparent 50%);
+}
+
+body.theme-our-night { background-color: #05020f; }
+body.theme-our-night .aurora {
+    background:
+        radial-gradient(circle at 24% 28%, rgba(180, 125, 255, 0.30) 0%, transparent 52%),
+        radial-gradient(circle at 78% 72%, rgba(255, 143, 216, 0.22) 0%, transparent 50%),
+        radial-gradient(circle at 50% 50%, rgba(100, 70, 255, 0.14) 0%, transparent 60%);
 }
 
 body.protect-selection {
@@ -1617,7 +1624,7 @@ body.season-summer .seasonal-particle {
     100% { transform: translate3d(var(--season-drift), -112vh, 0) scale(1.25); opacity: 0; }
 }
 
-/* 엔딩 크레딧 - D-day 네모 박스 안에서 항상 영화 크레딧처럼 올라가도록 수정 */
+/* 엔딩 크레딧 */
 .ending-credits-section {
     position: relative;
     z-index: 2;
@@ -1643,7 +1650,6 @@ body.season-summer .seasonal-particle {
     text-shadow: 0 0 15px rgba(199, 164, 255, 0.4);
 }
 
-/* D-day 카운터와 같은 반투명 네모 카드 */
 .credits-mask {
     --credits-box-height: clamp(560px, 72vh, 700px);
     --credits-roll-start: 78%;
@@ -1664,7 +1670,6 @@ body.season-summer .seasonal-particle {
         inset 0 0 20px rgba(199, 164, 255, 0.1);
 }
 
-/* 영화관 크레딧처럼 위아래가 자연스럽게 사라지는 마스크 */
 .credits-mask::before,
 .credits-mask::after {
     content: '';
@@ -1695,12 +1700,9 @@ body.season-summer .seasonal-particle {
     opacity: 1;
     transform: translate3d(0, var(--credits-roll-start), 0);
     will-change: transform;
-
-    /* 핵심 수정: .play 클래스가 없어도 실제 파일을 열면 바로 움직이도록 적용 */
     animation: movieCreditsRoll var(--credits-duration) linear infinite;
 }
 
-/* JS가 붙이는 클래스와도 호환되도록 유지 */
 .ending-credits-section.play .credits-roll {
     animation: movieCreditsRoll var(--credits-duration) linear infinite !important;
 }
@@ -1710,12 +1712,8 @@ body.season-summer .seasonal-particle {
 }
 
 @keyframes movieCreditsRoll {
-    0% {
-        transform: translate3d(0, var(--credits-roll-start), 0);
-    }
-    100% {
-        transform: translate3d(0, calc(-1 * var(--credits-roll-end)), 0);
-    }
+    0% { transform: translate3d(0, var(--credits-roll-start), 0); }
+    100% { transform: translate3d(0, calc(-1 * var(--credits-roll-end)), 0); }
 }
 
 .credits-roll p,
@@ -1777,7 +1775,6 @@ body.season-summer .seasonal-particle {
     box-shadow: 0 12px 30px rgba(199, 164, 255, 0.55);
 }
 
-
 @media screen and (max-width: 768px) {
     .ending-credits-section {
         min-height: auto;
@@ -1793,22 +1790,10 @@ body.season-summer .seasonal-particle {
     }
 
     .credits-mask::before,
-    .credits-mask::after {
-        height: 86px;
-    }
-
-    .credits-roll {
-        padding: 44px 18px 130px;
-    }
-
-    .credits-roll h3 {
-        font-size: 1.38rem;
-    }
-
-    .credits-roll strong {
-        font-size: 1rem;
-    }
-
+    .credits-mask::after { height: 86px; }
+    .credits-roll { padding: 44px 18px 130px; }
+    .credits-roll h3 { font-size: 1.38rem; }
+    .credits-roll strong { font-size: 1rem; }
 
     body {
         padding-bottom: calc(92px + env(safe-area-inset-bottom));
@@ -1819,38 +1804,23 @@ body.season-summer .seasonal-particle {
         padding: 80px 18px 145px;
     }
 
-    .intro-content {
-        width: 100%;
-    }
-
+    .intro-content { width: 100%; }
     .main-title {
         font-size: clamp(2.2rem, 10vw, 2.8rem);
         line-height: 1.25;
     }
 
-    .sub-title {
-        font-size: 1rem;
-        line-height: 1.6;
-    }
+    .sub-title { font-size: 1rem; line-height: 1.6; }
 
     .d-day-counter {
-        min-width: 0;
         width: min(92vw, 390px);
         margin-top: 32px;
         padding: 15px 20px;
     }
 
-    .time-blocks {
-        gap: 12px;
-    }
-
-    .time-box {
-        min-width: 50px;
-    }
-
-    .time-box span {
-        font-size: 1.8rem;
-    }
+    .time-blocks { gap: 12px; }
+    .time-box { min-width: 50px; }
+    .time-box span { font-size: 1.8rem; }
 
     .scroll-down {
         bottom: max(28px, env(safe-area-inset-bottom));
@@ -1876,14 +1846,9 @@ body.season-summer .seasonal-particle {
         right: auto;
     }
 
-    .gallery-grid {
-        grid-template-columns: 1fr;
-    }
+    .gallery-grid { grid-template-columns: 1fr; }
 
-    #home,
-    #timeline,
-    #gallery,
-    #letter {
+    #home, #timeline, #gallery, #letter {
         scroll-margin-top: 18px;
     }
 
@@ -1923,9 +1888,7 @@ body.season-summer .seasonal-particle {
         transition: background 0.3s ease, color 0.3s ease, transform 0.3s ease;
     }
 
-    .mobile-nav a i {
-        font-size: 1.05rem;
-    }
+    .mobile-nav a i { font-size: 1.05rem; }
 
     .mobile-nav a.active,
     .mobile-nav a:hover {
@@ -1941,27 +1904,16 @@ body.season-summer .seasonal-particle {
         padding: 9px;
     }
 
-    .music-info {
-        display: none;
-    }
+    .music-info { display: none; }
 
     .slide-image-wrap {
         min-height: 420px;
         aspect-ratio: 4 / 5;
     }
 
-    .slide-caption {
-        padding: 70px 22px 24px;
-    }
-
-    .slide-caption h3 {
-        font-size: 1.2rem;
-    }
-
-    .slide-btn {
-        width: 42px;
-        height: 42px;
-    }
+    .slide-caption { padding: 70px 22px 24px; }
+    .slide-caption h3 { font-size: 1.2rem; }
+    .slide-btn { width: 42px; height: 42px; }
 
     .theme-panel {
         top: 18px;
@@ -1976,39 +1928,17 @@ body.season-summer .seasonal-particle {
         align-items: stretch;
     }
 
-    .theme-options button {
-        min-width: 86px;
-    }
-
-    .visit-count {
-        font-size: 0.9rem;
-    }
-
-    .secret-toast {
-        bottom: calc(92px + env(safe-area-inset-bottom));
-    }
+    .theme-options button { min-width: 86px; }
+    .visit-count { font-size: 0.9rem; }
+    .secret-toast { bottom: calc(92px + env(safe-area-inset-bottom)); }
 }
 
 @media screen and (max-width: 480px) {
-    .slide-image-wrap {
-        min-height: 340px;
-    }
-
-    .slideshow-section {
-        margin-bottom: 70px;
-    }
-
-    .welcome-box {
-        padding: 40px 24px 32px;
-    }
-
-    .password-field {
-        flex-wrap: wrap;
-    }
-
-    .letter-paper {
-        padding: 38px 26px;
-    }
+    .slide-image-wrap { min-height: 340px; }
+    .slideshow-section { margin-bottom: 70px; }
+    .welcome-box { padding: 40px 24px 32px; }
+    .password-field { flex-wrap: wrap; }
+    .letter-paper { padding: 38px 26px; }
 }
 
 @media screen and (max-height: 720px) {
@@ -2029,7 +1959,7 @@ body.season-summer .seasonal-particle {
     }
 }
 
-/* credits-reached-v4: 엔딩 도달 시 재생 + 마지막 To be continued 고정 */
+/* credits-reached-v4 */
 .ending-credits-section {
     position: relative;
     z-index: 2;
@@ -2053,9 +1983,7 @@ body.season-summer .seasonal-particle {
     background: rgba(25, 20, 45, 0.45);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.4),
-        inset 0 0 20px rgba(199, 164, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(199, 164, 255, 0.1);
 }
 
 .credits-roll {
@@ -2108,9 +2036,7 @@ body.season-summer .seasonal-particle {
     font-size: clamp(1.8rem, 5vw, 3rem);
     letter-spacing: 3px;
     line-height: 1.5;
-    text-shadow:
-        0 0 18px rgba(199, 164, 255, 0.75),
-        0 0 35px rgba(255, 255, 255, 0.18);
+    text-shadow: 0 0 18px rgba(199, 164, 255, 0.75), 0 0 35px rgba(255, 255, 255, 0.18);
 }
 
 .ending-credits-section.ended .credits-final-message {
@@ -2120,66 +2046,38 @@ body.season-summer .seasonal-particle {
 }
 
 @keyframes movieCreditsRoll {
-    0% {
-        transform: translate3d(0, var(--credits-roll-start), 0);
-    }
-    100% {
-        transform: translate3d(0, calc(-1 * var(--credits-roll-end)), 0);
-    }
+    0% { transform: translate3d(0, var(--credits-roll-start), 0); }
+    100% { transform: translate3d(0, calc(-1 * var(--credits-roll-end)), 0); }
 }
 
 @media screen and (max-width: 768px) {
     .credits-mask {
         --credits-box-height: min(62vh, 540px);
-        width: min(92vw, 430px);
-        height: var(--credits-box-height);
-        border-radius: 22px;
+        width: min(92vw, 430px) !important;
+        height: var(--credits-box-height) !important;
+        border-radius: 22px !important;
     }
 
-    .credits-roll {
-        padding: 44px 18px 130px;
-    }
-
+    .credits-roll { padding: 44px 18px 130px !important; }
     .credits-final-message h3 {
         font-size: clamp(1.55rem, 8vw, 2.4rem);
         letter-spacing: 2px;
     }
 }
 
-
-/* =========================================
-final-v6 요청 반영: 슬라이드 일시정지, 라이트박스 설명, 모바일 안정화, 엔딩 완료 표시
-========================================= */
-
-/* 로딩 화면 최소/최대 시간 조절에 맞춘 부드러운 종료 */
+/* final-v6 추가수정 */
 .loading-screen {
     transition: opacity 0.58s ease, visibility 0.58s ease !important;
 }
 
-/* 이미지 로딩 시 레이아웃 밀림 방지 강화 */
-.image-wrapper {
-    aspect-ratio: 4 / 3 !important;
-}
-
-.item-image {
-    aspect-ratio: 1 / 1.08 !important;
-}
-
+.image-wrapper { aspect-ratio: 4 / 3 !important; }
+.item-image { aspect-ratio: 1 / 1.08 !important; }
 .slide-image-wrap {
     aspect-ratio: 16 / 9;
     min-height: 420px;
     background: rgba(199, 164, 255, 0.08);
 }
 
-.image-wrapper img,
-.item-image img,
-#slide-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-/* 슬라이드쇼 일시정지 버튼 */
 .slide-pause-btn {
     margin: 18px auto 0;
     padding: 10px 20px;
@@ -2206,11 +2104,7 @@ final-v6 요청 반영: 슬라이드 일시정지, 라이트박스 설명, 모�
     box-shadow: 0 10px 28px rgba(199, 164, 255, 0.24);
 }
 
-/* 라이트박스 사진 설명 표시 */
-.lightbox {
-    padding: 28px !important;
-}
-
+.lightbox { padding: 28px !important; }
 .lightbox-content {
     width: min(92vw, 1100px);
     max-height: 92svh;
@@ -2256,96 +2150,11 @@ final-v6 요청 반영: 슬라이드 일시정지, 라이트박스 설명, 모�
     line-height: 1.6;
 }
 
-body.lightbox-open {
-    overflow: hidden;
-}
+body.lightbox-open { overflow: hidden; }
 
-/* 엔딩 크레딧: 도달 후 재생, 완료 후 To be continued만 표시 */
-.ending-credits-section {
-    position: relative;
-    z-index: 2;
-    padding: 110px 20px 160px !important;
-    overflow: visible !important;
-    text-align: center;
-}
-
-.credits-mask {
-    --credits-box-height: clamp(560px, 72vh, 700px);
-    --credits-roll-start: calc(var(--credits-box-height) + 40px);
-    --credits-roll-end: 1900px;
-    --credits-duration: 58s;
-    position: relative !important;
-    width: min(92vw, 760px) !important;
-    height: var(--credits-box-height) !important;
-    margin: 0 auto !important;
-    overflow: hidden !important;
-    border-radius: 24px !important;
-    border: 1px solid rgba(199, 164, 255, 0.3) !important;
-    background: rgba(25, 20, 45, 0.45) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(199, 164, 255, 0.1) !important;
-}
-
-.credits-roll {
-    position: absolute !important;
-    left: 0 !important;
-    right: 0 !important;
-    top: 0 !important;
-    padding: 56px 30px 180px !important;
-    opacity: 1;
-    visibility: visible;
-    transform: translate3d(0, var(--credits-roll-start), 0);
-    animation: none !important;
-    will-change: transform, opacity;
-}
-
-.ending-credits-section.play:not(.ended) .credits-roll {
-    animation: movieCreditsRoll var(--credits-duration) linear 1 forwards !important;
-}
-
-.ending-credits-section.ended .credits-roll {
-    opacity: 0 !important;
-    visibility: hidden !important;
-    animation: none !important;
-}
-
-.credits-final-message {
-    position: absolute;
-    inset: 0;
-    z-index: 4;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 32px;
-    text-align: center;
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: scale(0.96);
-    transition: opacity 1s ease, transform 1s ease, visibility 1s ease;
-}
-
-.credits-final-message h3 {
-    margin: 0;
-    color: #ffffff;
-    font-size: clamp(1.8rem, 5vw, 3rem);
-    letter-spacing: 3px;
-    line-height: 1.5;
-    text-shadow: 0 0 18px rgba(199, 164, 255, 0.75), 0 0 35px rgba(255, 255, 255, 0.18);
-}
-
-.ending-credits-section.ended .credits-final-message {
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: scale(1) !important;
-}
-
-/* 모바일 글자 크기/자간 안정화 + 하단 가림 방지 */
+/* 모바일 메뉴 개편 */
 @media screen and (max-width: 768px) {
-    body {
-        padding-bottom: env(safe-area-inset-bottom) !important;
-    }
+    body { padding-bottom: env(safe-area-inset-bottom) !important; }
 
     .main-title {
         font-size: clamp(2.15rem, 9.4vw, 2.75rem) !important;
@@ -2353,18 +2162,10 @@ body.lightbox-open {
         line-height: 1.25 !important;
     }
 
-    .sub-title {
-        font-size: 0.98rem !important;
-        letter-spacing: 2.4px !important;
-    }
+    .sub-title { font-size: 0.98rem !important; letter-spacing: 2.4px !important; }
+    .d-day-label { letter-spacing: 1px !important; }
 
-    .d-day-label {
-        letter-spacing: 1px !important;
-    }
-
-    .random-message,
-    .easter-hint,
-    .visit-count {
+    .random-message, .easter-hint, .visit-count {
         max-width: 92vw;
         word-break: keep-all;
         overflow-wrap: break-word;
@@ -2375,42 +2176,11 @@ body.lightbox-open {
         min-height: 340px !important;
     }
 
-    .slide-pause-btn {
-        font-size: 0.92rem;
-        padding: 10px 17px;
-    }
+    .slide-pause-btn { font-size: 0.92rem; padding: 10px 17px; }
+    .lightbox { padding: 20px !important; }
+    .lightbox-content img, .lightbox img { max-height: 68svh; }
+    .lightbox-caption { padding: 14px 16px; }
 
-    .lightbox {
-        padding: 20px !important;
-    }
-
-    .lightbox-content img,
-    .lightbox img {
-        max-height: 68svh;
-    }
-
-    .lightbox-caption {
-        padding: 14px 16px;
-    }
-
-    .credits-mask {
-        --credits-box-height: min(62vh, 540px);
-        --credits-duration: 54s;
-        width: min(92vw, 430px) !important;
-        height: var(--credits-box-height) !important;
-        border-radius: 22px !important;
-    }
-
-    .credits-roll {
-        padding: 44px 18px 130px !important;
-    }
-
-    .credits-final-message h3 {
-        font-size: clamp(1.55rem, 8vw, 2.4rem);
-        letter-spacing: 2px;
-    }
-
-    /* 모바일 메뉴: 화면 아래를 가리지 않는 왼쪽 세로 플로팅 */
     .mobile-nav {
         position: fixed !important;
         left: 16px !important;
@@ -2508,10 +2278,7 @@ body.lightbox-open {
         text-align: center;
     }
 
-    .mobile-nav a span {
-        display: inline-block;
-        white-space: nowrap;
-    }
+    .mobile-nav a span { display: inline-block; white-space: nowrap; }
 
     .mobile-nav a.active,
     .mobile-nav a:hover {
@@ -2533,387 +2300,11 @@ body.lightbox-open {
         bottom: calc(140px + env(safe-area-inset-bottom)) !important;
     }
 
-    .mobile-nav-toggle {
-        width: 52px;
-        height: 52px;
-        font-size: 1.2rem;
-    }
-
-    .mobile-nav a {
-        width: 112px !important;
-        font-size: 0.86rem !important;
-    }
-}
-/* =========================================
-사이트 점검중 화면
-기본은 숨김, JS에서 show 클래스가 붙을 때만 표시
-========================================= */
-
-.maintenance-screen {
-    position: fixed;
-    inset: 0;
-    z-index: 30000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 28px;
-    background:
-        radial-gradient(circle at 20% 25%, rgba(199, 164, 255, 0.20), transparent 42%),
-        radial-gradient(circle at 80% 70%, rgba(255, 143, 216, 0.14), transparent 45%),
-        rgba(7, 7, 20, 0.96);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    overflow: hidden;
+    .mobile-nav-toggle { width: 52px; height: 52px; font-size: 1.2rem; }
+    .mobile-nav a { width: 112px !important; font-size: 0.86rem !important; }
 }
 
-.maintenance-screen.show {
-    display: flex;
-}
-
-.maintenance-screen::before {
-    content: '';
-    position: absolute;
-    inset: -40px;
-    background-image:
-        radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1.5px),
-        radial-gradient(circle, rgba(199,164,255,0.6) 1px, transparent 1.5px);
-    background-size: 70px 70px, 110px 110px;
-    background-position: 0 0, 35px 45px;
-    opacity: 0.24;
-    animation: maintenanceStars 80s linear infinite;
-    pointer-events: none;
-}
-
-.maintenance-screen::after {
-    content: '';
-    position: absolute;
-    width: 360px;
-    height: 360px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(199,164,255,0.24), transparent 65%);
-    filter: blur(4px);
-    animation: maintenanceGlow 4.5s ease-in-out infinite;
-    pointer-events: none;
-}
-
-.maintenance-card {
-    position: relative;
-    z-index: 2;
-    width: min(92vw, 620px);
-    padding: 54px 34px 46px;
-    text-align: center;
-    border-radius: 30px;
-    border: 1px solid rgba(199, 164, 255, 0.34);
-    background: rgba(25, 20, 45, 0.62);
-    box-shadow:
-        0 22px 60px rgba(0, 0, 0, 0.58),
-        inset 0 0 26px rgba(199, 164, 255, 0.10);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    animation: maintenanceCardIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.maintenance-orbit {
-    position: relative;
-    width: 92px;
-    height: 92px;
-    margin: 0 auto 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.maintenance-orbit span {
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    border: 1px solid rgba(199, 164, 255, 0.42);
-    box-shadow: 0 0 24px rgba(199, 164, 255, 0.34);
-    animation: maintenanceOrbit 3.4s linear infinite;
-}
-
-.maintenance-orbit span::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 50%;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #ffffff;
-    box-shadow: 0 0 14px #c7a4ff;
-}
-
-.maintenance-orbit i {
-    color: #ffffff;
-    font-size: 2.2rem;
-    text-shadow: 0 0 20px rgba(199, 164, 255, 0.9);
-    animation: maintenanceTwinkle 1.7s ease-in-out infinite;
-}
-
-.maintenance-label {
-    margin-bottom: 14px;
-    color: #bcafd0;
-    font-size: 0.85rem;
-    letter-spacing: 4px;
-}
-
-.maintenance-card h1 {
-    margin-bottom: 20px;
-    color: #ffffff;
-    font-size: clamp(1.75rem, 5vw, 2.6rem);
-    line-height: 1.45;
-    text-shadow: 0 0 20px rgba(199, 164, 255, 0.42);
-}
-
-.maintenance-message {
-    color: #e5d9f2;
-    font-size: 1.05rem;
-    line-height: 1.9;
-    margin-bottom: 30px;
-}
-
-.maintenance-progress {
-    position: relative;
-    width: min(320px, 76vw);
-    height: 8px;
-    margin: 0 auto 24px;
-    overflow: hidden;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.10);
-    border: 1px solid rgba(199, 164, 255, 0.22);
-}
-
-.maintenance-progress span {
-    position: absolute;
-    top: 0;
-    left: -45%;
-    width: 45%;
-    height: 100%;
-    border-radius: 999px;
-    background: linear-gradient(90deg, transparent, #c7a4ff, #ff8fd8, transparent);
-    box-shadow: 0 0 18px rgba(199, 164, 255, 0.8);
-    animation: maintenanceLoading 1.9s ease-in-out infinite;
-}
-
-.maintenance-small {
-    color: rgba(229, 217, 242, 0.72);
-    font-size: 0.9rem;
-    letter-spacing: 1px;
-}
-
-body.maintenance-active {
-    overflow: hidden;
-}
-
-@keyframes maintenanceStars {
-    from {
-        transform: translate3d(0, 0, 0);
-    }
-    to {
-        transform: translate3d(0, -260px, 0);
-    }
-}
-
-@keyframes maintenanceGlow {
-    0%, 100% {
-        opacity: 0.45;
-        transform: scale(0.96);
-    }
-    50% {
-        opacity: 0.85;
-        transform: scale(1.08);
-    }
-}
-
-@keyframes maintenanceCardIn {
-    from {
-        opacity: 0;
-        transform: translateY(28px) scale(0.96);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes maintenanceOrbit {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-@keyframes maintenanceTwinkle {
-    0%, 100% {
-        transform: scale(1);
-        opacity: 0.82;
-    }
-    50% {
-        transform: scale(1.18);
-        opacity: 1;
-    }
-}
-
-@keyframes maintenanceLoading {
-    0% {
-        left: -45%;
-    }
-    100% {
-        left: 100%;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .maintenance-card {
-        padding: 46px 24px 38px;
-        border-radius: 26px;
-    }
-
-    .maintenance-label {
-        font-size: 0.76rem;
-        letter-spacing: 3px;
-    }
-
-    .maintenance-message {
-        font-size: 0.96rem;
-    }
-}
-.Github {
-    text-decoration: none;
-    color: blue;
-}
-.Github:hover {
-    color: yellow; /* 빨간색 */
-}
-
-/* 3. 클릭할 때(active) 색상 변경 */
-.Github:active {
-    color: green; /* 파란색 */
-}
-/* =========================================
-로딩 화면 문구 크기/위치 고정
-========================================= */
-
-.loading-screen {
-    gap: 22px;
-}
-
-.loading-screen p {
-    width: min(90vw, 420px);
-    min-height: 32px;
-    line-height: 32px;
-    margin: 0;
-    text-align: center;
-
-    font-size: 1.1rem;
-    font-weight: 400;
-    letter-spacing: 2px;
-
-    transform: none !important;
-    animation: none !important;
-    transition: none !important;
-    will-change: auto;
-}
-
-/* 별 아이콘만 움직이게 고정 */
-.loading-star {
-    flex: 0 0 72px;
-}
-
-.loading-star i {
-    line-height: 1;
-}
-
-/* 모바일에서도 글자 크기 고정 */
-@media screen and (max-width: 480px) {
-    .loading-screen p {
-        font-size: 1rem;
-        line-height: 30px;
-        min-height: 30px;
-        letter-spacing: 1.5px;
-    }
-}
-/* =========================================
-로딩 화면 글자 크기/위치 흔들림 고정
-========================================= */
-
-.loading-screen {
-    text-align: center;
-    overflow: hidden;
-}
-
-.loading-screen p {
-    width: min(86vw, 360px);
-    min-height: 34px;
-    margin: 0;
-    
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
-    font-size: 1.1rem;
-    line-height: 1.6;
-    font-weight: 600;
-    letter-spacing: 2px;
-    white-space: nowrap;
-
-    color: #e5d9f2;
-    text-shadow: 0 0 12px rgba(199, 164, 255, 0.7);
-
-    animation: none !important;
-    transform: none !important;
-    transition: none !important;
-
-    font-synthesis: none;
-    text-rendering: geometricPrecision;
-}
-/* =========================================
-로딩 중 뒤 화면 안 보이게 고정
-========================================= */
-
-.loading-screen {
-    background:
-        radial-gradient(circle at center, rgba(30, 18, 60, 1), rgba(7, 7, 20, 1)) !important;
-    opacity: 1;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-}
-
-.loading-screen::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(circle at 20% 30%, rgba(199, 164, 255, 0.18), transparent 45%),
-        radial-gradient(circle at 80% 70%, rgba(255, 143, 216, 0.12), transparent 45%);
-    pointer-events: none;
-    z-index: 0;
-}
-
-.loading-screen > * {
-    position: relative;
-    z-index: 1;
-}
-
-/* 로딩이 끝날 때 뒤 화면이 서서히 비치는 현상 방지 */
-.loading-screen.hide {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.25s ease, visibility 0.25s ease;
-}
-/* =========================================
-점검중 화면 안정화 / 검은 화면 방지
-========================================= */
-
-html.maintenance-mode-active,
-body.maintenance-mode-active {
-    overflow: hidden !important;
-}
-
+/* 사이트 점검중 화면 */
 #maintenance-screen {
     position: fixed;
     inset: 0;
@@ -2959,9 +2350,7 @@ body.maintenance-mode-active {
     border-radius: 30px;
     border: 1px solid rgba(199, 164, 255, 0.34);
     background: rgba(25, 20, 45, 0.72);
-    box-shadow:
-        0 22px 60px rgba(0, 0, 0, 0.58),
-        inset 0 0 26px rgba(199, 164, 255, 0.10);
+    box-shadow: 0 22px 60px rgba(0, 0, 0, 0.58), inset 0 0 26px rgba(199, 164, 255, 0.10);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
 }
@@ -3068,20 +2457,64 @@ body.maintenance-mode-active {
     0% { left: -45%; }
     100% { left: 100%; }
 }
-/* =========================================
-로딩 화면 별 아이콘 즉시 표시
-Font Awesome 로딩 지연 방지
-========================================= */
 
-.loading-star {
-    position: relative;
-    flex-shrink: 0;
+.Github {
+    text-decoration: none;
+    color: blue;
+}
+.Github:hover { color: yellow; }
+.Github:active { color: green; }
+
+/* 로딩 고정 */
+.loading-screen p {
+    width: min(86vw, 360px);
+    min-height: 34px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    font-weight: 600;
+    letter-spacing: 2px;
+    white-space: nowrap;
+    color: #e5d9f2;
+    text-shadow: 0 0 12px rgba(199, 164, 255, 0.7);
+    animation: none !important;
+    transform: none !important;
+    transition: none !important;
+    text-rendering: geometricPrecision;
 }
 
-.loading-star i {
-    display: none !important;
+.loading-screen {
+    background: radial-gradient(circle at center, rgba(30, 18, 60, 1), rgba(7, 7, 20, 1)) !important;
+    opacity: 1;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
 }
 
+.loading-screen::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 30%, rgba(199, 164, 255, 0.18), transparent 45%),
+        radial-gradient(circle at 80% 70%, rgba(255, 143, 216, 0.12), transparent 45%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.loading-screen > * { position: relative; z-index: 1; }
+
+.loading-screen.hide {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.loading-star { position: relative; flex-shrink: 0; }
+.loading-star i { display: none !important; }
 .loading-star::before {
     content: "★";
     display: block;
@@ -3089,18 +2522,10 @@ Font Awesome 로딩 지연 방지
     font-family: Arial, sans-serif;
     font-size: 2rem;
     line-height: 1;
-    text-shadow:
-        0 0 12px rgba(255, 255, 255, 0.9),
-        0 0 22px rgba(199, 164, 255, 0.9);
-}
-/* =========================================
-엔딩 크레딧 종료 후 To be continued 즉시 표시
-========================================= */
-
-.credits-final-message {
-    transition: none !important;
+    text-shadow: 0 0 12px rgba(255, 255, 255, 0.9), 0 0 22px rgba(199, 164, 255, 0.9);
 }
 
+.credits-final-message { transition: none !important; }
 .ending-credits-section.ended .credits-final-message {
     opacity: 1 !important;
     visibility: visible !important;
@@ -3114,14 +2539,8 @@ Font Awesome 로딩 지연 방지
     animation: none !important;
 }
 
-/* =========================================
-final-v7-easter: 사이트 분위기 맞춤 이스터에그 추가
-========================================= */
-
-.sub-title {
-    cursor: pointer;
-}
-
+/* 별자리 이스터에그 */
+.sub-title { cursor: pointer; }
 .subtitle-constellation-easter {
     position: fixed;
     inset: 0;
@@ -3136,33 +2555,21 @@ final-v7-easter: 사이트 분위기 맞춤 이스터에그 추가
     transition: opacity 0.5s ease, visibility 0.5s ease;
 }
 
-.subtitle-constellation-easter.show {
-    opacity: 1;
-    visibility: visible;
-}
-
+.subtitle-constellation-easter.show { opacity: 1; visibility: visible; }
 .constellation-card {
     width: min(88vw, 520px);
     padding: 20px 20px 22px;
     border-radius: 28px;
     border: 1px solid rgba(199, 164, 255, 0.32);
     background: rgba(25, 20, 45, 0.58);
-    box-shadow:
-        0 18px 52px rgba(0, 0, 0, 0.46),
-        inset 0 0 24px rgba(199, 164, 255, 0.09);
+    box-shadow: 0 18px 52px rgba(0, 0, 0, 0.46), inset 0 0 24px rgba(199, 164, 255, 0.09);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     transform: translateY(18px) scale(0.96);
     animation: constellationCardPop 0.72s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.constellation-card svg {
-    width: 100%;
-    height: auto;
-    display: block;
-    overflow: visible;
-}
-
+.constellation-card svg { width: 100%; height: auto; display: block; overflow: visible; }
 .constellation-card polyline,
 .constellation-card line {
     fill: none;
@@ -3176,10 +2583,7 @@ final-v7-easter: 사이트 분위기 맞춤 이스터에그 추가
     animation: constellationLineDraw 1.45s ease forwards;
 }
 
-.constellation-card line {
-    animation-delay: 0.25s;
-}
-
+.constellation-card line { animation-delay: 0.25s; }
 .constellation-card circle {
     fill: #ffffff;
     stroke: rgba(199, 164, 255, 0.8);
@@ -3207,43 +2611,12 @@ final-v7-easter: 사이트 분위기 맞춤 이스터에그 추가
     text-shadow: 0 0 12px rgba(199, 164, 255, 0.6);
 }
 
-@keyframes constellationCardPop {
-    to {
-        transform: translateY(0) scale(1);
-    }
-}
-
-@keyframes constellationLineDraw {
-    to {
-        stroke-dashoffset: 0;
-    }
-}
-
+@keyframes constellationCardPop { to { transform: translateY(0) scale(1); } }
+@keyframes constellationLineDraw { to { stroke-dashoffset: 0; } }
 @keyframes constellationStarPop {
-    0% {
-        opacity: 0;
-        transform: scale(0.3);
-    }
-    60% {
-        opacity: 1;
-        transform: scale(1.35);
-    }
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* 숨겨진 테마 기믹 조절: 배경 테마만 바인딩 */
-body.theme-our-night {
-    background-color: #05020f;
-}
-
-body.theme-our-night .aurora {
-    background:
-        radial-gradient(circle at 24% 28%, rgba(180, 125, 255, 0.30) 0%, transparent 52%),
-        radial-gradient(circle at 78% 72%, rgba(255, 143, 216, 0.22) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(100, 70, 255, 0.14) 0%, transparent 60%);
+    0% { opacity: 0; transform: scale(0.3); }
+    60% { opacity: 1; transform: scale(1.35); }
+    100% { opacity: 1; transform: scale(1); }
 }
 
 body.our-night-unlocked::after,
@@ -3271,28 +2644,13 @@ body.heart-reward-active .aurora {
     filter: brightness(1.4) saturate(1.35);
 }
 
-body.heart-reward-active .heart-burst-btn {
-    animation: heartRewardButtonPulse 0.9s ease-in-out infinite;
-}
+body.heart-reward-active .heart-burst-btn { animation: heartRewardButtonPulse 0.9s ease-in-out infinite; }
 
-@keyframes easterGlowPulse {
-    0%, 100% { opacity: 0.35; }
-    50% { opacity: 0.82; }
-}
+@keyframes easterGlowPulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.82; } }
+@keyframes heartRewardButtonPulse { 0%, 100% { transform: translateY(-2px) scale(1); } 50% { transform: translateY(-6px) scale(1.07); } }
 
-@keyframes heartRewardButtonPulse {
-    0%, 100% { transform: translateY(-2px) scale(1); }
-    50% { transform: translateY(-6px) scale(1.07); }
-}
-
-.credits-final-message {
-    cursor: pointer;
-    pointer-events: auto;
-}
-
-.credits-final-message.clicked-reward h3 {
-    animation: finalMessageReward 0.9s ease-in-out 2;
-}
+.credits-final-message { cursor: pointer; pointer-events: auto; }
+.credits-final-message.clicked-reward h3 { animation: finalMessageReward 0.9s ease-in-out 2; }
 
 @keyframes finalMessageReward {
     0%, 100% {
@@ -3306,32 +2664,12 @@ body.heart-reward-active .heart-burst-btn {
 }
 
 @media screen and (max-width: 768px) {
-    .subtitle-constellation-easter {
-        padding-top: clamp(70px, 13vh, 120px);
-    }
-
-    .constellation-card {
-        width: min(90vw, 420px);
-        padding: 16px 16px 18px;
-        border-radius: 24px;
-    }
-
-    .constellation-card p {
-        font-size: 0.92rem;
-        word-break: keep-all;
-    }
+    .subtitle-constellation-easter { padding-top: clamp(70px, 13vh, 120px); }
+    .constellation-card { width: min(90vw, 420px); padding: 16px 16px 18px; border-radius: 24px; }
+    .constellation-card p { font-size: 0.92rem; word-break: keep-all; }
 }
-/* =========================================
-추가 기능 3, 5, 6, 7, 8, 10
-- 위로 가기 별 버튼
-- 사진 로딩 스켈레톤
-- 시간대별 인사
-- 엔딩 감상 완료 배지
-- BGM 볼륨 기억 표시 보조
-- 업데이트 알림
-========================================= */
 
-/* 3. 위로 가기 별 버튼 */
+/* 추가 편의기능 */
 .back-to-top-star {
     position: fixed;
     right: 24px;
@@ -3347,49 +2685,28 @@ body.heart-reward-active .heart-burst-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow:
-        0 0 22px rgba(199, 164, 255, 0.45),
-        inset 0 0 14px rgba(199, 164, 255, 0.08);
+    box-shadow: 0 0 22px rgba(199, 164, 255, 0.45), inset 0 0 14px rgba(199, 164, 255, 0.08);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     opacity: 0;
     visibility: hidden;
     transform: translateY(16px) scale(0.9);
     pointer-events: none;
-    transition:
-        opacity 0.3s ease,
-        visibility 0.3s ease,
-        transform 0.3s ease,
-        box-shadow 0.3s ease,
-        background 0.3s ease;
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
 
-.back-to-top-star.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0) scale(1);
-    pointer-events: auto;
-}
-
+.back-to-top-star.show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); pointer-events: auto; }
 .back-to-top-star:hover {
     background: rgba(199, 164, 255, 0.26);
     box-shadow: 0 0 30px rgba(199, 164, 255, 0.75);
     transform: translateY(-4px) scale(1.05);
 }
+.back-to-top-star i { font-size: 1.25rem; text-shadow: 0 0 14px rgba(199, 164, 255, 0.9); }
 
-.back-to-top-star i {
-    font-size: 1.25rem;
-    text-shadow: 0 0 14px rgba(199, 164, 255, 0.9);
-}
-
-
-/* 5. 사진 로딩 스켈레톤 */
 .memory-img-skeleton {
     position: relative;
     overflow: hidden;
-    background:
-        linear-gradient(135deg, rgba(199, 164, 255, 0.08), rgba(255, 255, 255, 0.04)),
-        rgba(25, 20, 45, 0.55) !important;
+    background: linear-gradient(135deg, rgba(199, 164, 255, 0.08), rgba(255, 255, 255, 0.04)), rgba(25, 20, 45, 0.55) !important;
 }
 
 .memory-img-skeleton::before {
@@ -3397,15 +2714,7 @@ body.heart-reward-active .heart-burst-btn {
     position: absolute;
     inset: 0;
     z-index: 3;
-    background:
-        linear-gradient(
-            110deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.06) 36%,
-            rgba(199, 164, 255, 0.24) 50%,
-            rgba(255, 255, 255, 0.06) 64%,
-            transparent 100__
-        );
+    background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.06) 36%, rgba(199, 164, 255, 0.24) 50%, rgba(255, 255, 255, 0.06) 64%, transparent 100%);
     transform: translateX(-120%);
     animation: memorySkeletonShine 1.45s ease-in-out infinite;
     pointer-events: none;
@@ -3426,23 +2735,10 @@ body.heart-reward-active .heart-burst-btn {
 }
 
 .memory-img-skeleton.memory-img-loaded::before,
-.memory-img-skeleton.memory-img-loaded::after {
-    opacity: 0;
-    visibility: hidden;
-    animation: none;
-}
+.memory-img-skeleton.memory-img-loaded::after { opacity: 0; visibility: hidden; animation: none; }
 
-@keyframes memorySkeletonShine {
-    0% {
-        transform: translateX(-120%);
-    }
-    100% {
-        transform: translateX(120%);
-    }
-}
+@keyframes memorySkeletonShine { 0% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
 
-
-/* 6. 방문 시간대별 인사 + 10. 업데이트 알림 */
 .memory-time-greeting,
 .memory-update-notice,
 .ending-complete-badge {
@@ -3459,53 +2755,18 @@ body.heart-reward-active .heart-burst-btn {
     letter-spacing: 0.5px;
     text-align: center;
     text-shadow: 0 0 10px rgba(199, 164, 255, 0.42);
-    box-shadow:
-        0 8px 24px rgba(0, 0, 0, 0.26),
-        inset 0 0 14px rgba(199, 164, 255, 0.06);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.26), inset 0 0 14px rgba(199, 164, 255, 0.06);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
 
-.memory-time-greeting i,
-.memory-update-notice i,
-.ending-complete-badge i {
-    color: #c7a4ff;
-    margin-right: 6px;
-}
+.memory-time-greeting i, .memory-update-notice i, .ending-complete-badge i { color: #c7a4ff; margin-right: 6px; }
+.ending-complete-badge { display: none; border-color: rgba(255, 217, 142, 0.38); color: #fff3c7; background: rgba(40, 31, 54, 0.58); }
+.ending-complete-badge.show { display: block; animation: endingBadgePop 0.65s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
+@keyframes endingBadgePop { from { opacity: 0; transform: translateY(12px) scale(0.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+#bgm-volume.memory-volume-saved { filter: drop-shadow(0 0 8px rgba(199, 164, 255, 0.65)); }
 
-/* 7. 엔딩 감상 완료 배지 */
-.ending-complete-badge {
-    display: none;
-    border-color: rgba(255, 217, 142, 0.38);
-    color: #fff3c7;
-    background: rgba(40, 31, 54, 0.58);
-}
-
-.ending-complete-badge.show {
-    display: block;
-    animation: endingBadgePop 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes endingBadgePop {
-    from {
-        opacity: 0;
-        transform: translateY(12px) scale(0.96);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-
-/* 8. BGM 볼륨 저장 안내용 작은 반짝임 */
-#bgm-volume.memory-volume-saved {
-    filter: drop-shadow(0 0 8px rgba(199, 164, 255, 0.65));
-}
-
-
-/* 모바일 위치 조정 */
 @media screen and (max-width: 768px) {
     .back-to-top-star {
         right: 16px;
@@ -3514,90 +2775,37 @@ body.heart-reward-active .heart-burst-btn {
         height: 48px;
     }
 
-    .memory-time-greeting,
-    .memory-update-notice,
-    .ending-complete-badge {
-        font-size: 0.88rem;
-        padding: 8px 14px;
-        word-break: keep-all;
-    }
-}
-/* =========================================
-엔딩 배지 추가 시 아래 안내문 잘림 방지
-========================================= */
-
-/* 배지가 생겼을 때 인트로 하단 공간 확보 */
-body.has-ending-complete-badge .intro-section {
-    padding-bottom: 210px !important;
+    .memory-time-greeting, .memory-update-notice, .ending-complete-badge { font-size: 0.88rem; padding: 8px 14px; word-break: keep-all; }
 }
 
-/* 안내 문구가 항상 위에 보이도록 */
-body.has-ending-complete-badge .scroll-down {
-    z-index: 5;
-}
+body.has-ending-complete-badge .intro-section { padding-bottom: 210px !important; }
+body.has-ending-complete-badge .scroll-down { z-index: 5; }
+body.has-ending-complete-badge .intro-content { transform: translateY(-18px); }
 
-/* 배지가 생겼을 때 인트로 내용이 안내문과 너무 가까워지지 않게 */
-body.has-ending-complete-badge .intro-content {
-    transform: translateY(-18px);
-}
-
-/* 모바일에서는 더 여유 있게 */
 @media screen and (max-width: 768px) {
-    body.has-ending-complete-badge .intro-section {
-        padding-bottom: 230px !important;
-    }
-
-    body.has-ending-complete-badge .intro-content {
-        transform: translateY(-24px);
-    }
-
-    body.has-ending-complete-badge .scroll-down {
-        bottom: max(34px, env(safe-area-inset-bottom)) !important;
-    }
+    body.has-ending-complete-badge .intro-section { padding-bottom: 230px !important; }
+    body.has-ending-complete-badge .intro-content { transform: translateY(-24px); }
+    body.has-ending-complete-badge .scroll-down { bottom: max(34px, env(safe-area-inset-bottom)) !important; }
 }
 
-/* 화면 높이가 낮으면 absolute 고정을 풀어서 잘림 방지 */
 @media screen and (max-height: 760px) {
-    body.has-ending-complete-badge .intro-section {
-        min-height: auto !important;
-        padding-top: 80px !important;
-        padding-bottom: 80px !important;
-        flex-direction: column !important;
-    }
-
-    body.has-ending-complete-badge .intro-content {
-        transform: none !important;
-    }
-
-    body.has-ending-complete-badge .scroll-down {
-        position: relative !important;
-        left: auto !important;
-        bottom: auto !important;
-        transform: none !important;
-        margin-top: 42px !important;
-    }
-}
-/* ==========================================================================
-   💻 & 📱 [최종 완전판] 맨 왼쪽 위 고정형 통합 최적화 시스템 스타일 가이드
-   ========================================================================== */
-
-/* HTML에 직접 추가되었을 수 있는 과거 체크박스 흔적 제거 */
-.perf-mobile-btn, #perf-mode-toggle {
-    display: none !important;
+    body.has-ending-complete-badge .intro-section { min-height: auto !important; padding-top: 80px !important; padding-bottom: 80px !important; flex-direction: column !important; }
+    body.has-ending-complete-badge .intro-content { transform: none !important; }
+    body.has-ending-complete-badge .scroll-down { position: relative !important; left: auto !important; bottom: auto !important; transform: none !important; margin-top: 42px !important; }
 }
 
-/* 1. [공통 디자인] 데스크탑 및 모바일 화면 공통 '맨 왼쪽 위' 정밀 정착 */
+.perf-mobile-btn, #perf-mode-toggle { display: none !important; }
+
+/* 1. [최종 고정형] 통합 최적화 시스템 버튼 */
 .mobile-perf-btn {
     display: flex !important;
     position: fixed !important;
-    /* 상단 상태바/노치 세이프 아웃 구역 자동 계산 및 왼쪽 위 마진 배치 */
     top: max(16px, env(safe-area-inset-top)) !important;
     left: 16px !important;
     right: auto !important;
     bottom: auto !important;
-    z-index: 999999 !important; /* 상단 배너나 텍스트에 클릭이 씹히지 않도록 조치 */
-    
-    background: #ffc107 !important; /* 최적화가 켜져서 활성화된 상태의 골드 앰버 테마 */
+    z-index: 999999 !important;
+    background: #ffc107 !important;
     color: #0c0a1e !important;
     border: 1px solid #ffc107 !important;
     padding: 7px 12px !important;
@@ -3611,39 +2819,37 @@ body.has-ending-complete-badge .intro-content {
     cursor: pointer !important;
 }
 
-/* 최적화 버튼이 꺼져 있을 때 (PC 디폴트 / 모바일 수동 정지 상태) */
 .mobile-perf-btn.opt-off {
     background: rgba(30, 25, 55, 0.85) !important;
     color: rgba(255, 255, 255, 0.7) !important;
     border: 1px solid rgba(255, 255, 255, 0.25) !important;
 }
 
-/* 2. ⚡ [핵심 렉 줄이기 필터] 최적화 ON 모드가 가동되면 시스템 연산 일시 해제 */
+/* 2. ⚡ 최적화 모드 연산 제어 */
 body.perf-mode-active .stars {
     animation: none !important;
-    display: none !important; /* 끊임없이 움직여 연산 과부하를 초래하는 별빛 입자 즉시 소멸 */
+    display: none !important;
 }
 body.perf-mode-active .aurora {
-    animation: none !important;
+    animation: none !important; /* 끊기던 실시간 애니메이션 연산만 정지 */
 }
 body.perf-mode-active .timeline-card,
 body.perf-mode-active .gallery-item,
 body.perf-mode-active .d-day-counter,
 body.perf-mode-active .welcome-box,
 body.perf-mode-active .letter-lock-container {
-    backdrop-filter: none !important; /* 그래픽 리소스를 점유하는 카드 뒷면 실시간 흐림(Blur) 필터링 제어 */
+    backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    background: rgba(18, 14, 35, 0.96) !important; /* 필터 가 꺼져도 글귀 시인성에 문제 없도록 명도 보정 */
+    background: rgba(18, 14, 35, 0.96) !important;
 }
 
-/* 🎨 [배경 테마 고정 최적화] 최적화 모드가 켜진 상태에서도 배경 테마 연동이 완벽히 동기화되도록 바인딩 */
-body.perf-mode-active .aurora { background: #070714 !important; }
-body.perf-mode-active.theme-cherry .aurora, body.perf-mode-active.cherry .aurora { background: #170b18 !important; }
-body.perf-mode-active.theme-ocean .aurora, body.perf-mode-active.ocean .aurora { background: #03141f !important; }
-body.perf-mode-active.theme-letter .aurora, body.perf-mode-active.letter .aurora { background: #120d18 !important; }
-body.perf-mode-active.theme-our-night .aurora, body.perf-mode-active.our-night .aurora { background: #05020f !important; }
+/* 🎨 [배경 테마 고정 최적화] 수정 포인트: .aurora를 단색으로 덮어쓰던 버그를 제거하고 body 고유 배경색 가중치를 강화하여 최적화 상태에서도 테마 완벽 보장 */
+body.perf-mode-active.theme-cherry { background-color: #170b18 !important; }
+body.perf-mode-active.theme-ocean { background-color: #03141f !important; }
+body.perf-mode-active.theme-letter { background-color: #120d18 !important; }
+body.perf-mode-active.theme-our-night { background-color: #05020f !important; }
 
-/* 3. 📱 모바일 환경 전용 (화면 가로폭 768px 이하) 완전 격리 최적화 규격 */
+/* 3. 📱 모바일 격리 환경 가이드 */
 @media screen and (max-width: 768px) {
     html, body {
         overflow-x: hidden !important;
@@ -3655,12 +2861,8 @@ body.perf-mode-active.theme-our-night .aurora, body.perf-mode-active.our-night .
         -webkit-overflow-scrolling: touch !important;
     }
 
-    * {
-        -webkit-tap-highlight-color: transparent !important;
-        outline: none !important;
-    }
+    * { -webkit-tap-highlight-color: transparent !important; outline: none !important; }
 
-    /* 하단 고정바 뒤로 문구가 숨는 문제 완벽 차단 공백 형성 */
     footer, .footer-section {
         position: relative !important;
         z-index: 10 !important;
@@ -3668,7 +2870,6 @@ body.perf-mode-active.theme-our-night .aurora, body.perf-mode-active.our-night .
         padding-bottom: calc(140px + env(safe-area-inset-bottom)) !important;
     }
 
-    /* 모바일 반응형 1열 구조 정돈 */
     .timeline-container { padding: 30px 16px 40px !important; }
     .timeline-container::after { left: 20px !important; transform: none !important; }
     .timeline-item { width: 100% !important; margin-left: 0 !important; margin-right: 0 !important; padding-left: 42px !important; padding-bottom: 30px !important; }
@@ -3679,7 +2880,6 @@ body.perf-mode-active.theme-our-night .aurora, body.perf-mode-active.our-night .
     .mobile-nav-toggle { background: transparent !important; border: none !important; box-shadow: none !important; }
     .mobile-nav { position: fixed !important; bottom: 0 !important; left: 0 !important; width: 100% !important; z-index: 99999 !important; }
 
-    /* 문장 흐름 단위 정돈 (줄바꿈이 이상하게 끊어지는 버그 방지) */
     h1, h2, h3, p, span, a, .intro-content, .timeline-card p {
         word-break: keep-all !important;
         overflow-wrap: break-word !important;
