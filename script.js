@@ -136,7 +136,7 @@
                 player?.classList.add("playing");
                 document.body.classList.add("bgm-playing");
             }).catch(error => {
-                console.error("BGM 재생 오류:", error);
+                console.error("BGM 재생 오류 :", error);
                 alert("음원을 재생할 수 없어! 기기의 소리 설정이나 절전 모드를 확인해줘 🥺");
             });
         } else {
@@ -750,6 +750,7 @@
     }
 
     function setSiteTheme(themeName) {
+        document.body.classList.remove("our-night-unlocked");
         const safeTheme = SITE_THEMES.includes(themeName) ? themeName : "night";
 
         document.body.classList.remove("theme-cherry", "theme-ocean", "theme-letter");
@@ -1257,7 +1258,7 @@
 (function () {
     "use strict";
 
-    const FORCE_MAINTENANCE_FOR_ALL = true;
+    const FORCE_MAINTENANCE_FOR_ALL = false;
     const STORAGE_KEY = "memorySiteMaintenanceModeFixed";
 
     function setSavedMode(isOn) {
@@ -1302,7 +1303,7 @@
                     <i class="fa-solid fa-star"></i>
                 </div>
                 <p class="maintenance-label">SITE MAINTENANCE</p>
-                <h1>우리의 기록장을 잠시 정리하는 중이야.</h1>
+                <h2>우리의 기록장을 잠시 정리하는 중이야.</h2>
                 <p class="maintenance-message">
                     더 예쁜 추억을 담기 위해 별빛을 다시 고르고 있어.<br>
                     잠시 후 다시 찾아와줘.
@@ -1555,11 +1556,6 @@
         writeStorage("memorySiteHiddenTheme", "our-night");
         showEasterToast("우리의 밤 테마가 열렸어.", 3200);
         burstAt(document.querySelector(".theme-toggle-btn") || document.querySelector(".welcome-icon") || document.body, 1);
-
-        clearTimeout(activateOurNightTheme._timer);
-        activateOurNightTheme._timer = setTimeout(() => {
-            document.body.classList.remove("our-night-unlocked");
-        }, 5200);
     }
 
     function clearLongPressTimer() {
@@ -1664,10 +1660,10 @@
             const rect = footer.getBoundingClientRect();
             const viewHeight = window.innerHeight || document.documentElement.clientHeight || 1;
 
-            if (rect.top <= viewHeight * 0.82) {
+            if (rect.top <= viewHeight * 0.72) {
                 footerRewardShown = true;
                 writeSession("memorySiteFooterRewardShown", "true");
-                showEasterToast("여기까지 함께 내려와줘서 고마워.", 3400);
+                showEasterToast("여기까지 함께 내려와줘서 고마워.", 3000);
                 burstAt(footer, 1);
                 window.removeEventListener("scroll", requestCheck);
             }
@@ -1715,7 +1711,7 @@
         endingBadge: "memorySiteEndingCompleteBadge"
     };
 
-    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.20 17:15";
+    const SITE_UPDATE_TEXT = "마지막 업데이트 : 2026.05.21 16:00";
 
     function safeGet(key) {
         try {
