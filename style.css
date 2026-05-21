@@ -874,7 +874,7 @@ footer {
 .reply-box {
     width: 90%;
     max-width: 500px;
-    background: rgba(255, 253, 245, 0.95);
+    background: rgba(25, 20, 45, 0.45);
     padding: 40px;
     border-radius: 15px;
     box-shadow: 0 15px 40px rgba(199, 164, 255, 0.5);
@@ -1290,7 +1290,6 @@ footer {
     font-size: 0.98rem;
     line-height: 1.7;
     letter-spacing: 0.5px;
-    text-shadow: 0 0 10px rgba(199, 164, 255, 0.45);
 }
 
 .heart-burst-btn {
@@ -1332,7 +1331,6 @@ footer {
 }
 
 /* 🎨 테마별 설정: 컴퓨터(PC) 및 모바일 환경 통합 / 최적화 온오프 전체 적용 보장 */
-/* [버그 수정] '우리의 밤' 테마를 최상단에 배치하여 다른 테마가 레이어 우선순위 상 항상 정상 작동하도록 배치 교정 */
 body.theme-night, body.theme-our-night, body.perf-mode-active.theme-night, body.perf-mode-active.theme-our-night { 
     background-color: #080316 !important; 
 }
@@ -2329,7 +2327,7 @@ body.lightbox-open { overflow: hidden; }
         rgba(7, 7, 20, 1);
     overflow: hidden;
     opacity: 0;
-    transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1) !important; /* 덜컥거림 방지 페이드 가속화 */
+    transition: opacity 0.5s cubic-bezier(0.25, 1, 0.5, 1) !important;
 }
 
 #maintenance-screen.show {
@@ -2357,7 +2355,7 @@ body.lightbox-open { overflow: hidden; }
     position: relative;
     z-index: 2;
     width: min(92vw, 620px);
-    min-height: 460px; /* 초기 높이 연산 보존으로 덜컥거림 방지 */
+    min-height: 460px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -2418,7 +2416,6 @@ body.lightbox-open { overflow: hidden; }
     letter-spacing: 4px;
 }
 
-/* 폰트 로드 전후 레이아웃 흔들림 차단을 위해 절대 안전 고정 치수로 개편 */
 .maintenance-card h1 {
     margin: 0 0 20px 0 !important;
     color: #ffffff;
@@ -2492,7 +2489,25 @@ body.lightbox-open { overflow: hidden; }
 .Github:hover { color: yellow; }
 .Github:active { color: green; }
 
-/* 로딩 고정 */
+/* ────────────────────────────────────────────────────────
+   [버그 수정] 로딩 화면 z-index supreme 격상 (최적화 버튼 가림 보장)
+   ──────────────────────────────────────────────────────── */
+.loading-screen {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(30, 18, 60, 1), rgba(7, 7, 20, 1)) !important;
+    z-index: 100000000 !important; /* 최적화 버튼(999999)을 포함한 모든 컨텐츠를 무조건 덮도록 설정 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 22px;
+    opacity: 1;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
 .loading-screen p {
     width: min(86vw, 360px);
     min-height: 34px;
@@ -2514,13 +2529,6 @@ body.lightbox-open { overflow: hidden; }
     text-rendering: geometricPrecision;
 }
 
-.loading-screen {
-    background: radial-gradient(circle at center, rgba(30, 18, 60, 1), rgba(7, 7, 20, 1)) !important;
-    opacity: 1;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-}
-
 .loading-screen::before {
     content: '';
     position: absolute;
@@ -2535,9 +2543,9 @@ body.lightbox-open { overflow: hidden; }
 .loading-screen > * { position: relative; z-index: 1; }
 
 .loading-screen.hide {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.25s ease, visibility 0.25s ease;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
 }
 
 .loading-star { position: relative; flex-shrink: 0; }
@@ -2852,18 +2860,15 @@ body.has-ending-complete-badge .intro-content { transform: translateY(-18px); }
     border: 1px solid rgba(255, 255, 255, 0.25) !important;
 }
 
-/* ────────────────────────────────────────────────────────
-   [추가 요구사항 반영] 최적화 온오프 버튼 마우스 호버(Hover) 효과
-   ──────────────────────────────────────────────────────── */
 .mobile-perf-btn:hover {
-    background: #ffca2c !important; /* 마우스를 올리면 더 밝고 선명한 금색으로 변경 */
+    background: #ffca2c !important;
     border-color: #ffc720 !important;
-    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.6) !important; /* 영롱하게 빛나는 광채 추가 */
-    transform: translateY(-2px) scale(1.03) !important; /* 부드럽게 위로 살짝 뜨며 커지는 시각 피드백 */
+    box-shadow: 0 6px 20px rgba(255, 193, 7, 0.6) !important;
+    transform: translateY(-2px) scale(1.03) !important;
 }
 
 .mobile-perf-btn.opt-off:hover {
-    background: rgba(52, 44, 90, 0.95) !important; /* 꺼진 상태에서 올리면 세련된 연보라빛으로 반응 */
+    background: rgba(52, 44, 90, 0.95) !important;
     color: #ffffff !important;
     border-color: rgba(199, 164, 255, 0.6) !important;
     box-shadow: 0 6px 18px rgba(199, 164, 255, 0.35) !important;
