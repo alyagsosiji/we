@@ -1332,7 +1332,6 @@ footer {
 }
 
 /* 🎨 테마별 설정: 컴퓨터(PC) 및 모바일 환경 통합 / 최적화 온오프 전체 적용 보장 */
-/* [버그 수정] '우리의 밤' 테마를 최상단에 배치하여 다른 테마가 레이어 우선순위 상 항상 정상 작동하도록 배치 교정 */
 body.theme-night, body.theme-our-night, body.perf-mode-active.theme-night, body.perf-mode-active.theme-our-night { 
     background-color: #080316 !important; 
 }
@@ -2628,6 +2627,7 @@ body.lightbox-open { overflow: hidden; }
     100% { opacity: 1; transform: scale(1); }
 }
 
+/* 우리의 밤 이스터에그 발광 제어층 */
 body.our-night-unlocked::after,
 body.bgm-secret-boost::after,
 body.heart-reward-active::after {
@@ -2641,6 +2641,16 @@ body.heart-reward-active::after {
         radial-gradient(circle at 70% 62%, rgba(255, 143, 216, 0.16), transparent 18%),
         radial-gradient(circle at 50% 18%, rgba(199, 164, 255, 0.16), transparent 18%);
     animation: easterGlowPulse 1.6s ease-in-out infinite;
+}
+
+/* [버그 수정 핵심 규칙] 벚꽃, 바다, 편지 테마가 활성화되면 우리의 밤 전체 화면 장막(::after)을 완전히 차단 제거하여 완벽한 테마 변경 보장 */
+body.theme-cherry::after,
+body.theme-ocean::after,
+body.theme-letter::after {
+    content: none !important;
+    display: none !important;
+    background: none !important;
+    opacity: 0 !important;
 }
 
 body.bgm-secret-boost .shooting-stars span {
@@ -2840,7 +2850,7 @@ body.perf-mode-active .stars {
     display: none !important;
 }
 body.perf-mode-active .aurora {
-    animation: none !important; /* 끊기던 실시간 애니메이션 연산만 정지 */
+    animation: none !important; 
 }
 body.perf-mode-active .timeline-card,
 body.perf-mode-active .gallery-item,
