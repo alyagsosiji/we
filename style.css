@@ -2888,32 +2888,28 @@ body.perf-mode-active .letter-lock-container {
 }
 
 /* ────────────────────────────────────────────────────────
-   ✨ [타이틀 고도화] '우리의 기록장' 은하수 5색 무빙 오로라 텍스트 가공
+   ✨ [타이틀 고도화] '우리의 기록장' 은하수 5색 무빙 오로라 (마우스 호버 효과 제거 버전)
    ──────────────────────────────────────────────────────── */
 .main-title {
-    font-size: clamp(2.4rem, 8.5vw, 3.8rem) !important;
+    font-size: clamp(2.4rem, 8.5vw, 3.8rem) !important; /* 모바일과 PC 화면 크기 자동 맞춤 레이아웃 */
     letter-spacing: 8px !important;
+    /* 신비로운 우주빛 그라데이션 배색 (보라, 화이트, 핑크, 화이트, 보라) */
     background: linear-gradient(75deg, #c7a4ff, #ffffff, #ffb7e2, #ffffff, #c7a4ff) !important;
     background-size: 400% auto !important;
     -webkit-background-clip: text !important;
     background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
+    /* 몽환적인 2중 레이어 네온 발광 네뷸라 효과 */
     text-shadow: 
         0 0 20px rgba(199, 164, 255, 0.65), 
         0 0 45px rgba(255, 143, 216, 0.35) !important;
-    animation: mainTitleSkyShine 7s ease infinite !important;
+    animation: mainTitleSkyShine 7s ease infinite !important; /* 빛이 스스로 천천히 흐르는 무한 루프 */
     position: relative;
     display: inline-block;
-    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.4s ease;
+    /* [수정] 호버 반응을 없앴으므로 크기/텍스트 섀도우 transition 속성을 완전히 삭제하여 정적 안정성 확보 */
 }
 
-.main-title:hover {
-    transform: scale(1.02);
-    text-shadow: 
-        0 0 30px rgba(199, 164, 255, 0.95), 
-        0 0 60px rgba(255, 143, 216, 0.7) !important;
-}
-
+/* 🌟 타이틀 하단에 은은하게 숨쉬는 별빛 수평 데코선 배치 */
 .main-title::after {
     content: '';
     position: absolute;
@@ -2926,17 +2922,20 @@ body.perf-mode-active .letter-lock-container {
     animation: mainTitleLinePulse 3.5s ease-in-out infinite alternate;
 }
 
+/* 🌌 은하수 컬러 슬라이딩 그라데이션 무빙 연산 연출 */
 @keyframes mainTitleSkyShine {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
 
+/* 하단 가이드 라인의 신비로운 안개 불빛 박동 수축 애니메이션 */
 @keyframes mainTitleLinePulse {
     0% { opacity: 0.35; transform: scaleX(0.92); filter: brightness(0.85); }
     100% { opacity: 1; transform: scaleX(1.04); filter: brightness(1.3); }
 }
 
+/* 모바일 환경 세부 조율 격리 처리 */
 @media screen and (max-width: 768px) {
     .main-title {
         letter-spacing: 4px !important;
