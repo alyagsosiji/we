@@ -1,4 +1,4 @@
-/* final-v6: 슬라이드 일시정지 + 로딩 최적화 + 라이트박스 설명 + 엔딩 완료 표시 */
+/* final-v7-easter: 슬라이드 일시정지 + 로딩 최적화 + 라이트박스 설명 + 엔딩 완료 표시 */
 /* 기본 리셋 및 폰트 설정 */
 * {
     margin: 0;
@@ -946,55 +946,6 @@ footer {
 .send-letter-btn:hover {
     background: #8263cf;
     transform: translateY(-3px);
-}
-
-/* 로딩 화면 */
-.loading-screen {
-    position: fixed;
-    inset: 0;
-    background: radial-gradient(circle at center, rgba(30, 18, 60, 0.98), rgba(7, 7, 20, 0.98));
-    z-index: 20000;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 22px;
-    transition: opacity 0.7s ease, visibility 0.7s ease;
-}
-
-.loading-screen.hide {
-    opacity: 0;
-    visibility: hidden;
-}
-
-.loading-star {
-    width: 72px;
-    height: 72px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #ffffff;
-    background: rgba(199, 164, 255, 0.15);
-    border: 1px solid rgba(199, 164, 255, 0.45);
-    box-shadow: 0 0 30px rgba(199, 164, 255, 0.75);
-    animation: loadingTwinkle 1.4s ease-in-out infinite;
-}
-
-.loading-star i {
-    font-size: 2rem;
-}
-
-.loading-screen p {
-    color: #e5d9f2;
-    font-size: 1.1rem;
-    letter-spacing: 2px;
-    text-shadow: 0 0 12px rgba(199, 164, 255, 0.7);
-}
-
-@keyframes loadingTwinkle {
-    0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.85; }
-    50% { transform: scale(1.18) rotate(25deg); opacity: 1; }
 }
 
 /* 첫 방문 안내 */
@@ -2073,10 +2024,6 @@ body.season-summer .seasonal-particle {
 }
 
 /* final-v6 추가수정 */
-.loading-screen {
-    transition: opacity 0.58s ease, visibility 0.58s ease !important;
-}
-
 .image-wrapper { aspect-ratio: 4 / 3 !important; }
 .item-image { aspect-ratio: 1 / 1.08 !important; }
 .slide-image-wrap {
@@ -2489,14 +2436,12 @@ body.lightbox-open { overflow: hidden; }
 .Github:hover { color: yellow; }
 .Github:active { color: green; }
 
-/* ────────────────────────────────────────────────────────
-   [버그 수정] 로딩 화면 z-index supreme 격상 (최적화 버튼 가림 보장)
-   ──────────────────────────────────────────────────────── */
+/* 최상위 고정형 로딩 장막 */
 .loading-screen {
     position: fixed;
     inset: 0;
     background: radial-gradient(circle at center, rgba(30, 18, 60, 1), rgba(7, 7, 20, 1)) !important;
-    z-index: 100000000 !important; /* 최적화 버튼(999999)을 포함한 모든 컨텐츠를 무조건 덮도록 설정 */
+    z-index: 100000000 !important;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -2669,6 +2614,15 @@ body.heart-reward-active::after {
     animation: easterGlowPulse 1.6s ease-in-out infinite;
 }
 
+body.theme-cherry::after,
+body.theme-ocean::after,
+body.theme-letter::after {
+    content: none !important;
+    display: none !important;
+    background: none !important;
+    opacity: 0 !important;
+}
+
 body.bgm-secret-boost .shooting-stars span {
     animation-duration: 1.25s !important;
     box-shadow: 0 0 18px #ffffff, 0 0 36px rgba(255, 143, 216, 0.95) !important;
@@ -2831,7 +2785,7 @@ body.has-ending-complete-badge .intro-content { transform: translateY(-18px); }
 
 .perf-mobile-btn, #perf-mode-toggle { display: none !important; }
 
-/* 1. [최종 고정형] 통합 최적화 시스템 버튼 */
+/* ⚡ 1. 최적화 시스템 버튼 (초기 생성 딜레이 버그 해결 버전) */
 .mobile-perf-btn {
     display: flex !important;
     position: fixed !important;
@@ -2850,14 +2804,17 @@ body.has-ending-complete-badge .intro-content { transform: translateY(-18px); }
     align-items: center !important;
     gap: 5px !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
-    transition: all 0.25s ease-in-out !important;
     cursor: pointer !important;
+    /* ❌ [원인 버그 교정] 전역 'all' 트랜지션은 초기 로딩 시 뒤늦게 피드인 되는 현상을 만듭니다. */
+    /* ⭕ 마우스 호버 반응에만 작동하도록 속성을 한정시켜 첫 등장 시 딜레이 없이 0초 만에 완벽 동기화 노출됩니다. */
+    transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease !important;
 }
 
 .mobile-perf-btn.opt-off {
     background: rgba(30, 25, 55, 0.85) !important;
     color: rgba(255, 255, 255, 0.7) !important;
     border: 1px solid rgba(255, 255, 255, 0.25) !important;
+    transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease !important;
 }
 
 .mobile-perf-btn:hover {
@@ -2929,30 +2886,27 @@ body.perf-mode-active .letter-lock-container {
         overflow-wrap: break-word !important;
     }
 }
+
 /* ────────────────────────────────────────────────────────
-   ✨ [추가 코드] '우리의 기록장' 메인 타이틀 은하수 그라데이션 및 오로라 빛 가공
-   (기존 style.css 파일의 가장 마지막 줄에 그대로 추가해 주시면 됩니다!)
+   ✨ [타이틀 고도화] '우리의 기록장' 은하수 5색 무빙 오로라 텍스트 가공
    ──────────────────────────────────────────────────────── */
 .main-title {
-    font-size: clamp(2.4rem, 8.5vw, 3.8rem) !important; /* 모바일과 PC 화면 크기 자동 맞춤 가변 레이아웃 */
+    font-size: clamp(2.4rem, 8.5vw, 3.8rem) !important;
     letter-spacing: 8px !important;
-    /* 신비로운 우주빛 그라데이션 배색 (보라, 화이트, 핑크, 화이트, 보라) */
     background: linear-gradient(75deg, #c7a4ff, #ffffff, #ffb7e2, #ffffff, #c7a4ff) !important;
     background-size: 400% auto !important;
     -webkit-background-clip: text !important;
     background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
-    /* 몽환적인 2중 레이어 네온 발광 네뷸라 효과 */
     text-shadow: 
         0 0 20px rgba(199, 164, 255, 0.65), 
         0 0 45px rgba(255, 143, 216, 0.35) !important;
-    animation: mainTitleSkyShine 7s ease infinite !important; /* 빛이 천천히 흐르는 무한 루프 */
+    animation: mainTitleSkyShine 7s ease infinite !important;
     position: relative;
     display: inline-block;
     transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.4s ease;
 }
 
-/* 🖱️ 타이틀 마우스 호버 및 터치 시 깊어지는 발광 인터랙티브 피드백 */
 .main-title:hover {
     transform: scale(1.02);
     text-shadow: 
@@ -2960,7 +2914,6 @@ body.perf-mode-active .letter-lock-container {
         0 0 60px rgba(255, 143, 216, 0.7) !important;
 }
 
-/* 🌟 타이틀 하단에 은은하게 숨쉬는 별빛 수평 데코선 배치 */
 .main-title::after {
     content: '';
     position: absolute;
@@ -2973,20 +2926,17 @@ body.perf-mode-active .letter-lock-container {
     animation: mainTitleLinePulse 3.5s ease-in-out infinite alternate;
 }
 
-/* 🌌 은하수 컬러 슬라이딩 그라데이션 무빙 연산 연출 */
 @keyframes mainTitleSkyShine {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
 
-/* 하단 가이드 라인의 신비로운 안개 불빛 박동 수축 애니메이션 */
 @keyframes mainTitleLinePulse {
     0% { opacity: 0.35; transform: scaleX(0.92); filter: brightness(0.85); }
     100% { opacity: 1; transform: scaleX(1.04); filter: brightness(1.3); }
 }
 
-/* 모바일 환경 세부 조율 격리 처리 */
 @media screen and (max-width: 768px) {
     .main-title {
         letter-spacing: 4px !important;
