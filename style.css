@@ -2929,3 +2929,70 @@ body.perf-mode-active .letter-lock-container {
         overflow-wrap: break-word !important;
     }
 }
+/* ────────────────────────────────────────────────────────
+   ✨ [추가 코드] '우리의 기록장' 메인 타이틀 은하수 그라데이션 및 오로라 빛 가공
+   (기존 style.css 파일의 가장 마지막 줄에 그대로 추가해 주시면 됩니다!)
+   ──────────────────────────────────────────────────────── */
+.main-title {
+    font-size: clamp(2.4rem, 8.5vw, 3.8rem) !important; /* 모바일과 PC 화면 크기 자동 맞춤 가변 레이아웃 */
+    letter-spacing: 8px !important;
+    /* 신비로운 우주빛 그라데이션 배색 (보라, 화이트, 핑크, 화이트, 보라) */
+    background: linear-gradient(75deg, #c7a4ff, #ffffff, #ffb7e2, #ffffff, #c7a4ff) !important;
+    background-size: 400% auto !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    /* 몽환적인 2중 레이어 네온 발광 네뷸라 효과 */
+    text-shadow: 
+        0 0 20px rgba(199, 164, 255, 0.65), 
+        0 0 45px rgba(255, 143, 216, 0.35) !important;
+    animation: mainTitleSkyShine 7s ease infinite !important; /* 빛이 천천히 흐르는 무한 루프 */
+    position: relative;
+    display: inline-block;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.4s ease;
+}
+
+/* 🖱️ 타이틀 마우스 호버 및 터치 시 깊어지는 발광 인터랙티브 피드백 */
+.main-title:hover {
+    transform: scale(1.02);
+    text-shadow: 
+        0 0 30px rgba(199, 164, 255, 0.95), 
+        0 0 60px rgba(255, 143, 216, 0.7) !important;
+}
+
+/* 🌟 타이틀 하단에 은은하게 숨쉬는 별빛 수평 데코선 배치 */
+.main-title::after {
+    content: '';
+    position: absolute;
+    bottom: -14px;
+    left: 8%;
+    width: 84%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #c7a4ff, #ffb7e2, #c7a4ff, transparent);
+    box-shadow: 0 0 14px rgba(199, 164, 255, 0.88);
+    animation: mainTitleLinePulse 3.5s ease-in-out infinite alternate;
+}
+
+/* 🌌 은하수 컬러 슬라이딩 그라데이션 무빙 연산 연출 */
+@keyframes mainTitleSkyShine {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* 하단 가이드 라인의 신비로운 안개 불빛 박동 수축 애니메이션 */
+@keyframes mainTitleLinePulse {
+    0% { opacity: 0.35; transform: scaleX(0.92); filter: brightness(0.85); }
+    100% { opacity: 1; transform: scaleX(1.04); filter: brightness(1.3); }
+}
+
+/* 모바일 환경 세부 조율 격리 처리 */
+@media screen and (max-width: 768px) {
+    .main-title {
+        letter-spacing: 4px !important;
+        line-height: 1.3 !important;
+    }
+    .main-title::after {
+        bottom: -10px;
+    }
+}
