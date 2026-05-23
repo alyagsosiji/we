@@ -2038,6 +2038,11 @@
     if (typeof restartEndingCredits !== 'undefined') window.restartEndingCredits = restartEndingCredits;
     if (typeof toggleMobileNav !== 'undefined') window.toggleMobileNav = toggleMobileNav;
 
+    // 원래 맨 밑에 존재하던 로직 실행선 (로딩 화면 제거 등 초기화 실행)
+    if (typeof runWhenReady !== 'undefined' && typeof initExtraSafeFeatures !== 'undefined') {
+        runWhenReady(initExtraSafeFeatures);
+    }
+
 // 원래 맨 밑에 있던 이 괄호 바로 위에 복사해 넣으시면 됩니다!
     // 이 코드 바로 아래에 원래 있던 아래 두 줄과 })(); 가 위치하게 됩니다.
     // runWhenReady(initExtraSafeFeatures);
