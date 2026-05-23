@@ -5,7 +5,7 @@ const ASSETS_TO_CACHE = [
     'style.css',
     'script.js',
     '하은.jpg',
-    '블라우스_하은'
+    '블라우스_하은.jpg'
 ];
 
 // 1. 서비스 워커 설치 및 하위 레포지토리 자산 로컬 캐싱
