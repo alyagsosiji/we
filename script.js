@@ -2018,7 +2018,29 @@
         initEndingCompleteBadge();
         initBgmVolumeMemory();
     }
-
+// ────────────────────────────────────────────────────────
+    // 🌐 [PWA 및 인라인 버튼 먹통 해결] 격리된 함수들을 전역 window 객체와 연결
+    // ────────────────────────────────────────────────────────
+    if (typeof closeWelcomeModal !== 'undefined') window.closeWelcomeModal = closeWelcomeModal;
+    if (typeof toggleBGM !== 'undefined') window.toggleBGM = toggleBGM;
+    if (typeof toggleMute !== 'undefined') window.toggleMute = toggleMute;
+    if (typeof toggleThemePanel !== 'undefined') window.toggleThemePanel = toggleThemePanel;
+    if (typeof setSiteTheme !== 'undefined') window.setSiteTheme = setSiteTheme;
+    if (typeof launchHeartFireworks !== 'undefined') window.launchHeartFireworks = launchHeartFireworks;
+    if (typeof changeSlide !== 'undefined') window.changeSlide = changeSlide;
+    if (typeof toggleSlidePause !== 'undefined') window.toggleSlidePause = toggleSlidePause;
+    if (typeof checkPassword !== 'undefined') window.checkPassword = checkPassword;
+    if (typeof openReplyBox !== 'undefined') window.openReplyBox = openReplyBox;
+    if (typeof closeReplyBox !== 'undefined') window.closeReplyBox = closeReplyBox;
+    if (typeof sendReply !== 'undefined') window.sendReply = sendReply;
+    if (typeof closeLightbox !== 'undefined') window.closeLightbox = closeLightbox;
+    if (typeof hideEasterSecret !== 'undefined') window.hideEasterSecret = hideEasterSecret;
+    if (typeof restartEndingCredits !== 'undefined') window.restartEndingCredits = restartEndingCredits;
+    if (typeof toggleMobileNav !== 'undefined') window.toggleMobileNav = toggleMobileNav;
+    
+    // 이 코드 바로 아래에 원래 있던 아래 두 줄과 })(); 가 위치하게 됩니다.
+    // runWhenReady(initExtraSafeFeatures);
+// })();
     runWhenReady(initExtraSafeFeatures);
 })();
 
@@ -2071,6 +2093,7 @@ function initHybridPerformanceMode() {
             perfBtn.classList.add("opt-off");
             perfBtn.querySelector(".opt-text").innerText = "최적화 OFF";
         }
+
     });
 }
 
