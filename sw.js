@@ -1,5 +1,5 @@
 /* sw.js - 로딩 정체 및 버튼 먹통 방지 최종 고도화 버전 */
-const CACHE_NAME = 'we-final-v4'; // 버전을 갱신하여 브라우저의 구버전 캐시를 강제로 밀어냅니다.
+const CACHE_NAME = 'we-final-v5'; // 버전을 갱신하여 브라우저의 구버전 캐시를 강제로 밀어냅니다.
 const ASSETS_TO_CACHE = [
     './',
     'index.html',
