@@ -1262,7 +1262,7 @@
 (function () {
     "use strict";
 
-    const FORCE_MAINTENANCE_FOR_ALL = true;
+    const FORCE_MAINTENANCE_FOR_ALL = false;
     const STORAGE_KEY = "memorySiteMaintenanceModeFixed";
 
     function setSavedMode(isOn) {
