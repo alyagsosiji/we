@@ -110,7 +110,7 @@
         loadingScreen.dataset.hidden = "true";
         loadingScreen.classList.add("hide");
         
-        // 로딩 화면의 페이드아웃 트랜지션(580ms)이 완벽히 끝난 시점에 display를 끄고 버튼 실행
+        // 로딩 화면의 페이드아웃 트랜지션(580ms)이 완벽히 끝난 시점에 display를 끄고 버튼 실행.
         setTimeout(() => {
             loadingScreen.style.display = "none";
             if (typeof window.initHybridPerformanceMode === "function") {
