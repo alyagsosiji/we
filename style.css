@@ -2945,3 +2945,91 @@ body.perf-mode-active .letter-lock-container {
         bottom: -10px;
     }
 }
+/* ────────────────────────────────────────────────────────
+   🌌 [애니메이션 복구 완료] 로딩 화면 영롱한 오로라 무한 회전 & 텍스트 호흡 효과
+   (기존 style.css 최하단에 그대로 추가해주시면 즉시 적용됩니다!)
+   ──────────────────────────────────────────────────────── */
+.loading-screen {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(16, 9, 36, 1), rgba(4, 4, 15, 1)) !important;
+    z-index: 100000000 !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.loading-screen.hide {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* ⭐ 로딩 별빛 원형 컨테이너: 부드럽게 커지며 네온 불빛 발광 */
+.loading-star {
+    position: relative !important;
+    width: 76px !important;
+    height: 76px !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(199, 164, 255, 0.15) !important;
+    border: 1px solid rgba(199, 164, 255, 0.45) !important;
+    box-shadow: 0 0 35px rgba(199, 164, 255, 0.8) !important;
+    transform: none !important;
+    animation: loadingStarUniversePulse 2.8s ease-in-out infinite !important;
+}
+
+/* 내부 실제 별 아이콘: 멈춰있지 않고 무한히 영롱하게 360도 회전 */
+.loading-star i {
+    display: block !important;
+    font-size: 2.1rem !important;
+    color: #ffffff !important;
+    text-shadow: 0 0 15px #ffffff, 0 0 30px rgba(199, 164, 255, 1) !important;
+    animation: loadingStarRotate 3.5s linear infinite !important;
+}
+
+/* 정적이었던 가짜 글자 별표는 완벽 제거 */
+.loading-star::before {
+    display: none !important;
+    content: "" !important;
+}
+
+/* 💬 로딩 중 글씨: 밤하늘의 성운처럼 은은하게 숨쉬는 듯 밝아지는 펄스 효과 */
+.loading-screen p {
+    font-family: 'Gowun Batang', 'Nanum Myeongjo', serif !important;
+    font-size: 1.15rem !important;
+    font-weight: 600 !important;
+    letter-spacing: 3px !important;
+    color: #e5d9f2 !important;
+    text-shadow: 0 0 15px rgba(199, 164, 255, 0.8) !important;
+    white-space: nowrap !important;
+    width: auto !important;
+    min-height: auto !important;
+    display: block !important;
+    animation: loadingTextNebulaBreathe 2s ease-in-out infinite !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+/* 🪐 로딩 전용 고화질 애니메이션 키프레임 연산 */
+@keyframes loadingStarUniversePulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(199, 164, 255, 0.6); background: rgba(199, 164, 255, 0.15); }
+    50% { transform: scale(1.13); box-shadow: 0 0 50px rgba(255, 143, 216, 0.85); background: rgba(199, 164, 255, 0.25); border-color: rgba(255, 143, 216, 0.5); }
+}
+
+@keyframes loadingStarRotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes loadingTextNebulaBreathe {
+    0%, 100% { opacity: 0.45; filter: brightness(0.85); }
+    50% { opacity: 1; filter: brightness(1.25); text-shadow: 0 0 15px rgba(199, 164, 255, 0.95), 0 0 25px #ffffff; }
+}
