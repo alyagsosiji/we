@@ -2039,7 +2039,6 @@
     if (typeof toggleMobileNav !== 'undefined') window.toggleMobileNav = toggleMobileNav;
 
 // 원래 맨 밑에 있던 이 괄호 바로 위에 복사해 넣으시면 됩니다!
-})();
     // 이 코드 바로 아래에 원래 있던 아래 두 줄과 })(); 가 위치하게 됩니다.
     // runWhenReady(initExtraSafeFeatures);
 // })();
