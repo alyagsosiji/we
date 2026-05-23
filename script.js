@@ -2021,22 +2021,22 @@
 // ────────────────────────────────────────────────────────
     // 🌐 [버튼 먹통 완벽 해결] 격리된 모든 함수들을 전역 window 객체에 바인딩
     // ────────────────────────────────────────────────────────
-    window.closeWelcomeModal = closeWelcomeModal;
-    window.toggleBGM = toggleBGM;
-    window.toggleMute = toggleMute;
-    window.toggleThemePanel = toggleThemePanel;
-    window.setSiteTheme = setSiteTheme;
-    window.launchHeartFireworks = launchHeartFireworks;
-    window.changeSlide = changeSlide;
-    window.toggleSlidePause = toggleSlidePause;
-    window.checkPassword = checkPassword;
-    window.openReplyBox = openReplyBox;
-    window.closeReplyBox = closeReplyBox;
-    window.sendReply = sendReply;
-    window.closeLightbox = closeLightbox;
-    window.hideEasterSecret = hideEasterSecret;
-    window.restartEndingCredits = restartEndingCredits;
-    window.toggleMobileNav = toggleMobileNav;
+    if (typeof closeWelcomeModal !== 'undefined') window.closeWelcomeModal = closeWelcomeModal;
+    if (typeof toggleBGM !== 'undefined') window.toggleBGM = toggleBGM;
+    if (typeof toggleMute !== 'undefined') window.toggleMute = toggleMute;
+    if (typeof toggleThemePanel !== 'undefined') window.toggleThemePanel = toggleThemePanel;
+    if (typeof setSiteTheme !== 'undefined') window.setSiteTheme = setSiteTheme;
+    if (typeof launchHeartFireworks !== 'undefined') window.launchHeartFireworks = launchHeartFireworks;
+    if (typeof changeSlide !== 'undefined') window.changeSlide = changeSlide;
+    if (typeof toggleSlidePause !== 'undefined') window.toggleSlidePause = toggleSlidePause;
+    if (typeof checkPassword !== 'undefined') window.checkPassword = checkPassword;
+    if (typeof openReplyBox !== 'undefined') window.openReplyBox = openReplyBox;
+    if (typeof closeReplyBox !== 'undefined') window.closeReplyBox = closeReplyBox;
+    if (typeof sendReply !== 'undefined') window.sendReply = sendReply;
+    if (typeof closeLightbox !== 'undefined') window.closeLightbox = closeLightbox;
+    if (typeof hideEasterSecret !== 'undefined') window.hideEasterSecret = hideEasterSecret;
+    if (typeof restartEndingCredits !== 'undefined') window.restartEndingCredits = restartEndingCredits;
+    if (typeof toggleMobileNav !== 'undefined') window.toggleMobileNav = toggleMobileNav;
 
 // 원래 맨 밑에 있던 이 괄호 바로 위에 복사해 넣으시면 됩니다!
 })();
