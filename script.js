@@ -1261,8 +1261,8 @@
 // =========================================
 (function () {
     "use strict";
-
-    const FORCE_MAINTENANCE_FOR_ALL = false;
+// true = 점검창활성화
+    const FORCE_MAINTENANCE_FOR_ALL = true;
     const STORAGE_KEY = "memorySiteMaintenanceModeFixed";
 
     function setSavedMode(isOn) {
@@ -1316,7 +1316,8 @@
                     <span></span>
                 </div>
                 <p class="maintenance-small">
-                    To be continued under the same night sky.
+                    To be continued under the same night sky.<br>
+                    6월 7일 까지 점점 중입니다.
                 </p>
             </div>
         `;
