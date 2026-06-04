@@ -1316,7 +1316,7 @@
                     <span></span>
                 </div>
                 <p class="maintenance-small">
-                    To be continued under the same night sky.<br>
+                    To be continued under the same night sky.
                     6월 7일 까지 점점 중입니다.
                 </p>
             </div>
