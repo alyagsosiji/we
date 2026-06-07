@@ -1261,7 +1261,7 @@
 (function () {
     "use strict";
 // true = 점검창활성화
-    const FORCE_MAINTENANCE_FOR_ALL = false;
+    const FORCE_MAINTENANCE_FOR_ALL = true;
     const STORAGE_KEY = "memorySiteMaintenanceModeFixed";
 
     function setSavedMode(isOn) {
