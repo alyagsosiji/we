@@ -1309,14 +1309,13 @@
                 <h2>우리의 기록장을 잠시 정리하는 중이야.</h2>
                 <p class="maintenance-message">
                     더 예쁜 추억을 담기 위해 별빛을 다시 고르고 있어.<br>
-                    잠시 후 다시 찾아와줘.
+                    나중에 다시 찾아와줘.
                 </p>
                 <div class="maintenance-progress">
                     <span></span>
                 </div>
                 <p class="maintenance-small">
                     To be continued under the same night sky.
-                    6월 7일 까지 점점 중입니다.
                 </p>
             </div>
         `;
